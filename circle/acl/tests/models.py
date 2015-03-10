@@ -15,4 +15,8 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
-from .test_acl import TestModel, Test2Model  # noqa
+from django.conf import settings
+
+# https://code.djangoproject.com/ticket/7835
+if settings.SETTINGS_MODULE == 'circle.settings.test':
+    from .test_acl import TestModel, Test2Model  # noqa

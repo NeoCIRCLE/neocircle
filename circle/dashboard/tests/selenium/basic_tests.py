@@ -22,12 +22,14 @@ import random
 import urlparse
 import re
 import time
+import logging
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.common.by import By
 from datetime import datetime
 from selenium.common.exceptions import NoSuchElementException
+logging.getLogger(__name__)
 random_pass = "".join([random.choice(
     '0123456789abcdefghijklmnopqrstvwxyz') for n in xrange(10)])
 random_accents = random_pass + "".join([random.choice(
@@ -75,7 +77,7 @@ class UtilityMixin(object):
                 except:
                     time.sleep(0.5)
             except:
-                raise Exception('Selenium cannot find the form controls')
+                logging.exception('Selenium cannot find the form controls')
 
     def list_options(self, select):
         try:
@@ -87,7 +89,7 @@ class UtilityMixin(object):
                     option_dic[key] = [option.text]
             return option_dic
         except:
-            raise Exception(
+            logging.exception(
                 'Selenium cannot list the select possibilities')
 
     def select_option(self, select, what=None):
@@ -118,7 +120,7 @@ class UtilityMixin(object):
                     0, len(my_choose_list) - 1)]
             select.select_by_value(my_choice)
         except:
-            raise Exception(
+            logging.exception(
                 'Selenium cannot select the chosen one')
 
     def get_link_by_href(self, target_href, attributes=None):
@@ -138,7 +140,7 @@ class UtilityMixin(object):
                         if perfect_fit:
                             return link
         except:
-            raise Exception(
+            logging.exception(
                 'Selenium cannot find the href=%s link' % target_href)
 
     def click_on_link(self, link):
@@ -165,7 +167,7 @@ class UtilityMixin(object):
                 "}")
             self.driver.execute_script(javascript, link)
         except:
-            raise Exception(
+            logging.exception(
                 'Selenium cannot inject javascript to the page')
 
     def wait_and_accept_operation(self, argument=None):
@@ -190,8 +192,8 @@ class UtilityMixin(object):
                         form.send_keys(argument)
             accept.click()
         except:
-            raise Exception("Selenium cannot accept the"
-                            " operation confirmation")
+            logging.exception(
+                'Selenium cannot accept the operation confirmation')
 
     def save_template_from_vm(self, name):
         try:
@@ -206,7 +208,7 @@ class UtilityMixin(object):
             if not self.check_operation_result(recent_deploy):
                 print ("Selenium cannot deploy the "
                        "chosen template virtual machine")
-                raise Exception('Cannot deploy the virtual machine')
+                logging.exception('Cannot deploy the virtual machine')
             self.click_on_link(WebDriverWait(self.driver, wait_max_sec).until(
                 ec.element_to_be_clickable((
                     By.CSS_SELECTOR,
@@ -217,7 +219,7 @@ class UtilityMixin(object):
             if not self.check_operation_result(recent_shut_off):
                 print ("Selenium cannot shut off the "
                        "chosen template virtual machine")
-                raise Exception('Cannot shut off the virtual machine')
+                logging.exception('Cannot shut off the virtual machine')
             self.click_on_link(WebDriverWait(self.driver, wait_max_sec).until(
                 ec.element_to_be_clickable((
                     By.CSS_SELECTOR,
@@ -225,7 +227,7 @@ class UtilityMixin(object):
             self.wait_and_accept_operation(name)
             return name
         except:
-            raise Exception(
+            logging.exception(
                 'Selenium cannot save a vm as a template')
 
     def create_base_template(self, name=None, architecture="x86-64",
@@ -261,7 +263,7 @@ class UtilityMixin(object):
                 "input.btn[type='submit']").click()
             return self.save_template_from_vm(name)
         except:
-            raise Exception(
+            logging.exception(
                 'Selenium cannot create a base template virtual machine')
 
     def get_template_id(self, name=None, from_all=False):
@@ -312,7 +314,7 @@ class UtilityMixin(object):
                            'name': name})
             return found_template_ids
         except:
-            raise Exception(
+            logging.exception(
                 'Selenium cannot found the template\'s id')
 
     def check_operation_result(self, operation_id, restore=True):
@@ -350,7 +352,7 @@ class UtilityMixin(object):
                 self.driver.get(url_save)
             return out
         except:
-            raise Exception(
+            logging.exception(
                 'Selenium cannot check the result of an operation')
 
     def recently(self, timeline_dict, second=90):
@@ -362,7 +364,7 @@ class UtilityMixin(object):
                     if delta.total_seconds() <= second:
                         return value
         except:
-            raise Exception(
+            logging.exception(
                 'Selenium cannot filter timeline activities to recent')
 
     def get_timeline_elements(self, code=None):
@@ -395,7 +397,7 @@ class UtilityMixin(object):
                 activity_dict[key] = activity_id
             return activity_dict
         except:
-            raise Exception('Selenium cannot find the searched activity')
+            logging.exception('Selenium cannot find the searched activity')
 
     def create_template_from_base(self, delete_disk=True, name=None):
         try:
@@ -433,10 +435,11 @@ class UtilityMixin(object):
                     if not self.check_operation_result(recent_remove_disk):
                         print ("Selenium cannot delete disk "
                                "of the chosen template")
-                        raise Exception('Cannot delete disk')
+                        logging.exception('Cannot delete disk')
                 return self.save_template_from_vm(name)
         except:
-            raise Exception('Selenium cannot start a template from a base one')
+            logging.exception(
+                'Selenium cannot start a template from a base one')
 
     def delete_template(self, template_id):
         try:
@@ -451,9 +454,10 @@ class UtilityMixin(object):
                     By.CLASS_NAME, 'alert-success')))
             url = urlparse.urlparse(self.driver.current_url)
             if "/template/list/" not in url.path:
-                raise Exception()
+                logging.exception(
+                    'System does not redirect to template listing')
         except:
-            raise Exception('Selenium cannot delete the desired template')
+            logging.exception('Selenium cannot delete the desired template')
 
     def create_random_vm(self):
         try:
@@ -474,7 +478,7 @@ class UtilityMixin(object):
             pk = re.search(r'\d+', url.path).group()
             return pk
         except:
-            raise Exception('Selenium cannot start a VM')
+            logging.exception('Selenium cannot start a VM')
 
     def view_change(self, target_box):
         driver = self.driver
@@ -522,7 +526,7 @@ class UtilityMixin(object):
                     print ("Selenium cannot destroy "
                            "the chosen %(id)s vm" % {
                                'id': pk})
-                    raise Exception('Cannot destroy the specified vm')
+                    logging.exception('Cannot destroy the specified vm')
             self.driver.get('%s/dashboard/vm/%s/' % (host, pk))
             try:
                 WebDriverWait(self.driver, wait_max_sec).until(
@@ -533,7 +537,7 @@ class UtilityMixin(object):
             except:
                 return False
         except:
-            raise Exception("Selenium can not destroy a VM")
+            logging.exception("Selenium can not destroy a VM")
 
 
 class VmDetailTest(UtilityMixin, SeleniumTestCase):
@@ -571,7 +575,7 @@ class VmDetailTest(UtilityMixin, SeleniumTestCase):
             chosen = template_pool[0]
         else:
             print "Selenium did not found any templates"
-            raise Exception(
+            logging.exception(
                 "System did not meet required conditions to continue")
         self.driver.get('%s/dashboard/template/%s/' % (host, chosen))
         acces_form = self.driver.find_element_by_css_selector(
