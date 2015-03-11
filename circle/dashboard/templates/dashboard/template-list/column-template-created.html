@@ -1,3 +1,4 @@
-{{ record.created|date }}
-<br />
-{{ record.created|time }}
+{% load arrowfilter %}
+<span title="{{ record.created }}">
+  {{ record.created|arrowfilter:LANGUAGE_CODE }}
+</span>
