@@ -11,7 +11,7 @@ from django_tables2 import SingleTableView
 
 from request.models import (
     Request, TemplateAccessType, LeaseType, TemplateAccessAction,
-    # ExtendLeaseAction,
+    ExtendLeaseAction,
 )
 from vm.models import Instance
 from request.tables import (
@@ -118,15 +118,38 @@ class LeaseRequestView(FormView):
     form_class = LeaseRequestForm
     template_name = "request/request-lease.html"
 
-    def get_context_data(self, **kwargs):
-        vm = get_object_or_404(Instance, pk=self.kwargs['vm_pk'])
+    def get_vm(self):
+        return get_object_or_404(Instance, pk=self.kwargs['vm_pk'])
+
+    def dispatch(self, *args, **kwargs):
+        vm = self.get_vm()
         user = self.request.user
         if not vm.has_level(user, 'operator'):
             raise PermissionDenied()
+        return super(LeaseRequestView, self).dispatch(*args, **kwargs)
 
+    def get_context_data(self, **kwargs):
         context = super(LeaseRequestView, self).get_context_data(**kwargs)
-        context['vm'] = vm
+        context['vm'] = self.get_vm()
         return context
 
     def form_valid(self, form):
-        pass
+        data = form.cleaned_data
+        user = self.request.user
+        vm = self.get_vm()
+
+        el = ExtendLeaseAction(
+            lease_type=data['lease'],
+            instance=vm,
+        )
+        el.save()
+
+        req = Request(
+            user=user,
+            reason=data['reason'],
+            type=Request.TYPES.lease,
+            action=el
+        )
+        req.save()
+
+        return redirect(vm.get_absolute_url())
