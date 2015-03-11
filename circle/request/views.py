@@ -11,7 +11,7 @@ from django_tables2 import SingleTableView
 
 from request.models import (
     Request, TemplateAccessType, LeaseType, TemplateAccessAction,
-    ExtendLeaseAction,
+    ExtendLeaseAction, ResourceChangeAction,
 )
 from vm.models import Instance
 from request.tables import (
@@ -19,8 +19,9 @@ from request.tables import (
 )
 from request.forms import (
     LeaseTypeForm, TemplateAccessTypeForm, TemplateRequestForm,
-    LeaseRequestForm,
+    LeaseRequestForm, ResourceRequestForm,
 )
+from dashboard.forms import VmResourcesForm
 
 
 class RequestList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
@@ -149,6 +150,63 @@ class LeaseRequestView(FormView):
             reason=data['reason'],
             type=Request.TYPES.lease,
             action=el
+        )
+        req.save()
+
+        return redirect(vm.get_absolute_url())
+
+
+class ResourceRequestView(FormView):
+    form_class = ResourceRequestForm
+    template_name = "request/request-resource.html"
+
+    def get_vm(self):
+        return get_object_or_404(Instance, pk=self.kwargs['vm_pk'])
+
+    def dispatch(self, *args, **kwargs):
+        vm = self.get_vm()
+        user = self.request.user
+        if not vm.has_level(user, "user"):
+            raise PermissionDenied()
+        return super(ResourceRequestView, self).dispatch(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(ResourceRequestView, self).get_context_data(**kwargs)
+        context['vm'] = self.get_vm()
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super(ResourceRequestView, self).get_form_kwargs()
+        kwargs['can_edit'] = True
+        kwargs['instance'] = self.get_vm()
+        return kwargs
+
+    def get_initial(self):
+        vm = self.get_vm()
+        initial = super(ResourceRequestView, self).get_initial()
+        initial['num_cores'] = vm.num_cores
+        initial['priority'] = vm.priority
+        initial['ram_size'] = vm.ram_size
+        return initial
+
+    def form_valid(self, form):
+        vm = self.get_vm()
+        data = form.cleaned_data
+        user = self.request.user
+
+        rc = ResourceChangeAction(
+            instance=vm,
+            num_cores=data['num_cores'],
+            priority=data['priority'],
+            ram_size=data['ram_size'],
+        )
+        rc.save()
+
+        req = Request(
+            user=user,
+            reason=data['reason'],
+            type=Request.TYPES.resource,
+            action=rc
         )
         req.save()
 

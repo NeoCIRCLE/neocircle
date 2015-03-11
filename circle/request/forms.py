@@ -10,6 +10,7 @@ from crispy_forms.layout import Submit
 from request.models import (
     LeaseType, TemplateAccessType, TemplateAccessAction,
 )
+from dashboard.forms import VmResourcesForm
 
 
 class LeaseTypeForm(ModelForm):
@@ -53,4 +54,7 @@ class TemplateRequestForm(Form):
 class LeaseRequestForm(Form):
     lease = ModelChoiceField(LeaseType.objects.all(),
                              label=_("Lease"))
+    reason = CharField(widget=forms.Textarea)
+
+class ResourceRequestForm(VmResourcesForm):
     reason = CharField(widget=forms.Textarea)
