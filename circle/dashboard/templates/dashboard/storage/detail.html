@@ -70,6 +70,33 @@
         <h3 class="no-margin"><i class="fa fa-file"></i> {% trans "Disks" %}</h3>
       </div>
       <div class="panel-body">
+        <div class="row">
+          <div class="col-md-9">
+            <ul class="nav nav-pills" style="margin: 5px 0 20px 0;">
+              <li class="disabled"><a href="#">{% trans "Filter by type" %}</a></li>
+              <li {% if not request.GET.filter %} class="active"{% endif %}>
+              <a href="{{ request.path }}?s={{ request.GET.s }}">{% trans "ALL" %}</a>
+              </li>
+              {% for f in filter_names %}
+                <li{% if request.GET.filter == f.0 %} class="active"{% endif %}>
+                <a href="?filter={{ f.0 }}&s={{ request.GET.s }}">{{ f.1|capfirst }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="col-md-3">
+            <form action="" method="GET" id="network-host-list-form">
+              <div class="input-group">
+                <input type="text" id="network-host-list-input" name="s" class="form-control"
+                value="{{ request.GET.s }}" placeholder="{% trans "Search..." %}"/>
+                <span class="input-group-btn">
+                  <button class="btn btn-primary"><i class="fa fa-search"></i></button>
+                </span>
+                <input type="hidden" name="filter" value="{{ request.GET.filter }}"/>
+              </div>
+            </form>
+          </div>
+        </div><!-- .row -->
         <div class="table-responsive">
           {% render_table disk_table %}
         </div>
