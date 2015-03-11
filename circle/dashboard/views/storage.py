@@ -72,3 +72,6 @@ class DiskDetail(SuperuserRequiredMixin, UpdateView):
     model = Disk
     form_class = DiskForm
     template_name = "dashboard/storage/disk.html"
+
+    def form_valid(self, form):
+        pass
