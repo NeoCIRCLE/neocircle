@@ -52,7 +52,9 @@
           <small>{% trans "image files without disk object in the database" %}</small>
         </h3>
         {% for o in orphan_disks %}
-          {{ o }}
+          <p>
+            {{ o }}
+          </p>
           {% empty %}
           {% trans "None" %}
         {% endfor %}
