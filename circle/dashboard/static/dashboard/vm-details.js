@@ -225,7 +225,7 @@ $(function() {
 
   $(document).on("click", "#vm-renew-request-lease-button", function(e) {
     $("#vm-renew-request-lease").stop().slideToggle();
-    e.preventDefault()
+    e.preventDefault();
   });
 
 });
