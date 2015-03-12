@@ -20,12 +20,13 @@ from collections import deque
 from django.test import TestCase
 from mock import MagicMock
 
+from .celery_mock import MockCeleryMixin
 from .models import TestClass
 from ..models import HumanSortField
 from ..models import activitycontextimpl
 
 
-class MethodCacheTestCase(TestCase):
+class MethodCacheTestCase(MockCeleryMixin, TestCase):
     def test_cache(self):
         t1 = TestClass(1)
         t2 = TestClass(2)
