@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load arrowfilter %}
 <div class="row">
   <div class="col-md-4">
     <dl id="home_name_and_description">
@@ -69,13 +70,13 @@
         <dt>{% trans "Suspended at:" %}</dt>
         <dd>
           <span title="{{ instance.time_of_suspend }}">
-            <i class="fa fa-moon-o"></i> {{ instance.time_of_suspend|timeuntil }}
+            <i class="fa fa-moon-o"></i> {{ instance.time_of_suspend|arrowfilter:LANGUAGE_CODE }}
           </span>
         </dd>
         <dt>{% trans "Destroyed at:" %}</dt>
         <dd>
           <span title="{{ instance.time_of_delete }}">
-            <i class="fa fa-times"></i> {{ instance.time_of_delete|timeuntil }}
+            <i class="fa fa-times"></i> {{ instance.time_of_delete|arrowfilter:LANGUAGE_CODE }}
           </span>
         </dd>
       </dl>
