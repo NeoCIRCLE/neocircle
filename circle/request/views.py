@@ -21,7 +21,6 @@ from request.forms import (
     LeaseTypeForm, TemplateAccessTypeForm, TemplateRequestForm,
     LeaseRequestForm, ResourceRequestForm,
 )
-from dashboard.forms import VmResourcesForm
 
 
 class RequestList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
@@ -46,6 +45,17 @@ class RequestList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
 class RequestDetail(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
     model = Request
     template_name = "request/detail.html"
+
+    def get_context_data(self, **kwargs):
+        request = self.object
+        context = super(RequestDetail, self).get_context_data(**kwargs)
+
+        context['action'] = request.action
+
+        if request.status == Request.STATUSES.UNSEEN:
+            request.status = Request.STATUSES.PENDING
+            request.save()
+        return context
 
 
 class TemplateAccessTypeDetail(LoginRequiredMixin, SuperuserRequiredMixin,

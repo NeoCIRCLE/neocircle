@@ -1,0 +1,98 @@
+{% extends "dashboard/base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+
+{% block title-page %}{% trans "Group list" %}{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <a href="{% url "request.views.request-list" %}" class="btn btn-default btn-xs pull-right">
+          {% trans "Back" %}
+        </a>
+        <h3 class="no-margin">
+          <i class="fa fa-{{ object.get_icon }}"></i>
+          {% trans "Request" %}
+        </h3>
+      </div>
+      <div class="panel-body">
+        <div class="label label-{{ object.get_effect }} pull-right" style="font-size: 1.5em; margin-top: 10px;">
+          {{ object.get_readable_status|upper }}
+        </div>
+        <p>
+          <img src="{{ object.user.profile.get_avatar_url }}" width="50" height="50"/>
+          <a href="{{ object.user.profile.get_absolute_url }} ">
+            {{ object.user.profile.get_display_name }}
+          </a>
+        </p>
+        <p>
+          <pre>{{ object.reason }}</pre>
+        </p>
+        <hr />
+        {% if object.type == "lease" %}
+          <dl>
+            <dt>{% trans "VM name" %}</dt>
+            <dd><a href="{{ action.instance.get_absolute_url }}">{{ action.instance.name }}</a></dd>
+            <dt>{% trans "VM description" %}</dt>
+            <dd>{{ action.instance.description }}</dd>
+            <dt>{% trans "Current Lease" %}</dt>
+            <dd>{{ action.instance.lease }}</dd>
+            <dt>{% trans "Requested Lease" %}</dt>
+            <dd>{{ action.lease_type.lease }}</dd>
+          </dl>
+        {% elif object.type == "template" %}
+          <dl>
+            <dt>
+              {% trans "Template type" %}:
+              <span style="font-weight: normal;">{{ action.template_type.name }}</span>
+            </dt>
+            <dd>
+              <ul>
+                {% for t in action.template_type.templates.all %}
+                  <li><a href="{{ t.get_absolute_url }}">{{ t }}</a></li>
+                {% endfor %}
+              </ul>
+            </dd>
+            <dt>{% trans "Level" %}<dt>
+            <dd>{{ action.get_readable_level }}</dd>
+          </dl>
+        {% elif object.type == "resource" %}
+          <dl>
+            <dt>{% trans "VM name" %}</dt>
+            <dd><a href="{{ action.instance.get_absolute_url }}">{{ action.instance.name }}</a></dd>
+            <dt>{% trans "VM description" %}</dt>
+            <dd>{{ action.instance.description }}</dd>
+            <dt>
+              {% trans "Priority" %}
+              <span class="text-muted" style="font-weight: normal;">{% trans "(old values in parentheses)" %}</span>
+            </dt>
+            <dd>{{ action.priority }} ({{ action.instance.priority }})</dd>
+            <dt>{% trans "Number of cores" %}</dt>
+            <dd>{{ action.num_cores }} ({{ action.instance.num_cores }})</dd>
+            <dt>{% trans "Ram size" %}</dt>
+            <dd>{{ action.ram_size }} ({{ action.instance.ram_size }}) MiB</dd>
+          </dl>
+        {% else %}
+          hacks!!!
+        {% endif %}
+        <hr />
+
+        <div class="pull-right">
+          <button class="btn btn-danger">
+            <i class="fa fa-thumbs-down"></i>
+            nope
+          </button>
+          <button class="btn btn-success">
+            <i class="fa fa-thumbs-up"></i>
+            yep
+          </button>
+        </div>
+      </div><!-- .panel-body -->
+    </div>
+  </div>
+</div>
+{% endblock %}

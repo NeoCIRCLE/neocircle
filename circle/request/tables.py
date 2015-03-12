@@ -11,7 +11,7 @@ from request.models import Request, LeaseType, TemplateAccessType
 
 class RequestTable(Table):
     pk = LinkColumn(
-        'dashboard.views.disk-detail',
+        'request.views.request-detail',
         args=[A('pk')],
         verbose_name=_("ID"),
     )
@@ -21,6 +21,7 @@ class RequestTable(Table):
         attrs = {'class': ('table table-bordered table-striped table-hover'),
                  'id': "request-list-table"}
         fields = ("pk", "status", "type", "user", )
+        order_by = ("-pk", )
         empty_text = _("No more requests.")
 
 
