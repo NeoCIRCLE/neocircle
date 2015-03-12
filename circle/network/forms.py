@@ -69,6 +69,7 @@ class BlacklistItemForm(ModelForm):
 
     class Meta:
         model = BlacklistItem
+        exclude = ()
 
 
 class DomainForm(ModelForm):
@@ -90,6 +91,7 @@ class DomainForm(ModelForm):
 
     class Meta:
         model = Domain
+        exclude = ()
 
 
 class FirewallForm(ModelForm):
@@ -105,6 +107,7 @@ class FirewallForm(ModelForm):
 
     class Meta:
         model = Firewall
+        exclude = ()
 
 
 class GroupForm(ModelForm):
@@ -126,6 +129,7 @@ class GroupForm(ModelForm):
 
     class Meta:
         model = Group
+        exclude = ()
 
 
 class HostForm(ModelForm):
@@ -165,6 +169,7 @@ class HostForm(ModelForm):
 
     class Meta:
         model = Host
+        exclude = ()
 
 
 class RecordForm(ModelForm):
@@ -191,6 +196,7 @@ class RecordForm(ModelForm):
 
     class Meta:
         model = Record
+        exclude = ()
 
 
 class RuleForm(ModelForm):
@@ -230,6 +236,7 @@ class RuleForm(ModelForm):
 
     class Meta:
         model = Rule
+        exclude = ()
 
 
 class SwitchPortForm(ModelForm):
@@ -252,6 +259,7 @@ class SwitchPortForm(ModelForm):
 
     class Meta:
         model = SwitchPort
+        exclude = ()
 
 
 class VlanForm(ModelForm):
@@ -305,6 +313,7 @@ class VlanForm(ModelForm):
         widgets = {
             'ipv6_template': widgets.TextInput,
         }
+        exclude = ()
 
 
 class VlanGroupForm(ModelForm):
@@ -328,3 +337,4 @@ class VlanGroupForm(ModelForm):
 
     class Meta:
         model = VlanGroup
+        exclude = ()

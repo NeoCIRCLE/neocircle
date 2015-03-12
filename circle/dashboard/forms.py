@@ -739,6 +739,7 @@ class LeaseForm(forms.ModelForm):
 
     class Meta:
         model = Lease
+        exclude = ()
 
 
 class VmRenewForm(OperationForm):
@@ -1604,6 +1605,7 @@ class DataStoreForm(ModelForm):
 
     class Meta:
         model = DataStore
+        exclude = ()
 
 
 class DiskForm(ModelForm):
@@ -1615,3 +1617,4 @@ class DiskForm(ModelForm):
 
     class Meta:
         model = Disk
+        exclude = ()
