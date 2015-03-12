@@ -61,6 +61,9 @@ class Request(TimeStampedModel):
     def get_readable_status(self):
         return self.STATUSES[self.status]
 
+    def get_readable_type(self):
+        return self.TYPES[self.type]
+
     def get_request_icon(self):
         return {
             'resource': "tasks",

@@ -15,14 +15,28 @@ class RequestTable(Table):
         args=[A('pk')],
         verbose_name=_("ID"),
     )
+    status = TemplateColumn(
+        template_name="request/columns/status.html",
+        verbose_name=_("Status"),
+    )
+    user = TemplateColumn(
+        template_name="request/columns/user.html",
+        verbose_name=_("User"),
+    )
+    type = TemplateColumn(
+        template_name="request/columns/type.html",
+        verbose_name=_("Type"),
+    )
 
     class Meta:
         model = Request
+        template = "django_tables2/with_pagination.html"
         attrs = {'class': ('table table-bordered table-striped table-hover'),
                  'id': "request-list-table"}
         fields = ("pk", "status", "type", "user", )
         order_by = ("-pk", )
         empty_text = _("No more requests.")
+        per_page = 10
 
 
 class LeaseTypeTable(Table):
