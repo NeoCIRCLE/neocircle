@@ -1,6 +1,8 @@
 from django.db.models import (
     Model, CharField, IntegerField, TextField, ForeignKey, ManyToManyField,
 )
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from django.utils.translation import ugettext_lazy as _
@@ -17,12 +19,18 @@ class RequestAction(Model):
     def accept(self):
         raise NotImplementedError
 
+    class Meta:
+        abstract = True
+
 
 class RequestType(Model):
     name = CharField(max_length=25)
 
     def __unicode__(self):
         return self.name
+
+    class Meta:
+        abstract = True
 
 
 class Request(TimeStampedModel):
@@ -42,7 +50,28 @@ class Request(TimeStampedModel):
     )
     type = CharField(choices=TYPES, max_length=10)
     reason = TextField(help_text="szia")
-    action = ForeignKey(RequestAction)
+
+    content_type = ForeignKey(ContentType)
+    object_id = IntegerField()
+    action = GenericForeignKey("content_type", "object_id")
+
+    def get_readable_status(self):
+        return self.STATUSES[self.status]
+
+    def get_icon(self):
+        return {
+            'resource': "tasks",
+            'lease': "clock-o",
+            'template': "puzzle-piece"
+        }.get(self.type)
+
+    def get_effect(self):
+        return {
+            "UNSEEN": "primary",
+            "PENDING": "warning",
+            "ACCEPTED": "success",
+            "DECLINED": "danger",
+        }.get(self.status)
 
 
 class LeaseType(RequestType):
@@ -102,6 +131,9 @@ class TemplateAccessAction(RequestAction):
     level = CharField(choices=LEVELS, default=LEVELS.user,
                       max_length=10)
     user = ForeignKey(User)
+
+    def get_readable_level(self):
+        return self.LEVELS[self.level]
 
     def accept(self):
         pass
