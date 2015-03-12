@@ -15,12 +15,13 @@
           {% trans "Back" %}
         </a>
         <h3 class="no-margin">
-          <i class="fa fa-{{ object.get_icon }}"></i>
+          <i class="fa fa-{{ object.get_request_icon }}"></i>
           {% trans "Request" %}
         </h3>
       </div>
       <div class="panel-body">
         <div class="label label-{{ object.get_effect }} pull-right" style="font-size: 1.5em; margin-top: 10px;">
+          <i class="fa fa-{{ object.get_status_icon }}"></i>
           {{ object.get_readable_status|upper }}
         </div>
         <p>
@@ -79,18 +80,30 @@
         {% else %}
           hacks!!!
         {% endif %}
-        <hr />
 
-        <div class="pull-right">
-          <button class="btn btn-danger">
-            <i class="fa fa-thumbs-down"></i>
-            nope
-          </button>
-          <button class="btn btn-success">
-            <i class="fa fa-thumbs-up"></i>
-            yep
-          </button>
-        </div>
+        {% if object.status == "PENDING" %}
+          <hr />
+
+          <div class="pull-right">
+            <form method="POST" style="display: inline;">
+              {% csrf_token %}
+              <button class="btn btn-danger" type="submit">
+                <i class="fa fa-thumbs-down"></i>
+                nope
+              </button>
+            </form>
+            <form method="POST" style="display: inline;">
+              {% csrf_token %}
+              <input type="hidden" name="accept" value="1"/>
+              <button class="btn btn-success">
+                <i class="fa fa-thumbs-up"></i>
+                yep
+              </button>
+            </form>
+          </div>
+        {% else %}
+          close date
+        {% endif %}
       </div><!-- .panel-body -->
     </div>
   </div>

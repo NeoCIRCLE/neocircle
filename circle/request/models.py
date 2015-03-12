@@ -55,10 +55,13 @@ class Request(TimeStampedModel):
     object_id = IntegerField()
     action = GenericForeignKey("content_type", "object_id")
 
+    def get_absolute_url(self):
+        return reverse("request.views.request-detail", kwargs={'pk': self.pk})
+
     def get_readable_status(self):
         return self.STATUSES[self.status]
 
-    def get_icon(self):
+    def get_request_icon(self):
         return {
             'resource': "tasks",
             'lease': "clock-o",
@@ -72,6 +75,22 @@ class Request(TimeStampedModel):
             "ACCEPTED": "success",
             "DECLINED": "danger",
         }.get(self.status)
+
+    def get_status_icon(self):
+        return {
+            "UNSEEN": "eye-slash",
+            "PENDING": "exclamation-triangle",
+            "ACCEPTED": "check",
+            "DECLINED": "times",
+        }.get(self.status)
+
+    def accept(self):
+        self.status = "ACCEPTED"
+        self.save()
+
+    def decline(self):
+        self.status = "DECLINED"
+        self.save()
 
 
 class LeaseType(RequestType):

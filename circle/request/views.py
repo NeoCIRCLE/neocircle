@@ -46,6 +46,16 @@ class RequestDetail(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
     model = Request
     template_name = "request/detail.html"
 
+    def post(self, *args, **kwargs):
+        accept = self.request.POST.get("accept")
+        request = self.get_object()  # not self.request!
+        if accept:
+            request.accept()
+        else:
+            request.decline()
+
+        return redirect(request.get_absolute_url())
+
     def get_context_data(self, **kwargs):
         request = self.object
         context = super(RequestDetail, self).get_context_data(**kwargs)
