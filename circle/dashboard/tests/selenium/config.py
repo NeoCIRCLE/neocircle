@@ -24,6 +24,16 @@ class SeleniumConfig:
     wait_max_sec = 10
     # How much sec can pass before the activity is no longer happened recently
     recently_sec = 90
+    # Name of the logger (necessary to override test logger)
+    logger_name = "selenium"
+    # File where the log should be stored
+    log_file = "selenium.log"
+    # Log file max size in Bytes
+    log_size = 1024 * 100
+    # Format of the log file
+    log_format = "%(asctime)s: %(name)s: %(levelname)s:  %(message)s"
+    # Backup count of the logfiles
+    log_backup = 5
 
     # Accented letters from which selenium can choose to name stuff
     accents = u"áéíöóúűÁÉÍÖÓÜÚŰ"

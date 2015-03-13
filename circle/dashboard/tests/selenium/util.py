@@ -18,7 +18,6 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 from datetime import datetime
 import logging
-from sys import stdout
 import random
 import re
 import time
@@ -30,9 +29,9 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 
-logger = logging.getLogger(__name__)
-consoleHandler = logging.StreamHandler(stdout)
-logger.addHandler(consoleHandler)
+from .config import SeleniumConfig
+
+logger = logging.getLogger(SeleniumConfig.logger_name)
 
 
 class CircleSeleniumMixin(object):
@@ -73,7 +72,8 @@ class CircleSeleniumMixin(object):
                 except:
                     time.sleep(0.5)
             except:
-                logging.exception('Selenium cannot find the form controls')
+                logger.exception("Selenium cannot find the form controls")
+                raise Exception('Cannot find the form controls')
 
     def wait_and_accept_operation(self, argument=None):
         """
@@ -97,8 +97,10 @@ class CircleSeleniumMixin(object):
                         form.send_keys(argument)
             accept.click()
         except:
-            logging.exception(
-                'Selenium cannot accept the operation confirmation')
+            logger.exception("Selenium cannot accept the"
+                             " operation confirmation")
+            raise Exception(
+                'Cannot accept the operation confirmation')
 
     def save_template_from_vm(self, name):
         try:
@@ -111,9 +113,9 @@ class CircleSeleniumMixin(object):
             recent_deploy = self.recently(self.get_timeline_elements(
                 "vm.Instance.deploy"))
             if not self.check_operation_result(recent_deploy):
-                logging.warning("Selenium cannot deploy the "
-                                "chosen template virtual machine")
-                logging.exception('Cannot deploy the virtual machine')
+                logger.warning("Selenium cannot deploy the "
+                               "chosen template virtual machine")
+                raise Exception('Cannot deploy the virtual machine')
             self.click_on_link(WebDriverWait(
                 self.driver, self.conf.wait_max_sec).until(
                     ec.element_to_be_clickable((
@@ -123,9 +125,9 @@ class CircleSeleniumMixin(object):
             recent_shut_off = self.recently(self.get_timeline_elements(
                 "vm.Instance.shut_off"))
             if not self.check_operation_result(recent_shut_off):
-                logging.warning("Selenium cannot shut off the "
-                                "chosen template virtual machine")
-                logging.exception('Cannot shut off the virtual machine')
+                logger.warning("Selenium cannot shut off the "
+                               "chosen template virtual machine")
+                raise Exception('Cannot shut off the virtual machine')
             self.click_on_link(WebDriverWait(
                 self.driver, self.conf.wait_max_sec).until(
                     ec.element_to_be_clickable((
@@ -134,8 +136,9 @@ class CircleSeleniumMixin(object):
             self.wait_and_accept_operation(name)
             return name
         except:
-            logging.exception(
-                'Selenium cannot save a vm as a template')
+            logger.exception("Selenium cannot save a vm as a template")
+            raise Exception(
+                'Cannot save a vm as a template')
 
     def create_base_template(self, name=None, architecture="x86-64",
                              method=None, op_system=None, lease=None,
@@ -171,8 +174,10 @@ class CircleSeleniumMixin(object):
                 "input.btn[type='submit']").click()
             return self.save_template_from_vm(name)
         except:
-            logging.exception(
-                'Selenium cannot create a base template virtual machine')
+            logger.exception("Selenium cannot create a base"
+                             " template virtual machine")
+            raise Exception(
+                'Cannot create a base template virtual machine')
 
     def get_template_id(self, name=None, from_all=False):
         """
@@ -195,7 +200,8 @@ class CircleSeleniumMixin(object):
                         ec.presence_of_element_located((
                             By.CSS_SELECTOR, css_selector_of_a_template)))
                 except:
-                    logging.warning("Selenium could not locate any templates")
+                    logger.warning("Selenium could not locate any templates")
+                    raise Exception("Could not locate any templates")
             template_table = self.driver.find_element_by_css_selector(
                 "table[class*='template-list-table']")
             templates = template_table.find_elements_by_css_selector("td.name")
@@ -209,22 +215,24 @@ class CircleSeleniumMixin(object):
                             r'\d+',
                             template_link.get_attribute("outerHTML")).group()
                         found_template_ids.append(template_id)
-                        logging.info("Found '%(name)s' "
-                                     "template's ID as %(id)s" % {
-                                         'name': template.text,
-                                         'id': template_id})
+                        logger.warning("Found '%(name)s' "
+                                       "template's ID as %(id)s" % {
+                                           'name': template.text,
+                                           'id': template_id})
                     except NoSuchElementException:
                         pass
                     except:
                         raise
             if not found_template_ids and name is not None:
-                logging.warning("Selenium could not find the specified "
-                                "%(name)s template in the list" % {
-                                    'name': name})
+                logger.warning("Selenium could not find the specified "
+                               "%(name)s template in the list" % {
+                                   'name': name})
+                raise Exception("Could not find the specified template")
             return found_template_ids
         except:
-            logging.exception(
-                'Selenium cannot found the template\'s id')
+            logger.exception('Selenium cannot find the template\'s id')
+            raise Exception(
+                'Cannot find the template\'s id')
 
     def check_operation_result(self, operation_id, restore=True):
         """
@@ -246,7 +254,7 @@ class CircleSeleniumMixin(object):
             result = WebDriverWait(self.driver, self.conf.wait_max_sec).until(
                 ec.visibility_of_element_located((
                     By.ID, "activity_status")))
-            logging.info("%(id)s result text is '%(result)s'" % {
+            logger.warning("%(id)s result text is '%(result)s'" % {
                 'id': operation_id,
                 'result': result.text})
             if (result.text == "success"):
@@ -257,12 +265,14 @@ class CircleSeleniumMixin(object):
             else:
                 out = False
             if restore:
-                logging.info("Restoring to %s url" % url_save)
+                logger.warning("Restoring to %s url" % url_save)
                 self.driver.get(url_save)
             return out
         except:
-            logging.exception(
-                'Selenium cannot check the result of an operation')
+            logger.exception("Selenium cannot check the"
+                             " result of an operation")
+            raise Exception(
+                'Cannot check the result of an operation')
 
     def recently(self, timeline_dict, second=None):
         if second is None:
@@ -275,8 +285,10 @@ class CircleSeleniumMixin(object):
                     if delta.total_seconds() <= second:
                         return value
         except:
-            logging.exception(
-                'Selenium cannot filter timeline activities to recent')
+            logger.exception("Selenium cannot filter"
+                             " timeline activities to recent")
+            raise Exception(
+                'Cannot filter timeline activities to recent')
 
     def get_timeline_elements(self, code=None):
         try:
@@ -297,19 +309,20 @@ class CircleSeleniumMixin(object):
                         By.ID, "activity-timeline")))
             searched_activity = timeline.find_elements_by_css_selector(
                 css_activity_selector)
-            logging.info("Found activity list for %s:" % code)
+            logger.warning("Found activity list for %s:" % code)
             for activity in searched_activity:
                 activity_id = activity.get_attribute('data-activity-id')
                 activity_text = activity.text
                 key = re.search(
                     r'\d+-\d+-\d+ \d+:\d+,', activity_text).group()[:-1]
-                logging.info("%(id)s @ %(activity)s" % {
+                logger.warning("%(id)s @ %(activity)s" % {
                     'id': activity_id,
                     'activity': key})
                 activity_dict[key] = activity_id
             return activity_dict
         except:
-            logging.exception('Selenium cannot find the searched activity')
+            logger.exception('Selenium cannot find the searched activity')
+            raise Exception('Cannot find the searched activity')
 
     def create_template_from_base(self, delete_disk=True, name=None):
         try:
@@ -346,13 +359,15 @@ class CircleSeleniumMixin(object):
                         self.get_timeline_elements(
                             "vm.Instance.remove_disk"))
                     if not self.check_operation_result(recent_remove_disk):
-                        logging.warning("Selenium cannot delete disk "
-                                        "of the chosen template")
-                        logging.exception('Cannot delete disk')
+                        logger.warning("Selenium cannot delete disk "
+                                       "of the chosen template")
+                        raise Exception('Cannot delete disk')
                 return self.save_template_from_vm(name)
         except:
-            logging.exception(
-                'Selenium cannot start a template from a base one')
+            logger.exception("Selenium cannot start a"
+                             " template from a base one")
+            raise Exception(
+                'Cannot start a template from a base one')
 
     def delete_template(self, template_id):
         try:
@@ -368,10 +383,12 @@ class CircleSeleniumMixin(object):
                     By.CLASS_NAME, 'alert-success')))
             url = urlparse.urlparse(self.driver.current_url)
             if "/template/list/" not in url.path:
-                logging.exception(
+                logger.warning('CIRCLE does not redirect to /template/list/')
+                raise Exception(
                     'System does not redirect to template listing')
         except:
-            logging.exception('Selenium cannot delete the desired template')
+            logger.exception("Selenium cannot delete the desired template")
+            raise Exception('Cannot delete the desired template')
 
     def create_random_vm(self):
         try:
@@ -392,7 +409,8 @@ class CircleSeleniumMixin(object):
             pk = re.search(r'\d+', url.path).group()
             return pk
         except:
-            logging.exception('Selenium cannot start a VM')
+            logger.exception("Selenium cannot start a VM")
+            raise Exception('Cannot start a VM')
 
     def view_change(self, target_box):
         driver = self.driver
@@ -438,10 +456,10 @@ class CircleSeleniumMixin(object):
                 recent_destroy_vm = self.recently(
                     self.get_timeline_elements("vm.Instance.destroy"))
                 if not self.check_operation_result(recent_destroy_vm):
-                    logging.warning("Selenium cannot destroy "
-                                    "the chosen %(id)s vm" % {
-                                        'id': pk})
-                    logging.exception('Cannot destroy the specified vm')
+                    logger.warning("Selenium cannot destroy "
+                                   "the chosen %(id)s vm" % {
+                                       'id': pk})
+                    raise Exception('Cannot destroy the specified vm')
             self.driver.get('%s/dashboard/vm/%s/' % (self.conf.host, pk))
             try:
                 WebDriverWait(self.driver, self.conf.wait_max_sec).until(
@@ -452,7 +470,8 @@ class CircleSeleniumMixin(object):
             except:
                 return False
         except:
-            logging.exception("Selenium can not destroy a VM")
+            logger.exception("Selenium can not destroy a VM")
+            raise Exception("Can not destroy a VM")
 
 
 class SeleniumMixin(object):
@@ -466,8 +485,10 @@ class SeleniumMixin(object):
                     option_dic[key] = [option.text]
             return option_dic
         except:
-            logging.exception(
-                'Selenium cannot list the select possibilities')
+            logger.exception("Selenium cannot list the"
+                             " select possibilities")
+            raise Exception(
+                'Cannot list the select possibilities')
 
     def select_option(self, select, what=None):
         """
@@ -497,8 +518,9 @@ class SeleniumMixin(object):
                     0, len(my_choose_list) - 1)]
             select.select_by_value(my_choice)
         except:
-            logging.exception(
-                'Selenium cannot select the chosen one')
+            logger.exception("Selenium cannot select the chosen one")
+            raise Exception(
+                'Cannot select the chosen one')
 
     def get_link_by_href(self, target_href, attributes=None):
         try:
@@ -517,8 +539,9 @@ class SeleniumMixin(object):
                         if perfect_fit:
                             return link
         except:
-            logging.exception(
-                'Selenium cannot find the href=%s link' % target_href)
+            logger.exception(
+                "Selenium cannot find the href=%s link" % target_href)
+            raise Exception('Cannot find the requested href')
 
     def click_on_link(self, link):
         """
@@ -544,5 +567,6 @@ class SeleniumMixin(object):
                 "}")
             self.driver.execute_script(javascript, link)
         except:
-            logging.exception(
-                'Selenium cannot inject javascript to the page')
+            logger.exception("Selenium cannot inject javascript to the page")
+            raise Exception(
+                'Cannot inject javascript to the page')

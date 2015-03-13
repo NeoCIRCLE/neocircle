@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 import logging
-from sys import stdout
 import random
 import re
 import urlparse
@@ -34,10 +33,14 @@ from vm.models import Instance
 from .config import SeleniumConfig
 from .util import CircleSeleniumMixin, SeleniumMixin
 
-logger = logging.getLogger(__name__)
-consoleHandler = logging.StreamHandler(stdout)
-logger.addHandler(consoleHandler)
 conf = SeleniumConfig()
+log_formatter = logging.Formatter(conf.log_format)
+logger = logging.getLogger(conf.logger_name)
+fileHandler = logging.handlers.RotatingFileHandler(
+    conf.log_file, maxBytes=conf.log_size, backupCount=conf.log_backup)
+fileHandler.setFormatter(log_formatter)
+fileHandler.setLevel(logging.WARNING)
+logger.addHandler(fileHandler)
 
 
 class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
@@ -82,9 +85,9 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
         elif len(template_pool) == 1:
             chosen = template_pool[0]
         else:
-            logging.warning("Selenium did not found any templates")
-            logging.exception(
-                "System did not meet required conditions to continue")
+            logger.exception("Selenium did not found any templates")
+            raise Exception(
+                "Selenium did not found any templates")
         self.driver.get('%s/dashboard/template/%s/' % (conf.host, chosen))
         acces_form = self.driver.find_element_by_css_selector(
             "form[action*='/dashboard/template/%(template_id)s/acl/']"
@@ -106,10 +109,10 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
             user_text = re.split(r':[ ]?', user.text)
             if len(user_text) == 2:
                 found_name = re.search(r'[\w\W]+(?=\))', user_text[1]).group()
-                logging.info("'%(user)s' found in ACL "
-                             "list for template %(id)s" % {
-                                 'user': found_name,
-                                 'id': chosen})
+                logger.warning("'%(user)s' found in ACL "
+                               "list for template %(id)s" % {
+                                   'user': found_name,
+                                   'id': chosen})
                 found_users.append(found_name)
         self.assertIn(conf.client_name, found_users,
                       "Could not add user to template's ACL")
@@ -124,7 +127,7 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
                 By.ID, 'confirmation-modal')))
         template_list = self.driver.find_elements_by_class_name(
             'template-choose-list-element')
-        logging.info('Selenium found %(count)s template possibilities' % {
+        logger.warning('Selenium found %(count)s template possibilities' % {
             'count': len(template_list)})
         (self.assertIsNotNone(
             template_list, "Selenium can not find the create template list") or
@@ -157,7 +160,7 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
         success = False
         self.login()
         for template_id in self.template_ids:
-            logging.info("Deleting template %s" % template_id)
+            logger.warning("Deleting template %s" % template_id)
             self.delete_template(template_id)
         existing_templates = self.get_template_id()
         if len(existing_templates) == 0:
@@ -181,9 +184,9 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
                 By.ID, 'confirmation-modal')))
         vm_list = self.driver.find_elements_by_class_name(
             'vm-create-template-summary')
-        logging.info("Selenium found %(vm_number)s virtual machine template "
-                     " possibilities" % {
-                         'vm_number': len(vm_list)})
+        logger.warning("Selenium found %(vm_number)s virtual machine template "
+                       " possibilities" % {
+                           'vm_number': len(vm_list)})
         (self.assertIsNotNone(
             vm_list, "Selenium can not find the VM list") or
             self.assertGreater(len(vm_list), 0, "The create VM list is empty"))
@@ -200,8 +203,8 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
                            "none", "",
                            "block", "none"]
         states = self.view_change("vm")
-        logging.info('states: [%s]' % ', '.join(map(str, states)))
-        logging.info('expected: [%s]' % ', '.join(map(str, expected_states)))
+        logger.warning('states: [%s]' % ', '.join(map(str, states)))
+        logger.warning('expected: [%s]' % ', '.join(map(str, expected_states)))
         self.assertListEqual(states, expected_states,
                              "The view mode does not change for VM listing")
 
@@ -211,8 +214,8 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
                            "none", "",
                            "block", "none"]
         states = self.view_change("node")
-        logging.info('states: [%s]' % ', '.join(map(str, states)))
-        logging.info('expected: [%s]' % ', '.join(map(str, expected_states)))
+        logger.warning('states: [%s]' % ', '.join(map(str, states)))
+        logger.warning('expected: [%s]' % ', '.join(map(str, expected_states)))
         self.assertListEqual(states, expected_states,
                              "The view mode does not change for NODE listing")
 
