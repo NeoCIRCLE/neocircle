@@ -377,7 +377,12 @@ class DeployOperation(InstanceOperation):
             self.instance.allocate_node()
 
         # Deploy virtual images
-        self.instance._deploy_disks(parent_activity=activity)
+        try:
+            self.instance._deploy_disks(parent_activity=activity)
+        except:
+            self.instance.yield_node()
+            self.instance.yield_vnc_port()
+            raise
 
         # Deploy VM on remote machine
         if self.instance.state not in ['PAUSED']:
@@ -451,6 +456,9 @@ class DestroyOperation(InstanceOperation):
                     "settings and disks.")
     required_perms = ()
     resultant_state = 'DESTROYED'
+
+    def on_abort(self, activity, error):
+        activity.resultant_state = None
 
     def _operation(self, activity, system):
         # Destroy networks
