@@ -16,14 +16,16 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals, absolute_import
 
-from django.db.models import Q
-from django.views.generic import UpdateView
+from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
+from django.views.generic import UpdateView
 
-from sizefield.utils import filesizeformat
 from braces.views import SuperuserRequiredMixin
+from sizefield.utils import filesizeformat
 
+from common.models import WorkerNotFound
 from storage.models import DataStore, Disk
 from ..tables import DiskListTable
 from ..forms import DataStoreForm, DiskForm
@@ -41,9 +43,13 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
         context = super(StorageDetail, self).get_context_data(**kwargs)
 
         ds = self.get_object()
-        context['stats'] = self._get_stats()
-        context['missing_disks'] = ds.get_missing_disks()
-        context['orphan_disks'] = ds.get_orphan_disks()
+        try:
+            context['stats'] = self._get_stats()
+            context['missing_disks'] = ds.get_missing_disks()
+            context['orphan_disks'] = ds.get_orphan_disks()
+        except WorkerNotFound:
+            messages.error(self.request, _("The DataStore is offline."))
+
         context['disk_table'] = DiskListTable(
             self.get_table_data(), request=self.request,
             template="django_tables2/with_pagination.html")
