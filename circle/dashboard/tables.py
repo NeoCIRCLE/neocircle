@@ -350,4 +350,5 @@ class DiskListTable(Table):
         fields = ("pk", "appliance", "filename", "size", "is_ready")
         prefix = "disk-"
         order_by = ("-pk", )
-        per_page = 65536
+        per_page = 15
+        empty_text = _("No disk found.")

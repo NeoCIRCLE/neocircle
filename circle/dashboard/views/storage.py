@@ -16,13 +16,16 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals, absolute_import
 
-
-from django.views.generic import UpdateView
+from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.db.models import Q
+from django.utils.translation import ugettext_lazy as _
+from django.views.generic import UpdateView
 
-from sizefield.utils import filesizeformat
 from braces.views import SuperuserRequiredMixin
+from sizefield.utils import filesizeformat
 
+from common.models import WorkerNotFound
 from storage.models import DataStore, Disk
 from ..tables import DiskListTable
 from ..forms import DataStoreForm, DiskForm
@@ -40,14 +43,52 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
         context = super(StorageDetail, self).get_context_data(**kwargs)
 
         ds = self.get_object()
-        context['stats'] = self._get_stats()
-        context['missing_disks'] = ds.get_missing_disks()
-        context['orphan_disks'] = ds.get_orphan_disks()
-        qs = Disk.objects.filter(datastore=ds, destroyed=None)
+        try:
+            context['stats'] = self._get_stats()
+            context['missing_disks'] = ds.get_missing_disks()
+            context['orphan_disks'] = ds.get_orphan_disks()
+        except WorkerNotFound:
+            messages.error(self.request, _("The DataStore is offline."))
+
         context['disk_table'] = DiskListTable(
-            qs, request=self.request,
-            template="django_tables2/table_no_page.html")
+            self.get_table_data(), request=self.request,
+            template="django_tables2/with_pagination.html")
+        context['filter_names'] = (
+            ('vm', _("virtual machine")),
+            ('template', _("template")),
+            ('none', _("none")),
+        )
         return context
+
+    def get_table_data(self):
+        ds = self.get_object()
+        qs = Disk.objects.filter(datastore=ds, destroyed=None)
+
+        filter_name = self.request.GET.get("filter")
+        search = self.request.GET.get("s")
+
+        filter_queries = {
+            'vm': {
+                'instance_set__isnull': False,
+            },
+            'template': {
+                'template_set__isnull': False,
+            },
+            'none': {
+                'template_set__isnull': True,
+                'instance_set__isnull': True,
+            }
+        }
+
+        if filter_name:
+            qs = qs.filter(**filter_queries.get(filter_name, {}))
+
+        if search:
+            search = search.strip()
+            qs = qs.filter(Q(name__icontains=search) |
+                           Q(filename__icontains=search))
+
+        return qs
 
     def _get_stats(self):
         stats = self.object.get_statistics()
@@ -72,3 +113,6 @@ class DiskDetail(SuperuserRequiredMixin, UpdateView):
     model = Disk
     form_class = DiskForm
     template_name = "dashboard/storage/disk.html"
+
+    def form_valid(self, form):
+        pass

@@ -1607,11 +1607,16 @@ class DataStoreForm(ModelForm):
 
 
 class DiskForm(ModelForm):
+    created = forms.DateTimeField()
+    modified = forms.DateTimeField()
+
     def __init__(self, *args, **kwargs):
         super(DiskForm, self).__init__(*args, **kwargs)
 
         for k, v in self.fields.iteritems():
             v.widget.attrs['readonly'] = True
+        self.fields['created'].initial = self.instance.created
+        self.fields['modified'].initial = self.instance.modified
 
     class Meta:
         model = Disk
