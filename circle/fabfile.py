@@ -64,6 +64,14 @@ def bower(component=None):
 
 
 @roles('portal')
+def flake8():
+    "Run portal tests"
+    with _workon("circle"), cd("~/circle/circle"):
+        run("flake8 . --exclude=migrations,bower_components,"
+            "south_migrations,static_collected --max-complexity 12")
+
+
+@roles('portal')
 def migrate():
     "Run db migrations"
     with _workon("circle"), cd("~/circle/circle"):
