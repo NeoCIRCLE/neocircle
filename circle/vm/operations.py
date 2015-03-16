@@ -1093,15 +1093,16 @@ class ResetNodeOperation(NodeOperation):
                 "You cannot reset a disabled or online node."), Exception())
 
     def _operation(self, activity, user):
-        if self.node.enabled:
-            DisableOperation(self.node).call(parent_activity=activity,
-                                             user=user)
         for i in self.node.instance_set.all():
             name = create_readable(ugettext_noop(
-                "migrate %(instance)s (%(pk)s)"), instance=i.name, pk=i.pk)
+                "redeploy %(instance)s (%(pk)s)"), instance=i.name, pk=i.pk)
             with activity.sub_activity('migrate_instance_%d' % i.pk,
                                        readable_name=name):
                 i.redeploy(user=user)
+
+        self.node.enabled = False
+        self.node.schedule_enabled = False
+        self.node.save()
 
 
 @register_operation
