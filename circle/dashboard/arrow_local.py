@@ -37,8 +37,8 @@ class HungarianLocale(locales.Locale):
         'hour': {'past': 'egy órával', 'future': 'egy óra'},
         'hours': {'past': '{0} órával', 'future': '{0} óra'},
         'day': {
-            'past': 'nappal',
-            'future': 'nap'
+            'past': 'egy nappal',
+            'future': 'egy nap'
         },
         'days': {
             'past': '{0} nappal',
