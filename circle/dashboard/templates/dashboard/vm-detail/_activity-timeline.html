@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load hro %}
+{% load arrowfilter %}
 <div id="activity-timeline" class="timeline">
 
 {% for a in activities %}
@@ -18,10 +19,12 @@
   - {{ a.percentage }}%
 {% endif %}
 </strong>
-{% endspaceless %}{% if a.times < 2%} {{ a.started|date:"Y-m-d H:i" }}{% endif %}{% if a.user %},
-  <a class="no-style-link" href="{% url "dashboard.views.profile" username=a.user.username %}">
-    {% include "dashboard/_display-name.html" with user=a.user show_org=True %}
-  </a>
+{% endspaceless %}
+{% if a.times < 2 %}
+  <span title="{{ a.started }}">{{ a.started|arrowfilter:LANGUAGE_CODE }}</span>{% endif %}{% if a.user %},
+    <a class="no-style-link" href="{% url "dashboard.views.profile" username=a.user.username %}">
+      {% include "dashboard/_display-name.html" with user=a.user show_org=True %}
+    </a>
 {% endif %}
 {% if a.is_abortable_for_user %}
 <form action="{{ a.instance.get_absolute_url }}" method="POST" class="pull-right">
@@ -40,7 +43,9 @@
           <a href="{{ s.get_absolute_url }}">
               {{ s.readable_name|get_text:user|capfirst }}</a></span> &ndash;
         {% if s.finished %}
-          {{ s.finished|time:"H:i:s" }}
+          <span title="{{ s.finished }}">
+            {{ s.finished|arrowfilter:LANGUAGE_CODE }}
+          </span>
         {% else %}
           <i class="fa fa-refresh fa-spin" class="sub-activity-loading-icon"></i>
         {% endif %}
