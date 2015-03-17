@@ -651,9 +651,11 @@ textarea[name="new_members"] {
   padding-left: 28px;
 }
 
-.dashboard-profile-vm-list a, .dashboard-profile-vm-list a:hover {
-  text-decoration: none;
-  color: #555;
+.dashboard-profile-vm-list, .dashboard-profile-group-list {
+  a, a:hover {
+    text-decoration: none;
+    color: #555;
+  }
 }
 
 #group-detail-user-table td:nth-child(2) a,
@@ -1287,4 +1289,10 @@ textarea[name="new_members"] {
 #vm-request-resource-form textarea {
   max-width: 500px;
   height: 150px;
+}
+
+#disk-list-table {
+  td:last-child {
+    text-align: center;
+  }
 }

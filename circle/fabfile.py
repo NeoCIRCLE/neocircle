@@ -1,4 +1,22 @@
 #!/bin/echo Usage: fab --list -f
+
+# Copyright 2014 Budapest University of Technology and Economics (BME IK)
+#
+# This file is part of CIRCLE Cloud.
+#
+# CIRCLE is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# CIRCLE is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along
+# with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
+
 import contextlib
 import datetime
 
@@ -43,6 +61,14 @@ def bower(component=None):
             run("bower install %s" % component)
         else:
             run("bower install")
+
+
+@roles('portal')
+def flake8():
+    "Run portal tests"
+    with _workon("circle"), cd("~/circle/circle"):
+        run("flake8 . --exclude=migrations,bower_components,"
+            "south_migrations,static_collected --max-complexity 12")
 
 
 @roles('portal')

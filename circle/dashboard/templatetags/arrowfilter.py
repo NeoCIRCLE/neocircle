@@ -15,14 +15,20 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.core.management.base import BaseCommand
+from django.template import Library
 
-from common.management.commands.watch import LessUtils
+import arrow
+from dashboard.arrow_local import HungarianLocale
+for name in HungarianLocale.names:
+    arrow.locales._locales[name] = HungarianLocale
 
 
-class Command(BaseCommand):
-    help = "Compiles all LESS files."
+register = Library()
 
-    def handle(self, *args, **kwargs):
-        print("Compiling LESS")
-        LessUtils.initial_compile()
+
+@register.filter
+def arrowfilter(date, language='en'):
+    if not date:
+        return ''
+    adate = arrow.get(date)
+    return adate.humanize(locale=language)

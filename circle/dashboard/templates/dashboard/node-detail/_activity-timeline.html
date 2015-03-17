@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load hro %}
+{% load arrowfilter %}
 <div id="activity-timeline" class="timeline">
   {% for a in activities %}
     <div class="activity" data-activity-id="{{ a.pk }}">
@@ -10,7 +11,8 @@
         {{ a.readable_name.get_admin_text|capfirst }}
       </strong>
 
-    {{ a.started|date:"Y-m-d H:i" }}{% if a.user %}, {{ a.user }}{% endif %}
+    <span title="{{ a.started }}">{{ a.started|arrowfilter:LANGUAGE_CODE }}</span>{% if a.user %}, {{ a.user }}{% endif %}
+
     {% if a.children.count > 0 %}
       <div class="sub-timeline">
         {% for s in a.children.all %}
@@ -21,7 +23,9 @@
             </span>
             &ndash;
             {% if s.finished %}
-              {{ s.finished|time:"H:i:s" }}
+              <span title="{{ s.finished }}">
+                {{ s.finished|arrowfilter:LANGUAGE_CODE }}
+              </span>
             {% else %}
               <i class="fa fa-refresh fa-spin" class="sub-activity-loading-icon"></i>
             {% endif %}

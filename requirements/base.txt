@@ -1,5 +1,6 @@
 amqp==1.4.6
 anyjson==0.3.3
+arrow==0.5.4
 billiard==3.3.0.18
 bpython==0.13.1
 celery==3.1.17

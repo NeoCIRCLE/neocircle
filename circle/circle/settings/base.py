@@ -169,7 +169,8 @@ PIPELINE_COMPILERS = (
     'pipeline.compilers.less.LessCompiler',
 )
 PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.yuglify.YuglifyCompressor'
-PIPELINE_JS_COMPRESSOR = 'pipeline.compressors.slimit.SlimItCompressor'
+# PIPELINE_JS_COMPRESSOR = 'pipeline.compressors.slimit.SlimItCompressor'
+PIPELINE_JS_COMPRESSOR = None
 PIPELINE_DISABLE_WRAPPER = True
 PIPELINE_LESS_ARGUMENTS = u'--include-path={}'.format(':'.join(STATICFILES_DIRS))
 PIPELINE_CSS = {
@@ -525,7 +526,7 @@ except:
     AGENT_VERSION = None
 
 LOCALE_PATHS = (join(SITE_ROOT, 'locale'), )
-COMPANY_NAME = "BME IK 2014"
+COMPANY_NAME = get_env_variable("COMPANY_NAME", "BME IK 2015")
 
 graphite_host = environ.get("GRAPHITE_HOST", None)
 graphite_port = environ.get("GRAPHITE_PORT", None)

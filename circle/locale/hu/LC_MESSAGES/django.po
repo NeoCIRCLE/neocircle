@@ -113,12 +113,12 @@ msgstr "Ismeretlen hiba: %(ex)s"
 msgid "Superuser privileges are required."
 msgstr "Rendszergazdai jogosultság szükséges."
 
-#: dashboard/autocomplete_light_registry.py:55
+#: dashboard/autocomplete_light_registry.py:72
 #, python-format
 msgid "%s (group)"
 msgstr "%s (csoport)"
 
-#: dashboard/autocomplete_light_registry.py:75
+#: dashboard/autocomplete_light_registry.py:92
 msgid "no matches found"
 msgstr "nincs találat"
 
@@ -141,7 +141,7 @@ msgstr "valós idejű"
 #: dashboard/forms.py:93 dashboard/forms.py:810 dashboard/forms.py:900
 #: dashboard/forms.py:1351 dashboard/tables.py:268
 #: dashboard/templates/dashboard/_vm-create-2.html:20
-#: dashboard/templates/dashboard/vm-detail/home.html:8
+#: dashboard/templates/dashboard/vm-detail/home.html:9
 #: dashboard/templates/dashboard/vm-list.html:62 firewall/models.py:296
 #: network/templates/network/index.html:24
 #: network/templates/network/switch-port-edit.html:45
@@ -164,7 +164,7 @@ msgstr ""
 "ajánlott."
 
 #: dashboard/forms.py:216 dashboard/templates/dashboard/_vm-create-1.html:59
-#: dashboard/templates/dashboard/vm-detail/home.html:33
+#: dashboard/templates/dashboard/vm-detail/home.html:34
 msgid "Description"
 msgstr "Leírás"
 
@@ -223,7 +223,7 @@ msgstr "Gép"
 
 #: dashboard/forms.py:383 dashboard/forms.py:781 dashboard/forms.py:991
 #: dashboard/templates/dashboard/node-detail.html:5
-#: dashboard/templates/dashboard/vm-detail/home.html:116
+#: dashboard/templates/dashboard/vm-detail/home.html:117
 #: dashboard/templates/dashboard/vm-list.html:87
 msgid "Node"
 msgstr "Csomópont"
@@ -396,7 +396,7 @@ msgstr "Protokoll"
 msgid "<label>Host:</label> {0}"
 msgstr "<label>Gép:</label> {0}"
 
-#: dashboard/forms.py:1068 dashboard/templates/dashboard/profile.html:32
+#: dashboard/forms.py:1068 dashboard/templates/dashboard/profile.html:36
 #: dashboard/templates/dashboard/vm-detail.html:118
 msgid "Username"
 msgstr "Felhasználónév"
@@ -409,7 +409,7 @@ msgstr "Jelszó"
 msgid "Sign in"
 msgstr "Bejelentkezés"
 
-#: dashboard/forms.py:1110 dashboard/templates/dashboard/profile.html:38
+#: dashboard/forms.py:1110 dashboard/templates/dashboard/profile.html:42
 msgid "Email address"
 msgstr "E-mail cím"
 
@@ -431,7 +431,7 @@ msgstr "Választott nyelv"
 
 #: dashboard/forms.py:1272 dashboard/templates/dashboard/group-list.html:14
 #: dashboard/templates/dashboard/index-groups.html:7
-#: dashboard/templates/dashboard/profile.html:57
+#: dashboard/templates/dashboard/profile.html:60
 #: dashboard/templates/dashboard/vm-detail/network.html:40
 #: network/templates/network/host-edit.html:32 templates/info/help.html:192
 msgid "Groups"
@@ -607,7 +607,7 @@ msgstr "A csoport egyedi szervezeti azonosítója."
 
 #. Translators: [T] as Template
 #: dashboard/tables.py:53 dashboard/tables.py:308
-#: dashboard/templates/dashboard/vm-detail/home.html:129
+#: dashboard/templates/dashboard/vm-detail/home.html:130
 msgid "Template"
 msgstr "Sablon"
 
@@ -658,7 +658,7 @@ msgstr "Adminisztráció"
 msgid "Actions"
 msgstr "Műveletek"
 
-#: dashboard/tables.py:163 dashboard/templates/dashboard/profile.html:33
+#: dashboard/tables.py:163 dashboard/templates/dashboard/profile.html:37
 msgid "Organization ID"
 msgstr "Címtári azonosító"
 
@@ -856,7 +856,7 @@ msgstr "Ki"
 msgid "What"
 msgstr "Mi"
 
-#: dashboard/templates/dashboard/_notifications-timeline.html:19
+#: dashboard/templates/dashboard/_notifications-timeline.html:21
 msgid "You have no notifications."
 msgstr "Nincs értesítése."
 
@@ -1071,7 +1071,8 @@ msgstr "Kijelentkezés"
 
 #: dashboard/templates/dashboard/base.html:50
 #: dashboard/templates/dashboard/base.html:60
-#: dashboard/templates/dashboard/notifications.html:21
+#: dashboard/templates/dashboard/notifications.html:4
+#: dashboard/templates/dashboard/notifications.html:24
 msgid "Notifications"
 msgstr "Értesítések"
 
@@ -1192,7 +1193,7 @@ msgstr "Parancssablon létrehozása"
 #: dashboard/templates/dashboard/connect-command-edit.html:13
 #: dashboard/templates/dashboard/lease-create.html:13
 #: dashboard/templates/dashboard/lease-edit.html:12
-#: dashboard/templates/dashboard/profile.html:20
+#: dashboard/templates/dashboard/profile.html:23
 #: dashboard/templates/dashboard/template-edit.html:16
 #: dashboard/templates/dashboard/userkey-create.html:13
 #: dashboard/templates/dashboard/userkey-edit.html:14 network/forms.py:65
@@ -1242,7 +1243,7 @@ msgstr "csoport"
 #: dashboard/templates/dashboard/node-detail.html:24
 #: dashboard/templates/dashboard/node-list/column-name.html:7
 #: dashboard/templates/dashboard/vm-detail.html:65
-#: dashboard/templates/dashboard/vm-detail/home.html:24
+#: dashboard/templates/dashboard/vm-detail/home.html:25
 #: dashboard/templates/dashboard/vm-list/column-name.html:7
 msgid "Rename"
 msgstr "Átnevezés"
@@ -1550,8 +1551,8 @@ msgid "subactivities"
 msgstr "altevékenységek"
 
 #: dashboard/templates/dashboard/instanceactivity_detail.html:74
-#: dashboard/templates/dashboard/node-detail/_activity-timeline.html:29
-#: dashboard/templates/dashboard/vm-detail/_activity-timeline.html:48
+#: dashboard/templates/dashboard/node-detail/_activity-timeline.html:33
+#: dashboard/templates/dashboard/vm-detail/_activity-timeline.html:51
 msgid "failed"
 msgstr "meghiúsult"
 
@@ -1737,51 +1738,51 @@ msgid "Log in as this user. Recommended to open in an incognito window."
 msgstr ""
 "Bejelentkezés a felhasználó nevében. Ajánlott inkognitóablakban megnyitni."
 
-#: dashboard/templates/dashboard/profile.html:18
+#: dashboard/templates/dashboard/profile.html:19
 msgid "Login as this user"
 msgstr "Bejelentkezés a felhasználó nevében"
 
-#: dashboard/templates/dashboard/profile.html:34
+#: dashboard/templates/dashboard/profile.html:38
 msgid "First name"
 msgstr "Keresztnév"
 
-#: dashboard/templates/dashboard/profile.html:35
+#: dashboard/templates/dashboard/profile.html:39
 msgid "Last name"
 msgstr "Vezetéknév"
 
-#: dashboard/templates/dashboard/profile.html:43
+#: dashboard/templates/dashboard/profile.html:47
 msgid "Use email address as Gravatar profile image"
 msgstr "E-mail cím használata a Gravatar profilkép betöltésére"
 
-#: dashboard/templates/dashboard/profile.html:46
+#: dashboard/templates/dashboard/profile.html:50
 msgid "What's Gravatar?"
 msgstr "Mi az a Gravatar?"
 
-#: dashboard/templates/dashboard/profile.html:48
+#: dashboard/templates/dashboard/profile.html:52
 msgid "Change my preferences"
 msgstr "Személyes beállítások"
 
-#: dashboard/templates/dashboard/profile.html:63
+#: dashboard/templates/dashboard/profile.html:66
 msgid "This user is not in any group."
 msgstr "A felhasználó nem tagja csoportnak."
 
-#: dashboard/templates/dashboard/profile.html:72
+#: dashboard/templates/dashboard/profile.html:75
 msgid "Virtual machines owned by the user"
 msgstr "A felhasználó virtuális gépei"
 
-#: dashboard/templates/dashboard/profile.html:84
+#: dashboard/templates/dashboard/profile.html:87
 msgid "This user have no virtual machines."
 msgstr "A felhasználónak nincs virtuális gépe."
 
-#: dashboard/templates/dashboard/profile.html:93
+#: dashboard/templates/dashboard/profile.html:96
 msgid "Virtual machines with access"
 msgstr "Elérhető virtuális gépek"
 
-#: dashboard/templates/dashboard/profile.html:105
+#: dashboard/templates/dashboard/profile.html:108
 msgid "This user have no access to any virtual machine."
 msgstr "A felhasználónak egy géphez sincs hozzáférése."
 
-#: dashboard/templates/dashboard/profile.html:119
+#: dashboard/templates/dashboard/profile.html:122
 msgid "Edit user"
 msgstr "Felhasználó szerkesztése"
 
@@ -1942,7 +1943,7 @@ msgstr "Felsorolás"
 
 #: dashboard/templates/dashboard/store/list.html:5
 #: dashboard/templates/dashboard/store/upload.html:4
-#: dashboard/templates/dashboard/vm-detail/home.html:146
+#: dashboard/templates/dashboard/vm-detail/home.html:147
 msgid "Store"
 msgstr "Tárhely"
 
@@ -2049,30 +2050,22 @@ msgstr "Hozzáférési jogosultsági szintek"
 
 #: dashboard/templates/dashboard/template-edit.html:121
 #: dashboard/templates/dashboard/vm-detail/access.html:27
-#, fuzzy
-#| msgid "Users"
 msgid "User"
-msgstr "Felhasználók"
+msgstr "Felhasználó"
 
 #: dashboard/templates/dashboard/template-edit.html:123
-#, fuzzy
-#| msgid ""
-#| "         The system cannot be used for illegal activites.\n"
-#| "         "
 msgid ""
 "\n"
 "            User can deploy instances from this template.\n"
 "            "
 msgstr ""
 "\n"
-"A rendszer nem használható jogszerűtlen célokra."
+"A felhasználható indíthat példányokat a sablonból."
 
 #: dashboard/templates/dashboard/template-edit.html:127
 #: dashboard/templates/dashboard/vm-detail/access.html:31
-#, fuzzy
-#| msgid "operator"
 msgid "Operator"
-msgstr "operátor"
+msgstr "Operátor"
 
 #: dashboard/templates/dashboard/template-edit.html:129
 msgid ""
@@ -2286,15 +2279,15 @@ msgstr "Konzol"
 msgid "Access"
 msgstr "Hozzáférés"
 
-#: dashboard/templates/dashboard/vm-detail/_activity-timeline.html:31
+#: dashboard/templates/dashboard/vm-detail/_activity-timeline.html:32
 msgid "Abort"
 msgstr "Megszakítás"
 
-#: dashboard/templates/dashboard/vm-detail/_activity-timeline.html:62
+#: dashboard/templates/dashboard/vm-detail/_activity-timeline.html:65
 msgid "Show less activities"
 msgstr "Kevesebb tevékenység megjelenítése"
 
-#: dashboard/templates/dashboard/vm-detail/_activity-timeline.html:64
+#: dashboard/templates/dashboard/vm-detail/_activity-timeline.html:67
 msgid "Show all activities"
 msgstr "Összes tevékenység megjelenítése"
 
@@ -2374,35 +2367,35 @@ msgstr "Képernyőkép"
 msgid "Close"
 msgstr "Bezárás"
 
-#: dashboard/templates/dashboard/vm-detail/home.html:5
+#: dashboard/templates/dashboard/vm-detail/home.html:6
 msgid "System"
 msgstr "Rendszer"
 
-#: dashboard/templates/dashboard/vm-detail/home.html:48
+#: dashboard/templates/dashboard/vm-detail/home.html:49
 msgid "Update"
 msgstr "Frissítés"
 
-#: dashboard/templates/dashboard/vm-detail/home.html:57
+#: dashboard/templates/dashboard/vm-detail/home.html:58
 msgid "Expiration"
 msgstr "Lejárat"
 
-#: dashboard/templates/dashboard/vm-detail/home.html:69
+#: dashboard/templates/dashboard/vm-detail/home.html:70
 msgid "Suspended at:"
 msgstr "Felfüggesztve:"
 
-#: dashboard/templates/dashboard/vm-detail/home.html:75
+#: dashboard/templates/dashboard/vm-detail/home.html:76
 msgid "Destroyed at:"
 msgstr "Megsemmisítve:"
 
-#: dashboard/templates/dashboard/vm-detail/home.html:84
+#: dashboard/templates/dashboard/vm-detail/home.html:85
 msgid "Tags"
 msgstr "Címkék"
 
-#: dashboard/templates/dashboard/vm-detail/home.html:97
+#: dashboard/templates/dashboard/vm-detail/home.html:98
 msgid "No tag added."
 msgstr "Nincs címke."
 
-#: dashboard/templates/dashboard/vm-detail/home.html:109
+#: dashboard/templates/dashboard/vm-detail/home.html:110
 msgid "Add tag"
 msgstr "Címke hozzáadása"
 
@@ -2519,7 +2512,7 @@ msgid ""
 "  "
 msgstr ""
 
-#: dashboard/validators.py:57
+#: dashboard/validators.py:74
 msgid "Invalid template string."
 msgstr "Érvénytelen sablon."
 
@@ -2543,36 +2536,36 @@ msgstr "példányok száma"
 msgid "Allocated memory (bytes)"
 msgstr "Foglalt memória (byte)"
 
-#: dashboard/views/group.py:151
+#: dashboard/views/group.py:150
 #, python-format
 msgid "User \"%s\" not found."
 msgstr "Nem található „%s” felhasználó."
 
-#: dashboard/views/group.py:165
+#: dashboard/views/group.py:164
 msgid "Group successfully renamed."
 msgstr "A csoport átnevezésre került."
 
-#: dashboard/views/group.py:234
+#: dashboard/views/group.py:233
 msgid "Member successfully removed from group."
 msgstr "A csoporttag eltávolításra került."
 
-#: dashboard/views/group.py:267
+#: dashboard/views/group.py:266
 msgid "Future user successfully removed from group."
 msgstr "A leendő csoporttag eltávolításra került."
 
-#: dashboard/views/group.py:289
+#: dashboard/views/group.py:288
 msgid "Group successfully deleted."
 msgstr "A csoport törlésre került."
 
-#: dashboard/views/group.py:318
+#: dashboard/views/group.py:317
 msgid "Create a Group"
 msgstr "Csoport létrehozása"
 
-#: dashboard/views/group.py:334
+#: dashboard/views/group.py:333
 msgid "Group successfully created."
 msgstr "A csoport létrehozásra került."
 
-#: dashboard/views/group.py:348
+#: dashboard/views/group.py:347
 msgid "Group is successfully updated."
 msgstr "A csoport frissítésre került."
 
@@ -3566,10 +3559,9 @@ msgid "whitelisted"
 msgstr ""
 
 #: firewall/models.py:1128
-#, fuzzy
 #| msgid "Expiration"
 msgid "expires at"
-msgstr "Lejárat"
+msgstr "lejár"
 
 #: firewall/models.py:1138
 msgid "blacklist item"
@@ -3581,10 +3573,9 @@ msgid "blacklist"
 msgstr "tiltólista"
 
 #: firewall/views.py:79
-#, fuzzy
 #| msgid "Enter a valid IP address. %s"
 msgid "Invalid IP address."
-msgstr "Érvénytelen IP cím. %s"
+msgstr "Érvénytelen IP cím."
 
 #: firewall/views.py:111
 msgid "OK"
@@ -4034,37 +4025,35 @@ msgid "list of all vlans"
 msgstr "összes vlan"
 
 #: network/views.py:140
-#, fuzzy, python-format
+#, python-format
 #| msgid "Successfully modified blacklist item%(ipv4)s - %(type)s!"
 msgid "Successfully modified blacklist item %(ipv4)s."
-msgstr "Tiltólista eleme sikeresen módosítva (%(ipv4)s %(type)s)."
+msgstr "Tiltólista eleme sikeresen módosítva (%(ipv4)s)."
 
 #: network/views.py:157
-#, fuzzy, python-format
+#, python-format
 #| msgid "Successfully created blacklist item %(ipv4)s - %(type)s!"
 msgid "Successfully created blacklist item %(ipv4)s"
-msgstr "Tiltólista eleme sikeresen létrehozva (%(ipv4)s %(type)s)."
+msgstr "Tiltólista eleme sikeresen létrehozva (%(ipv4)s)."
 
 #: network/views.py:192
-#, fuzzy, python-format
+#, python-format
 #| msgid "Successfully modified domain %(name)s!"
 msgid "Successfully modified domain %(name)s."
 msgstr "A(z) %(name)s tartománynév módosításra került."
 
 #: network/views.py:219
-#, fuzzy, python-format
+#, python-format
 #| msgid "Successfully created domain %(name)s!"
 msgid "Successfully created domain %(name)s."
 msgstr "A(z) %(name)s tartománynév létrehozásra került."
 
 #: network/views.py:236 network/views.py:563 network/views.py:845
-#, fuzzy
 #| msgid "Object name does not match!"
 msgid "Object name does not match."
 msgstr "Az objektum neve nem egyezik."
 
 #: network/views.py:240
-#, fuzzy
 #| msgid "Domain successfully deleted!"
 msgid "Domain successfully deleted."
 msgstr "A tartománynév törlésre került."
@@ -4082,43 +4071,40 @@ msgid "Successfully created firewall."
 msgstr "A tűzfal létrehozásra került."
 
 #: network/views.py:350
-#, fuzzy, python-format
+#, python-format
 #| msgid "Successfully created host group %(name)s!"
 msgid "Successfully created host group %(name)s."
 msgstr "%(name)s gépcsoport létrehozásra került."
 
 #: network/views.py:358
-#, fuzzy, python-format
+#, python-format
 #| msgid "Successfully modified host group %(name)s!"
 msgid "Successfully modified host group %(name)s."
 msgstr "%(name)s gépcsoport módosításra került."
 
 #: network/views.py:442
-#, fuzzy, python-format
+#, python-format
 #| msgid "Successfully modified host %(hostname)s!"
 msgid "Successfully modified host %(hostname)s."
 msgstr "%(hostname)s gép módosításra került."
 
 #: network/views.py:515
-#, fuzzy, python-format
+#, python-format
 #| msgid "Successfully created host %(hostname)s!"
 msgid "Successfully created host %(hostname)s."
 msgstr "%(hostname)s gép létrehozásra került."
 
 #: network/views.py:567
-#, fuzzy
 #| msgid "Host successfully deleted!"
 msgid "Host successfully deleted."
 msgstr "A gép törlésre került."
 
 #: network/views.py:597
-#, fuzzy
 #| msgid "Successfully modified record!"
 msgid "Successfully modified record."
 msgstr "A rekord módosításra került."
 
 #: network/views.py:616
-#, fuzzy
 #| msgid "Successfully created record!"
 msgid "Successfully created record."
 msgstr "A rekord létrehozásra került."
@@ -4136,73 +4122,68 @@ msgid "Firewall"
 msgstr "Tűzfal"
 
 #: network/views.py:682
-#, fuzzy
 #| msgid "Successfully modified rule!"
 msgid "Successfully modified rule."
 msgstr "A szabály módosításra került."
 
 #: network/views.py:702
-#, fuzzy
 #| msgid "Successfully created rule!"
 msgid "Successfully created rule."
 msgstr "A szabály létrehozásra került."
 
 #: network/views.py:738
-#, fuzzy
 #| msgid "Succesfully modified switch port!"
 msgid "Succesfully modified switch port."
 msgstr "A switch-port módosításra került."
 
 #: network/views.py:757
-#, fuzzy
 #| msgid "Successfully created switch port!"
 msgid "Successfully created switch port."
 msgstr "A switch-port létrehozásra került."
 
 #: network/views.py:804
-#, fuzzy, python-format
+#, python-format
 #| msgid "Succesfully modified vlan %(name)s!"
 msgid "Succesfully modified vlan %(name)s."
 msgstr "A(z) %(name)s vlan módosításra került."
 
 #: network/views.py:824
-#, fuzzy, python-format
+#, python-format
 #| msgid "Successfully created vlan %(name)s!"
 msgid "Successfully created vlan %(name)s."
 msgstr "A(z) %(name)s vlan létrehozásra került."
 
 #: network/views.py:849
-#, fuzzy
 #| msgid "Vlan successfully deleted!"
 msgid "Vlan successfully deleted."
 msgstr "A vlan törlésre került."
 
 #: network/views.py:891
-#, fuzzy, python-format
+#, python-format
 #| msgid "Successfully modified vlan group %(name)s!"
 msgid "Successfully modified vlan group %(name)s."
 msgstr "A(z) %(name)s vlan-csoport módosításra került."
 
 #: network/views.py:904
-#, fuzzy, python-format
+#, python-format
 #| msgid "Successfully created vlan group %(name)s!"
 msgid "Successfully created vlan group %(name)s."
 msgstr "A(z) %(name)s vlan-csoport módosításra került."
 
 #: network/views.py:936
-#, fuzzy, python-format
+#, python-format
 #| msgid "Successfully removed %(host)s from %(group)s group!"
 msgid "Successfully removed %(host)s from %(group)s group."
 msgstr "A(z) %(host)s csoport törlésre került a(z) %(group)s csoportból."
 
 #: network/views.py:952
-#, fuzzy, python-format
+#, python-format
 #| msgid "Successfully added %(host)s to group %(group)s!"
 msgid "Successfully added %(host)s to group %(group)s."
 msgstr "A(z) %(host)s csoport hozzáadásra került a(z) %(group)s csoporthoz."
 
 #: network/views.py:971
-#, fuzzy, python-format
+#, python-format
 #| msgid "Successfully deleted ethernet device %(name)s!"
 msgid "Successfully deleted ethernet device %(name)s."
 msgstr "A(z) %(name)s ethernet-eszköz törlésre került."
@@ -4213,13 +4194,11 @@ msgid "Successfully added %(name)s to this switch port"
 msgstr "%(name)s hozzáadásra került a switch-porthoz."
 
 #: network/views.py:996
-#, fuzzy
 #| msgid "Ethernet device name cannot be empty!"
 msgid "Ethernet device name cannot be empty."
 msgstr "Az ethernet-eszköz megadása kötelező."
 
 #: network/views.py:999
-#, fuzzy
 #| msgid "There is already an ethernet device with that name!"
 msgid "There is already an ethernet device with that name."
 msgstr "Már létezik a megadott nevű ethernet-eszköz."

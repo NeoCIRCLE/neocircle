@@ -1,13 +1,15 @@
 {% load i18n %}
 {% load hro %}
+{% load arrowfilter %}
+
 {% for n in page %}
   <li class="notification-message" id="msg-{{n.id}}">
     <span class="notification-message-subject">
       {% if n.status == "new" %}<i class="fa fa-envelope-o"></i> {% endif %}
       {{ n.subject|get_text:user }}
     </span>
-    <span class="notification-message-date pull-right" title="{{n.created}}">
-      {{ n.created|timesince }}
+    <span class="notification-message-date pull-right" title="{{n.created}}" data-container="body">
+      {{ n.created|arrowfilter:LANGUAGE_CODE }}
     </span>
     <div style="clear: both;"></div>
     <div class="notification-message-text">
