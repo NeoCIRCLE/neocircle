@@ -3,7 +3,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from django_tables2 import Table, A
 from django_tables2.columns import (
-    TemplateColumn, LinkColumn
+    Column, TemplateColumn, LinkColumn
 )
 
 from request.models import Request, LeaseType, TemplateAccessType
@@ -45,6 +45,7 @@ class LeaseTypeTable(Table):
         args=[A('pk')],
         verbose_name=_("ID"),
     )
+    lease = Column(verbose_name=_("Lease"))
 
     class Meta:
         model = LeaseType

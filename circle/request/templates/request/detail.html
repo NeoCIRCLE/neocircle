@@ -2,6 +2,7 @@
 {% load staticfiles %}
 {% load i18n %}
 {% load render_table from django_tables2 %}
+{% load arrowfilter %}
 
 {% block title-page %}{% trans "Request" %}{% endblock %}
 
@@ -26,7 +27,7 @@
         </div>
         <p>
           <img src="{{ object.user.profile.get_avatar_url }}" width="50" height="50"/>
-          <a href="{{ object.user.profile.get_absolute_url }} ">
+          <a href="{{ object.user.profile.get_absolute_url }}">
             {{ object.user.profile.get_display_name }}
           </a>
         </p>
@@ -113,8 +114,8 @@
           </div>
         {% else %}
           <div class="text-right">
-            {% blocktrans with close_date=object.modified %}
-              Closed at {{ close_date }}
+            {% blocktrans with closed=object.modified|arrowfilter:LANGUAGE_CODE user=object.closed_by.profile.get_display_name %}
+            Closed {{ closed }} by <a href="{{ user.profile.get_absolute_url }}">{{ user }}</a>
             {% endblocktrans %}
           </div>
         {% endif %}

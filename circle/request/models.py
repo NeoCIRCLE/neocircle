@@ -42,7 +42,8 @@ class Request(TimeStampedModel):
     )
     status = CharField(choices=STATUSES, default=STATUSES.UNSEEN,
                        max_length=10)
-    user = ForeignKey(User, verbose_name=_('user'))
+    user = ForeignKey(User, related_name="user")
+    closed_by = ForeignKey(User, related_name="closed_by", null=True)
     TYPES = Choices(
         ('resource', _('resource request')),
         ('lease', _("lease request")),
@@ -90,10 +91,12 @@ class Request(TimeStampedModel):
     def accept(self, user):
         self.action.accept(user)
         self.status = "ACCEPTED"
+        self.closed_by = user
         self.save()
 
-    def decline(self):
+    def decline(self, user):
         self.status = "DECLINED"
+        self.closed_by = user
         self.save()
 
 
