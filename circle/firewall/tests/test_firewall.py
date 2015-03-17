@@ -15,20 +15,22 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
+from mock import patch
 from netaddr import IPSet, AddrFormatError
 
-from django.test import TestCase
+import django.conf
 from django.contrib.auth.models import User
-from ..admin import HostAdmin
+from django.forms import ValidationError
+from django.test import TestCase
+
+from common.tests.celery_mock import MockCeleryMixin
+from firewall.admin import HostAdmin
+from firewall.fw import dns, ipv6_to_octal
+from firewall.iptables import IptRule, IptChain, InvalidRuleExcepion
 from firewall.models import (Vlan, Domain, Record, Host, VlanGroup, Group,
                              Rule, Firewall)
-from firewall.fw import dns, ipv6_to_octal
 from firewall.tasks.local_tasks import reloadtask_worker, reloadtask
-from django.forms import ValidationError
-from ..iptables import IptRule, IptChain, InvalidRuleExcepion
-from mock import patch
 
-import django.conf
 settings = django.conf.settings.FIREWALL_SETTINGS
 
 
@@ -68,7 +70,7 @@ class HostAdminTestCase(TestCase):
         self.assertEqual(l, "alma, korte, szilva")
 
 
-class GetNewAddressTestCase(TestCase):
+class GetNewAddressTestCase(MockCeleryMixin, TestCase):
     def setUp(self):
         self.u1 = User.objects.create(username='user1')
         self.u1.save()
@@ -105,7 +107,7 @@ class GetNewAddressTestCase(TestCase):
         assert self.vlan.get_new_address()['ipv4'] not in used_v4
 
 
-class HostGetHostnameTestCase(TestCase):
+class HostGetHostnameTestCase(MockCeleryMixin, TestCase):
     def setUp(self):
         self.u1 = User.objects.create(username='user1')
         self.u1.save()
@@ -187,7 +189,7 @@ class IptablesTestCase(TestCase):
         self.assertEqual(len(compiled_v6.splitlines()), 0)
 
 
-class ReloadTestCase(TestCase):
+class ReloadTestCase(MockCeleryMixin, TestCase):
     def setUp(self):
         self.u1 = User.objects.create(username='user1')
         self.u1.save()
@@ -313,7 +315,22 @@ class ReloadTestCase(TestCase):
 
     def test_periodic_task(self):
         # TODO
-        with patch('firewall.tasks.local_tasks.cache') as cache:
+        cache = patch('firewall.tasks.local_tasks.cache')
+        grqn = patch('firewall.models.Firewall.get_remote_queue_name',
+                     return_value='fw.firewall')
+        worker = patch(
+            'firewall.tasks.local_tasks.reloadtask_worker.apply_async')
+
+        dns = patch('firewall.tasks.remote_tasks.reload_dns.apply_async')
+        fw = patch(
+            'firewall.tasks.remote_tasks.reload_firewall.apply_async')
+        fw_vlan = patch(
+            'firewall.tasks.remote_tasks.reload_firewall_vlan.apply_async')
+        blacklist = patch(
+            'firewall.tasks.remote_tasks.reload_blacklist.apply_async')
+        dhcp = patch('firewall.tasks.remote_tasks.reload_dhcp.apply_async')
+
+        with cache as cache, grqn, dns, fw, fw_vlan, blacklist, dhcp, worker:
             self.test_host_add_port()
             self.test_host_add_port2()
             reloadtask_worker()

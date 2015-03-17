@@ -24,10 +24,12 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth.models import Permission
 from django.contrib.auth import authenticate
 
+from common.tests.celery_mock import MockCeleryMixin
 from dashboard.views import VmAddInterfaceView
 from vm.models import Instance, InstanceTemplate, Lease, Node, Trait
 from vm.operations import (WakeUpOperation, AddInterfaceOperation,
-                           AddPortOperation, RemoveInterfaceOperation)
+                           AddPortOperation, RemoveInterfaceOperation,
+                           DeployOperation)
 from ..models import Profile
 from firewall.models import Vlan, Host, VlanGroup
 from mock import Mock, patch
@@ -44,7 +46,7 @@ class LoginMixin(object):
         self.assertNotEqual(response.status_code, 403)
 
 
-class VmDetailTest(LoginMixin, TestCase):
+class VmDetailTest(LoginMixin, MockCeleryMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
 
     def setUp(self):
@@ -217,21 +219,25 @@ class VmDetailTest(LoginMixin, TestCase):
         self.login(c, 'user1')
         InstanceTemplate.objects.get(id=1).set_level(self.u1, 'user')
         Vlan.objects.get(id=1).set_level(self.u1, 'user')
-        response = c.post('/dashboard/vm/create/',
-                          {'template': 1,
-                           'system': "bubi",
-                           'cpu_priority': 1, 'cpu_count': 1,
-                           'ram_size': 1000})
+        with patch.object(DeployOperation, 'async') as async:
+            response = c.post('/dashboard/vm/create/',
+                              {'template': 1,
+                               'system': "bubi",
+                               'cpu_priority': 1, 'cpu_count': 1,
+                               'ram_size': 1000})
+        assert async.called
         self.assertEqual(response.status_code, 302)
 
     def test_use_permitted_template_superuser(self):
         c = Client()
         self.login(c, 'superuser')
-        response = c.post('/dashboard/vm/create/',
-                          {'template': 1,
-                           'system': "bubi",
-                           'cpu_priority': 1, 'cpu_count': 1,
-                           'ram_size': 1000})
+        with patch.object(DeployOperation, 'async') as async:
+            response = c.post('/dashboard/vm/create/',
+                              {'template': 1,
+                               'system': "bubi",
+                               'cpu_priority': 1, 'cpu_count': 1,
+                               'ram_size': 1000})
+        assert async.called
         self.assertEqual(response.status_code, 302)
 
     def test_edit_unpermitted_template(self):
@@ -537,15 +543,17 @@ class VmDetailTest(LoginMixin, TestCase):
         self.login(c, "superuser")
 
         instance_count = Instance.objects.all().count()
-        response = c.post("/dashboard/vm/create/", {
-            'name': 'vm',
-            'amount': 2,
-            'customized': 1,
-            'template': 1,
-            'cpu_priority': 10, 'cpu_count': 1, 'ram_size': 128,
-            'network': [],
-        })
+        with patch.object(DeployOperation, 'async') as async:
+            response = c.post("/dashboard/vm/create/", {
+                'name': 'vm',
+                'amount': 2,
+                'customized': 1,
+                'template': 1,
+                'cpu_priority': 10, 'cpu_count': 1, 'ram_size': 128,
+                'network': [],
+            })
 
+        assert async.called
         self.assertEqual(response.status_code, 302)
         self.assertEqual(instance_count + 2, Instance.objects.all().count())
 
@@ -585,7 +593,7 @@ class VmDetailTest(LoginMixin, TestCase):
         self.assertEqual(Instance.objects.get(pk=1).description, "naonyo")
 
 
-class NodeDetailTest(LoginMixin, TestCase):
+class NodeDetailTest(LoginMixin, MockCeleryMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
 
     def setUp(self):
@@ -756,7 +764,7 @@ class NodeDetailTest(LoginMixin, TestCase):
         self.assertEqual(len(Node.objects.get(pk=1).traits.all()), trait_count)
 
 
-class GroupCreateTest(LoginMixin, TestCase):
+class GroupCreateTest(LoginMixin, MockCeleryMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
 
     def setUp(self):
@@ -858,7 +866,7 @@ class GroupCreateTest(LoginMixin, TestCase):
         self.assertTrue(newgroup.profile.has_level(self.u0, 'owner'))
 
 
-class GroupDeleteTest(LoginMixin, TestCase):
+class GroupDeleteTest(LoginMixin, MockCeleryMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
 
     def setUp(self):
@@ -948,7 +956,7 @@ class GroupDeleteTest(LoginMixin, TestCase):
         self.assertEqual(Group.objects.count(), groupnum - 1)
 
 
-class GroupDetailTest(LoginMixin, TestCase):
+class GroupDetailTest(LoginMixin, MockCeleryMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
 
     def setUp(self):
@@ -1332,7 +1340,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.assertEqual(response.status_code, 302)
 
 
-class GroupListTest(LoginMixin, TestCase):
+class GroupListTest(LoginMixin, MockCeleryMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
 
     def setUp(self):
@@ -1375,7 +1383,7 @@ class GroupListTest(LoginMixin, TestCase):
         self.g2.delete()
 
 
-class VmDetailVncTest(LoginMixin, TestCase):
+class VmDetailVncTest(LoginMixin, MockCeleryMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
 
     def setUp(self):
@@ -1408,7 +1416,7 @@ class VmDetailVncTest(LoginMixin, TestCase):
         self.assertEqual(response.status_code, 403)
 
 
-class TransferOwnershipViewTest(LoginMixin, TestCase):
+class TransferOwnershipViewTest(LoginMixin, MockCeleryMixin, TestCase):
     fixtures = ['test-vm-fixture.json']
 
     def setUp(self):
@@ -1446,7 +1454,7 @@ class TransferOwnershipViewTest(LoginMixin, TestCase):
         self.assertEqual(self.u2.notification_set.count(), c2 + 1)
 
 
-class IndexViewTest(LoginMixin, TestCase):
+class IndexViewTest(LoginMixin, MockCeleryMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
 
     def setUp(self):
@@ -1548,7 +1556,7 @@ class ProfileViewTest(LoginMixin, TestCase):
         self.assertIsNone(authenticate(username="user1", password="asd"))
 
 
-class AclViewTest(LoginMixin, TestCase):
+class AclViewTest(LoginMixin, MockCeleryMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
 
     def setUp(self):
@@ -1666,7 +1674,7 @@ class AclViewTest(LoginMixin, TestCase):
         self.assertEqual(resp.status_code, 302)
 
 
-class VmListTest(LoginMixin, TestCase):
+class VmListTest(LoginMixin, MockCeleryMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
 
     def setUp(self):

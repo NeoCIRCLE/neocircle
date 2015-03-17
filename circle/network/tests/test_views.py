@@ -20,6 +20,7 @@ from django.test.client import Client
 from django.contrib.auth.models import User, Group
 from mock import Mock
 
+from common.tests.celery_mock import MockCeleryMixin
 from dashboard.tests.test_views import LoginMixin
 
 from vm.models import Instance
@@ -29,7 +30,7 @@ import django.conf
 settings = django.conf.settings.FIREWALL_SETTINGS
 
 
-class VlanAclTest(LoginMixin, TestCase):
+class VlanAclTest(LoginMixin, MockCeleryMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
 
     def setUp(self):
