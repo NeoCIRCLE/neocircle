@@ -87,7 +87,8 @@ class Request(TimeStampedModel):
             "DECLINED": "times",
         }.get(self.status)
 
-    def accept(self):
+    def accept(self, user):
+        self.action.accept(user)
         self.status = "ACCEPTED"
         self.save()
 
@@ -131,17 +132,17 @@ class ResourceChangeAction(RequestAction):
                             help_text=_('CPU priority.'),
                             validators=[MinValueValidator(0)])
 
-    def accept(self):
-        pass
-        # self.instance.change_resources(xy=xy)
+    def accept(self, user):
+        self.instance.resources_request.async(user=user, resource_request=self)
 
 
 class ExtendLeaseAction(RequestAction):
     instance = ForeignKey(Instance)
     lease_type = ForeignKey(LeaseType)
 
-    def accept(self):
-        pass
+    def accept(self, user):
+        self.instance.renew(lease=self.lease_type.lease, save=True, force=True,
+                            user=user)
 
 
 class TemplateAccessAction(RequestAction):
@@ -157,5 +158,6 @@ class TemplateAccessAction(RequestAction):
     def get_readable_level(self):
         return self.LEVELS[self.level]
 
-    def accept(self):
-        pass
+    def accept(self, user):
+        for t in self.template_type.templates.all():
+            t.set_user_level(self.user, self.level)

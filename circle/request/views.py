@@ -14,6 +14,7 @@ from request.models import (
     ExtendLeaseAction, ResourceChangeAction,
 )
 from vm.models import Instance
+from vm.operations import ResourcesRequestOperation
 from request.tables import (
     RequestTable, TemplateAccessTypeTable, LeaseTypeTable,
 )
@@ -47,12 +48,14 @@ class RequestDetail(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
     template_name = "request/detail.html"
 
     def post(self, *args, **kwargs):
-        accept = self.request.POST.get("accept")
-        request = self.get_object()  # not self.request!
-        if accept:
-            request.accept()
-        else:
-            request.decline()
+        if self.get_object().status in ["PENDING", "UNSEEN"]:
+            user = self.request.user
+            accept = self.request.POST.get("accept")
+            request = self.get_object()  # not self.request!
+            if accept:
+                request.accept(user)
+            else:
+                request.decline(user)
 
         return redirect(request.get_absolute_url())
 
@@ -61,6 +64,7 @@ class RequestDetail(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         context = super(RequestDetail, self).get_context_data(**kwargs)
 
         context['action'] = request.action
+        context['accept_states'] = ResourcesRequestOperation.accept_states
 
         if request.status == Request.STATUSES.UNSEEN:
             request.status = Request.STATUSES.PENDING
