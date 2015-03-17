@@ -67,7 +67,7 @@ from ..forms import (
     VmRemoveInterfaceForm,
 )
 from request.models import TemplateAccessType
-from request.forms import LeaseRequestForm
+from request.forms import LeaseRequestForm, TemplateRequestForm
 from ..models import Favourite
 from manager.scheduler import has_traits
 
@@ -680,7 +680,7 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
 
     def get_context_data(self, **kwargs):
         context = super(VmRenewView, self).get_context_data(**kwargs)
-        context['lease_request_form'] = LeaseRequestForm()
+        context['lease_request_form'] = LeaseRequestForm(request=self.request)
         return context
 
 
@@ -1047,14 +1047,13 @@ class VmCreate(LoginRequiredMixin, TemplateView):
                 'template_o': template,
             })
         else:
-            from request.forms import TemplateRequestForm
             context.update({
                 'template': 'dashboard/_vm-create-1.html',
                 'box_title': _('Create a VM'),
                 'ajax_title': True,
                 'templates': templates.all(),
                 'template_access_types': TemplateAccessType.objects.count(),
-                'form': TemplateRequestForm(),
+                'form': TemplateRequestForm(request=request),
             })
         return self.render_to_response(context)
 

@@ -133,6 +133,11 @@ class TemplateRequestView(FormView):
     form_class = TemplateRequestForm
     template_name = "request/request-template.html"
 
+    def get_form_kwargs(self):
+        kwargs = super(TemplateRequestView, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+
     def form_valid(self, form):
         data = form.cleaned_data
         user = self.request.user
@@ -173,6 +178,11 @@ class LeaseRequestView(FormView):
         context = super(LeaseRequestView, self).get_context_data(**kwargs)
         context['vm'] = self.get_vm()
         return context
+
+    def get_form_kwargs(self):
+        kwargs = super(LeaseRequestView, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
 
     def form_valid(self, form):
         data = form.cleaned_data
