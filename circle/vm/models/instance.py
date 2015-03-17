@@ -56,7 +56,7 @@ pre_state_changed = Signal(providing_args=["new_state"])
 post_state_changed = Signal(providing_args=["new_state"])
 pwgen = partial(User.objects.make_random_password,
                 allowed_chars='abcdefghijklmnopqrstuvwx'
-                              'ABCDEFGHIJKLMNOPQRSTUVWX0123456789')
+                              'ABCDEFGHIJKLMNOPQRSTUVWX123456789')
 scheduler = import_module(name=django.conf.settings.VM_SCHEDULER)
 
 ACCESS_PROTOCOLS = django.conf.settings.VM_ACCESS_PROTOCOLS
