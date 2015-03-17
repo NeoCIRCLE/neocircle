@@ -15,16 +15,15 @@
 <p><div class="toc">
 <ul>
 <li><a href="#circle-cloud-manual">Circle Cloud Manual</a><ul>
-<li><ul>
-<li><a href="#faq">FAQ</a><ul>
+<li>
+<a href="#faq">FAQ</a><ul>
 <li><a href="#how-can-i-create-and-share-a-template-with-others">How can I create and share a template with others?</a></li>
 <li><a href="#how-can-i-create-a-vm-and-give-to-another-user">How can I create a VM and give to another user?</a></li>
 <li><a href="#how-can-i-portforward">How can I portforward?</a></li>
 <li><a href="#my-machines-lease-is-short-i-want-to-extend-it-how-can-i-do-it">My machine’s lease is short. I want to extend it. How can I do it?</a></li>
 <li><a href="#i-havent-got-enough-cpu-cores-andor-memory-on-my-vm-how-can-i-have-more">I haven’t got enough CPU cores and/or memory on my VM. How can I have more?</a></li>
 <li><a href="#i-want-access-to-a-specific-template-to-start-a-vm-what-can-i-do">I want access to a specific template to start a VM. What can I do? </a></li>
-</ul>
-</li>
+
 </ul>
 </li>
 <li><a href="#overview">Overview</a><ul>
@@ -52,7 +51,7 @@
 <li><a href="#home">Home</a><ul>
 <li><a href="#expiration">Expiration</a></li>
 <li><a href="#how-can-i-expand-the-vms-expiration-date">How can I expand the VM’s expiration date?</a></li>
-<li><a href="#file-management">File management</a></li>
+<li><a href="#file-management">ddFile management</a></li>
 <li><a href="#how-can-i-share-previously-uploaded-files-with-the-vm">How can I share previously uploaded files with the VM?</a></li>
 </ul>
 </li>
@@ -117,11 +116,10 @@
 
 
 
-<h3 id="faq"><strong>FAQ</strong></h3>
+<h2 id="faq"><strong>FAQ</strong></h2>
 
 
-
-<h4 id="how-can-i-create-and-share-a-template-with-others"><strong>How can I create and share a template with others?</strong></h4>
+<h3 id="how-can-i-create-and-share-a-template-with-others"><strong>How can I create and share a template with others?</strong></h3>
 
 <blockquote>
   <ol>
@@ -135,7 +133,7 @@
 
 
 
-<h4 id="how-can-i-create-a-vm-and-give-to-another-user"><strong>How can I create a VM and give to another user?</strong></h4>
+<h3 id="how-can-i-create-a-vm-and-give-to-another-user"><strong>How can I create a VM and give to another user?</strong></h3>
 
 <blockquote>
   <ol>
@@ -147,7 +145,7 @@
 
 
 
-<h4 id="how-can-i-portforward"><strong>How can I portforward?</strong></h4>
+<h3 id="how-can-i-portforward"><strong>How can I portforward?</strong></h3>
 
 <blockquote>
   <ol>
@@ -165,7 +163,7 @@
 
 
 
-<h4 id="my-machines-lease-is-short-i-want-to-extend-it-how-can-i-do-it"><strong>My machine’s lease is short. I want to extend it. How can I do it?</strong></h4>
+<h3 id="my-machines-lease-is-short-i-want-to-extend-it-how-can-i-do-it"><strong>My machine’s lease is short. I want to extend it. How can I do it?</strong></h3>
 
 <blockquote>
   <p>{% blocktrans %}You can send a request to the administrators. On the VM’s page - home pane, click on the ‘renew’ button and ‘send request’. Please write down, why are you need this and choose how long extension do you want.{% endblocktrans %}</p>
@@ -173,7 +171,7 @@
 
 
 
-<h4 id="i-havent-got-enough-cpu-cores-andor-memory-on-my-vm-how-can-i-have-more"><strong>I haven’t got enough CPU cores and/or memory on my VM. How can I have more?</strong></h4>
+<h3 id="i-havent-got-enough-cpu-cores-andor-memory-on-my-vm-how-can-i-have-more"><strong>I haven’t got enough CPU cores and/or memory on my VM. How can I have more?</strong></h3>
 
 <blockquote>
   <p>{% blocktrans %}You can send a request to the administrators. On the VM’s page - resources, modify the counters, write down, why are you need this and ‘save’.{% endblocktrans %}<</p>
@@ -181,7 +179,7 @@
 
 
 
-<h4 id="i-want-access-to-a-specific-template-to-start-a-vm-what-can-i-do"><strong>I want access to a specific template to start a VM. What can I do? </strong></h4>
+<h3 id="i-want-access-to-a-specific-template-to-start-a-vm-what-can-i-do"><strong>I want access to a specific template to start a VM. What can I do? </strong></h3>
 
 <blockquote>
   <p>{% blocktrans %}When you want to create a VM, below the template list, there is an option to send a request. Select wich template do you want, why you need this and set the access rights.{% endblocktrans %}</p>
@@ -213,7 +211,7 @@
 
 
 
-<h5 id="how-can-i-create-a-vm"><strong>How can I create a VM?</strong></h5>
+<h4 id="how-can-i-create-a-vm"><strong>How can I create a VM?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}You can start a machine by clicking the ‘New’ button and select a template. The machine starts automaticly.{% endblocktrans %}</p>
@@ -221,7 +219,7 @@
 
 
 
-<h5 id="how-can-i-mark-frequently-used-vms"><strong>How can I mark frequently used VMs?</strong></h5>
+<h4 id="how-can-i-mark-frequently-used-vms"><strong>How can I mark frequently used VMs?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}Important or frequently used machines can be pinned by the favorite button (). {% endblocktrans %}</p>
@@ -229,7 +227,7 @@
 
 
 
-<h5 id="how-can-i-search-for-vms"><strong>How can I search for VMs?</strong></h5>
+<h4 id="how-can-i-search-for-vms"><strong>How can I search for VMs?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}The search field shows results incrementally, and submitting (⏎) jumps directly to the result, if there is exactly one. You can start a new virtual machine by clicking on the  new button, and choosing a template.{% endblocktrans %}</p>
@@ -255,7 +253,7 @@
 
 
 
-<h5 id="how-can-i-connect-to-the-virtual-machine"><strong>How can I connect to the virtual machine?</strong></h5>
+<h4 id="how-can-i-connect-to-the-virtual-machine"><strong>How can I connect to the virtual machine?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}If the machine is already started, click on the ‘Connect’ button, or simply copy the connection string to the terminal. <br>
@@ -264,7 +262,7 @@
 
 
 
-<h5 id="how-can-i-change-the-vms-password"><strong>How can I change the VM’s password?</strong></h5>
+<h4 id="how-can-i-change-the-vms-password"><strong>How can I change the VM’s password?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}Click on the ‘Generate new password!’ link{% endblocktrans %}</p>
@@ -274,11 +272,13 @@
 
 <h4 id="operations"><strong>Operations</strong></h4>
 
-<p>{% blocktrans %}The upper right corner is the operation toolbar with the most important actions that control the lifecycle of the machine.{% endblocktrans %}</p>
+<p>{% blocktrans %}The upper right corner is the operation toolbar with the most important actions that control the lifecycle of the machine.
+
+The tool buttons are color coded by their effect, and enabled/disabled based on the current state of the machine. The recommended operation is always the biggest tool button with the name displayed. You can click on them as the confirmation dialog explains in detail what they do.{% endblocktrans %}</p>
 
 
 
-<h5 id="what-kind-of-operations-are-allowed-to-do-with-my-vm"><strong>What kind of operations are allowed to do with my VM?</strong></h5>
+<h4 id="what-kind-of-operations-are-allowed-to-do-with-my-vm"><strong>What kind of operations are allowed to do with my VM?</strong></h4>
 
 <blockquote>
   <p><em>{% blocktrans %}Deploy</em>: Deploy and start the virtual machine (including storage and network configuration){% endblocktrans %}</p>
@@ -300,7 +300,6 @@
   <p><em>{% blocktrans %}Destroy</em>: Permanently destroy virtual machine, its network settings and disks{% endblocktrans %}</p>
 </blockquote>
 
-<p>{% blocktrans %}The tool buttons are color coded by their effect, and enabled/disabled based on the current state of the machine. The recommended operation is always the biggest tool button with the name displayed. You can click on them as the confirmation dialog explains in detail what they do.{% endblocktrans %}</p>
 
 
 
@@ -310,25 +309,20 @@
 
 
 
-<h5 id="expiration"><strong>Expiration</strong></h5>
+<h4 id="expiration"><strong>Expiration</strong></h4>
 
 <p>{% blocktrans %}Here is a summary about the expiration times as well. Each virtual machine has a deadline for suspending and destroying based on predefined leases. {% endblocktrans %}</p>
 
 
 
-<h5 id="how-can-i-expand-the-vms-expiration-date"><strong>How can I expand the VM’s expiration date?</strong></h5>
+<h4 id="how-can-i-expand-the-vms-expiration-date"><strong>How can I expand the VM’s expiration date?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}With the renew button you can reset the counters. Of course you will get a notification if the machine is going to expire.{% endblocktrans %}</p>
 </blockquote>
 
 
-
-<h5 id="file-management"><strong>File management</strong></h5>
-
-
-
-<h5 id="how-can-i-share-previously-uploaded-files-with-the-vm"><strong>How can I share previously uploaded files with the VM?</strong></h5>
+<h4 id="how-can-i-share-previously-uploaded-files-with-the-vm"><strong>How can I share previously uploaded files with the VM?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}With the ‘Mount Store’ option, the virtual machine mounts your directory{% endblocktrans %}</p>
@@ -354,7 +348,7 @@
 
 
 
-<h5 id="how-can-i-give-access-to-others"><strong>How can I give access to others?</strong></h5>
+<h4 id="how-can-i-give-access-to-others"><strong>How can I give access to others?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}Type the user/group ID, set permissions and click ‘Save’.{% endblocktrans %}</p>
@@ -362,7 +356,7 @@
 
 
 
-<h5 id="what-kind-of-permissions-are-available"><strong>What kind of permissions are available?</strong></h5>
+<h4 id="what-kind-of-permissions-are-available"><strong>What kind of permissions are available?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}<strong>User</strong> <br>
@@ -383,7 +377,7 @@
 
 
 
-<h5 id="how-can-i-add-a-network-interface"><strong>How can I add a network interface?</strong></h5>
+<h4 id="how-can-i-add-a-network-interface"><strong>How can I add a network interface?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}Click on the ‘Add interface’ on the Network pane and select from the list.{% endblocktrans %}</p>
@@ -403,7 +397,7 @@
 
 
 
-<h5 id="how-can-i-show-shared-or-destroyed-vms"><strong>How can I show shared or destroyed VMs?</strong></h5>
+<h4 id="how-can-i-show-shared-or-destroyed-vms"><strong>How can I show shared or destroyed VMs?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}Check on the ‘Include deleted VMs’ checkbox to list already deleted machines.{% endblocktrans %}</p>
@@ -419,7 +413,7 @@
 
 
 
-<h5 id="how-can-i-create-templates"><strong>How can I create templates?</strong></h5>
+<h4 id="how-can-i-create-templates"><strong>How can I create templates?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}You can create templates from any virtual machine with the  save as template button. Additionally, you can also click on the  new button of the template box, and follow the template creation wizard.{% endblocktrans %}</p>
@@ -429,7 +423,7 @@
 
 
 
-<h5 id="what-kind-of-options-are-customizable-in-the-template"><strong>What kind of options are customizable in the template?</strong></h5>
+<h4 id="what-kind-of-options-are-customizable-in-the-template"><strong>What kind of options are customizable in the template?</strong></h4>
 
 <blockquote>
   <p><strong>Architecture</strong> <br>
@@ -462,7 +456,7 @@
 
 
 
-<h5 id="how-can-i-change-the-expiration-of-the-templates-vms"><strong>How can I change the expiration of the template’s VMs?</strong></h5>
+<h4 id="how-can-i-change-the-expiration-of-the-templates-vms"><strong>How can I change the expiration of the template’s VMs?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}Modify the ‘Lease’ option. You can choose lab, project or server configuration.{% endblocktrans %}</p>
@@ -470,7 +464,7 @@
 
 
 
-<h5 id="how-can-i-give-the-template-to-other-user"><strong>How can I give the template to other user?</strong></h5>
+<h4 id="how-can-i-give-the-template-to-other-user"><strong>How can I give the template to other user?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}After clicking the ‘Transfer ownership’ you can select a user to give the template.{% endblocktrans %}</p>
@@ -478,7 +472,7 @@
 
 
 
-<h5 id="how-can-i-give-access-to-users-or-groups-to-the-template"><strong>How can I give access to users or groups to the template?</strong></h5>
+<h4 id="how-can-i-give-access-to-users-or-groups-to-the-template"><strong>How can I give access to users or groups to the template?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}Same as the VM access right handling, you can type the user or group ID at the template edit page Manage access box and select the {% endblocktrans %}</p>
@@ -492,7 +486,7 @@
 
 
 
-<h5 id="how-can-i-create-groups"><strong>How can I create groups?</strong></h5>
+<h4 id="how-can-i-create-groups"><strong>How can I create groups?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}You can create your own groups by clicking on the  new button of the groups box.{% endblocktrans %}</p>
@@ -502,7 +496,7 @@
 
 
 
-<h5 id="how-can-i-manage-the-users-in-a-group"><strong>How can I manage the users in a group?</strong></h5>
+<h4 id="how-can-i-manage-the-users-in-a-group"><strong>How can I manage the users in a group?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}On the group page the owner can add or remove users or change the access rights over the group.{% endblocktrans %}</p>
@@ -510,7 +504,7 @@
 
 
 
-<h5 id="how-can-i-manage-privileges-with-the-group"><strong>How can I manage privileges with the group?</strong></h5>
+<h4 id="how-can-i-manage-privileges-with-the-group"><strong>How can I manage privileges with the group?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}The owner can add or remove privileges at the bottom of the group page like ‘can download disk’ or ‘can configure port forwards’.{% endblocktrans %}</p>
@@ -526,7 +520,7 @@
 
 
 
-<h5 id="how-can-i-share-my-files-with-a-vm"><strong>How can I share my files with a VM?</strong></h5>
+<h4 id="how-can-i-share-my-files-with-a-vm"><strong>How can I share my files with a VM?</strong></h4>
 
 <blockquote>
   <p>{% blocktrans %}To use the file store, press the  mount store button of the virtual machine.{% endblocktrans %}</p>
