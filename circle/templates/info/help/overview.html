@@ -98,7 +98,7 @@
 
 
 
-<h3 id="dashboard">{% trans "Dashboard" %}</h3>
+<h3 id="dashboard"><i class="fa fa-dashboard"></i> {% trans "Dashboard" %}</h3>
 
 <p>{% blocktrans %}You can reach this service at <a href="https://cloud.bme.hu/">https://cloud.bme.hu/</a> where you can log in to the dashboard. The dashboard is a summary about your virtual machines and other resources, and the main starting point to access the functions of the system.{% endblocktrans %}</p>
 
@@ -106,14 +106,14 @@
 
 <h4 id="virtual-machines-box">{% trans "Virtual Machines box" %}</h4>
 
-<p>{% blocktrans %}In the virtual machines box you will find your recent virtual machines. A summary view is also available by clicking the dashboard button (). Click on the name of a virtual machine to see its connection details, preferences, or to change its state.{% endblocktrans %}</p>
+<p>{% blocktrans %}In the virtual machines box you will find your recent virtual machines. A summary view is also available by clicking the dashboard button (<i class="fa fa-dashboard"></i>). Click on the name of a virtual machine to see its connection details, preferences, or to change its state.{% endblocktrans %}</p>
 
 
 
 <h4 id="how-can-i-create-a-vm">{% trans "How can I create a VM?" %}</h4>
 
 <blockquote>
-  <p>{% blocktrans %}You can start a machine by clicking the ‘New’ button and select a template. The machine starts automaticly.{% endblocktrans %}</p>
+  <p>{% blocktrans %}You can start a machine by clicking the <span class="btn btn-success disabled btn-xs"><i class="fa fa-plus-circle"></i> new</span> button and select a template. The machine starts automaticly.{% endblocktrans %}</p>
 </blockquote>
 
 
@@ -121,7 +121,7 @@
 <h4 id="how-can-i-mark-frequently-used-vms">{% trans "How can I mark frequently used VMs?" %}</h4>
 
 <blockquote>
-  <p>{% blocktrans %}Important or frequently used machines can be pinned by the favorite button (). {% endblocktrans %}</p>
+  <p>{% blocktrans %}Important or frequently used machines can be pinned by the <i class="fa fa-star-o"></i> button. {% endblocktrans %}</p>
 </blockquote>
 
 
@@ -129,7 +129,7 @@
 <h4 id="how-can-i-search-for-vms">{% trans "How can I search for VMs?" %}</h4>
 
 <blockquote>
-  <p>{% blocktrans %}The search field shows results incrementally, and submitting (⏎) jumps directly to the result, if there is exactly one. You can start a new virtual machine by clicking on the  new button, and choosing a template.{% endblocktrans %}</p>
+  <p>{% blocktrans %}The search field shows results incrementally, and submitting ⏎ jumps directly to the result, if there is exactly one. You can start a new virtual machine by clicking on the  new button, and choosing a template.{% endblocktrans %}</p>
 </blockquote>
 
 
@@ -140,7 +140,7 @@
 
 
 
-<h3 id="virtual-machines">{% trans "Virtual Machines" %}</h3>
+<h3 id="virtual-machines"><i class="fa fa-desktop"></i> {% trans "Virtual Machines" %}</h3>
 
 <p>{% blocktrans %}After selecting a virtual machine, you will see the machine’s detailed page. Here, you can see the <strong>details</strong>, usage <strong>statistics</strong>, <strong>manage</strong> the virtual machine, change <strong>access rights</strong> and <strong>network interfaces</strong>, modify <strong>resources</strong> and show the <strong>activity log</strong>.{% endblocktrans %}</p>
 
@@ -155,8 +155,8 @@
 <h4 id="how-can-i-connect-to-the-virtual-machine">{% trans "How can I connect to the virtual machine?" %}</h4>
 
 <blockquote>
-  <p>{% blocktrans %}If the machine is already started, click on the ‘Connect’ button, or simply copy the connection string to the terminal. <br>
-  Another option is using the ‘Console’ pane.{% endblocktrans %}</p>
+  <p>{% blocktrans %}If the machine is already started, click on the ‘connect’ button, or simply copy the connection string to the terminal. <br>
+  Another option is using the Console pane.{% endblocktrans %}</p>
 </blockquote>
 
 
@@ -180,15 +180,15 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 <h4 id="what-kind-of-operations-are-allowed-to-do-with-my-vm">{% trans "What kind of operations are allowed to do with my VM?" %}</h4>
 
 <blockquote>
-  <p><em>{% blocktrans %}Deploy</em>: Deploy and start the virtual machine (including storage and network configuration){% endblocktrans %}</p>
-  <p><em>{% blocktrans %}Sleep</em>: Suspend virtual machine. This means the machine is stopped and its memory is saved{% endblocktrans %}</p>
-  <p><em>{% blocktrans %}Wake up</em>: Wake up sleeping (suspended) virtual machine. This will load the saved memory of the system{% endblocktrans %}</p>
-  <p><em>{% blocktrans %}Save as Template</em>: Save virtual machine as a template so they can be shared with users and groups{% endblocktrans %}</p>
-  <p><em>{% blocktrans %}Reboot</em>: Warm reboot virtual machine by sending Ctrl+Alt+Del signal to its console{% endblocktrans %}</p>
-  <p><em>{% blocktrans %}Reset</em>: Cold reboot virtual machine (power cycle){% endblocktrans %}</p>
-  <p><em>{% blocktrans %}Shut down</em>: Try to halt virtual machine by a standard ACPI signal, allowing the operating system{% endblocktrans %}</p>
-  <p><em>{% blocktrans %}Shut off</em>: Forcibly halt a virtual machine without notifying the operating system{% endblocktrans %}</p>
-  <p><em>{% blocktrans %}Destroy</em>: Permanently destroy virtual machine, its network settings and disks{% endblocktrans %}</p>
+  <p><span class="btn btn-xs btn-success disabled"><i class="fa fa-play"></i></span> : {% blocktrans %}Deploy. Deploy and start the virtual machine (including storage and network configuration){% endblocktrans %}</p>
+  <p><span class="btn btn-xs btn-info disabled"><i class="fa fa-moon-o">sleep</i></span> : {% blocktrans %}Sleep. Suspend virtual machine. This means the machine is stopped and its memory is saved{% endblocktrans %}</p>
+  <p><span class="btn btn-xs btn-success disabled"><i class="fa fa-sun-o">wake up</i></span> : {% blocktrans %}Wake up: Wake up sleeping (suspended) virtual machine. This will load the saved memory of the system{% endblocktrans %}</p>
+  <p><span class="btn btn-xs btn-info disabled"><i class="fa fa-save"></i></span> : {% blocktrans %}Save as Template. Save virtual machine as a template so they can be shared with users and groups{% endblocktrans %}</p>
+  <p><span class="btn btn-xs btn-warning disabled"><i class="fa fa-refresh"></i></span> : {% blocktrans %}Reboot. Warm reboot virtual machine by sending Ctrl+Alt+Del signal to its console{% endblocktrans %}</p>
+  <p><span class="btn btn-xs btn-warning disabled"><i class="fa fa-bolt"></i></span> : {% blocktrans %}Reset. Cold reboot virtual machine (power cycle){% endblocktrans %}</p>
+  <p><span class="btn btn-xs btn-warning disabled"><i class="fa fa-power-off"></i></span> : {% blocktrans %}Shutdown. Try to halt virtual machine by a standard ACPI signal, allowing the operating system{% endblocktrans %}</p>
+  <p><span class="btn btn-xs btn-warning disabled"><i class="fa fa-plug"></i></span> : {% blocktrans %}Shut off. Forcibly halt a virtual machine without notifying the operating system{% endblocktrans %}</p>
+  <p><span class="btn btn-xs btn-danger disabled"><i class="fa fa-times"></i></span> : {% blocktrans %}Destroy. Permanently destroy virtual machine, its network settings and disks{% endblocktrans %}</p>
 </blockquote>
 
 
@@ -240,7 +240,7 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 <h4 id="how-can-i-give-access-to-others">{% trans "How can I give access to others?" %}</h4>
 
 <blockquote>
-  <p>{% blocktrans %}Type the user/group ID, set permissions and click ‘Save’.{% endblocktrans %}</p>
+  <p>{% blocktrans %}Type the user/group ID, set permissions and click <span class="btn btn-success disabled">Save</span>.{% endblocktrans %}</p>
 </blockquote>
 
 
@@ -267,7 +267,7 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 <h4 id="how-can-i-add-a-network-interface">{% trans "How can I add a network interface?" %}</h4>
 
 <blockquote>
-  <p>{% blocktrans %}Click on the ‘Add interface’ on the Network pane and select from the list.{% endblocktrans %}</p>
+  <p>{% blocktrans %}Click on the <span class="btn btn-success disabled"><i class="fa fa-globe"> add interface</i></span> on the Network pane and select from the list.{% endblocktrans %}</p>
 </blockquote>
 
 
