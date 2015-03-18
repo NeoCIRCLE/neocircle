@@ -102,7 +102,8 @@ class NodeDetailView(LoginRequiredMixin,
         ).order_by('-started').select_related()
         context['ops'] = get_operations(self.object, self.request.user)
         context['op'] = {i.op: i for i in context['ops']}
-        context['activities'] = na
+        context['show_show_all'] = len(na) > 10
+        context['activities'] = na[:10]
         context['trait_form'] = form
         context['graphite_enabled'] = (
             settings.GRAPHITE_URL is not None)
@@ -294,15 +295,21 @@ class NodeAddTraitView(SuperuserRequiredMixin, DetailView):
 
 class NodeActivityView(LoginRequiredMixin, SuperuserRequiredMixin, View):
     def get(self, request, pk):
+        show_all = request.GET.get("show_all", "false") == "true"
         node = Node.objects.get(pk=pk)
 
         activities = NodeActivity.objects.filter(
             node=node, parent=None).order_by('-started').select_related()
 
+        show_show_all = len(activities) > 10
+        if not show_all:
+            activities = activities[:10]
+
         response = {
             'activities': render_to_string(
                 "dashboard/node-detail/_activity-timeline.html",
-                RequestContext(request, {'activities': activities}))
+                RequestContext(request, {'activities': activities,
+                                         'show_show_all': show_show_all}))
         }
 
         return HttpResponse(
