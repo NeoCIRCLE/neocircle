@@ -32,9 +32,6 @@ from dashboard.forms import VmResourcesForm
 
 
 class LeaseTypeForm(ModelForm):
-    def __init__(self, *args, **kwargs):
-        super(LeaseTypeForm, self).__init__(*args, **kwargs)
-
     @property
     def helper(self):
         helper = FormHelper()

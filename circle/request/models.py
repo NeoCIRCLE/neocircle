@@ -66,7 +66,7 @@ class Request(TimeStampedModel):
         ('template', _("template access")),
     )
     type = CharField(choices=TYPES, max_length=10)
-    reason = TextField(help_text="szia")
+    reason = TextField(verbose_name=_("Reason"))
 
     content_type = ForeignKey(ContentType)
     object_id = IntegerField()

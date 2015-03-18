@@ -160,29 +160,35 @@ class TemplateRequestView(FormView):
         return redirect("/")
 
 
-class LeaseRequestView(FormView):
-    form_class = LeaseRequestForm
-    template_name = "request/request-lease.html"
-
+class VmRequestMixin(object):
     def get_vm(self):
         return get_object_or_404(Instance, pk=self.kwargs['vm_pk'])
 
     def dispatch(self, *args, **kwargs):
         vm = self.get_vm()
         user = self.request.user
-        if not vm.has_level(user, 'operator'):
+        if not vm.has_level(user, self.user_level):
             raise PermissionDenied()
-        return super(LeaseRequestView, self).dispatch(*args, **kwargs)
+        return super(VmRequestMixin, self).dispatch(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super(LeaseRequestView, self).get_context_data(**kwargs)
+        context = super(VmRequestMixin, self).get_context_data(**kwargs)
         context['vm'] = self.get_vm()
         return context
 
     def get_form_kwargs(self):
-        kwargs = super(LeaseRequestView, self).get_form_kwargs()
+        kwargs = super(VmRequestMixin, self).get_form_kwargs()
         kwargs['request'] = self.request
         return kwargs
+
+    def form_valid(self, form):
+        raise NotImplementedError
+
+
+class LeaseRequestView(VmRequestMixin, FormView):
+    form_class = LeaseRequestForm
+    template_name = "request/request-lease.html"
+    user_level = "operator"
 
     def form_valid(self, form):
         data = form.cleaned_data
@@ -206,29 +212,14 @@ class LeaseRequestView(FormView):
         return redirect(vm.get_absolute_url())
 
 
-class ResourceRequestView(FormView):
+class ResourceRequestView(VmRequestMixin, FormView):
     form_class = ResourceRequestForm
     template_name = "request/request-resource.html"
-
-    def get_vm(self):
-        return get_object_or_404(Instance, pk=self.kwargs['vm_pk'])
-
-    def dispatch(self, *args, **kwargs):
-        vm = self.get_vm()
-        user = self.request.user
-        if not vm.has_level(user, "user"):
-            raise PermissionDenied()
-        return super(ResourceRequestView, self).dispatch(*args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super(ResourceRequestView, self).get_context_data(**kwargs)
-        context['vm'] = self.get_vm()
-        return context
+    user_level = "user"
 
     def get_form_kwargs(self):
         kwargs = super(ResourceRequestView, self).get_form_kwargs()
         kwargs['can_edit'] = True
-        kwargs['instance'] = self.get_vm()
         return kwargs
 
     def get_initial(self):

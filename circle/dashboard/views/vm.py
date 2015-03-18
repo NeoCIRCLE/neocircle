@@ -1052,7 +1052,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
                 'box_title': _('Create a VM'),
                 'ajax_title': True,
                 'templates': templates.all(),
-                'template_access_types': TemplateAccessType.objects.count(),
+                'template_access_types': TemplateAccessType.objects.exists(),
                 'form': TemplateRequestForm(request=request),
             })
         return self.render_to_response(context)
