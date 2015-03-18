@@ -69,7 +69,8 @@ def activitycontextimpl(act, on_abort=None, on_commit=None):
             # system-exiting exceptions, e.g. KeyboardInterrupt
             result = create_readable(
                 ugettext_noop("Failure."),
-                ugettext_noop("Unhandled exception: %(error)s"),
+                ugettext_noop("Unhandled exception: %(e)s: %(error)s"),
+                e=str(e.__class__.__name__),
                 error=get_error_msg(e))
             raise
     except:
