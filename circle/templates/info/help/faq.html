@@ -48,7 +48,7 @@
     <li>{% trans "Of course the machines port must be opened. Opening port 80 examples: " %}<br>
   <ul><li>Ubuntu, Debian: <code>sudo ufw allow 80</code></li>
     <li>CentOS, RHEL:  {% trans "append to" %}<code>/etc/sysconfig/iptables</code>:<br/>
-  <code><br/>
+  <code>
   iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT <br>
   </code><br>{% trans "and restart the service:" %}<code>sudo service iptables restart</code></li></ul></li>
   <li>{% trans "Now you can connect to the machine, with the generated port number." %}</li>
