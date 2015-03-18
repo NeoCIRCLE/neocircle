@@ -38,6 +38,13 @@ $(function() {
     e.preventDefault();
   });
 
+  /* save as (close vnc console) */
+  $('.operation-save_as_template').click(function(e) {
+    if ($('li.active > a[href$="console"]').length > 0) {
+      $('a[data-toggle$="pill"][href$="#activity"]').click();
+    }
+  });
+
   /* remove tag */
   $('.vm-details-remove-tag').click(function() {
     var to_remove =  $.trim($(this).parent('div').text());
