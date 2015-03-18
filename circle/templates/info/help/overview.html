@@ -192,7 +192,7 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 </blockquote>
 
 
-<h4 id="home">{% trans "Home" %}</h4>
+<h4 id="home"><i class="fa fa-compass"></i> {% trans "Home" %}</h4>
 
 <p>{% blocktrans %}This shows statistics about the virtual machine, and this is where you can change the name, description and tags of the instance. We strongly advise to add a description to make the work of the cloud administrators easier in case of maintenance. {% endblocktrans %}</p>
 
@@ -219,19 +219,19 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 
 
 
-<h4 id="resources">{% trans "Resources" %}</h4>
+<h4 id="resources"><i class="fa fa-tasks"></i> {% trans "Resources" %}</h4>
 
 <p>{% blocktrans %}Resources contains details about how much <strong>memory</strong> and <strong>CPU</strong> the VM has, and how is it <strong>scheduled</strong>. Users with specific permission can change these settings if the machine is stopped.{% endblocktrans %}</p>
 
 
 
-<h4 id="console">{% trans "Console" %}</h4>
+<h4 id="console"><i class="fa fa-desktop"></i> {% trans "Console" %}</h4>
 
 <p>{% blocktrans %}This pane allows to see the console of the virutal machine for troubleshooting and operating system installation. You can also use the keyboard and mouse. You should normally use the machine by connecting remotely over SSH or Remote Desktop.{% endblocktrans %}</p>
 
 
 
-<h4 id="access">{% trans "Access" %}</h4>
+<h4 id="access"><i class="fa fa-group"></i> {% trans "Access" %}</h4>
 
 <p>{% blocktrans %}Allows sharing the machine with others and transferring the ownership. Users can see the details of the machine, operators can use most functions, and owners can also destroy the machine.{% endblocktrans %}</p>
 
@@ -258,7 +258,7 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 
 
 
-<h4 id="network">{% trans "Network" %}</h4>
+<h4 id="network"><i class="fa fa-globe"></i> {% trans "Network" %}</h4>
 
 <p>{% blocktrans %}Shows how the virtual machine is connected to the network. You can add or remove interfaces, and allow remote access of different TCP/UDP ports.{% endblocktrans %}</p>
 
@@ -272,7 +272,7 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 
 
 
-<h4 id="activity">{% trans "Activity" %}</h4>
+<h4 id="activity"><i class="fa fa-clock-o"></i> {% trans "Activity" %}</h4>
 
 <p>{% blocktrans %}Shows the full life history of the virtual machine. This is where you can see the causes of failed actions (just point the mouse to the name of the action) with the starting/finishing times.{% endblocktrans %}</p>
 
@@ -280,7 +280,7 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 
 <h4 id="multiple-vm-operations">{% trans "Multiple VM operations" %}</h4>
 
-<p>{% blocktrans %}On the dashboard, by clicking the ‘list’ button, the virtual machine list page opens. Here can the owner manage (delete, rename or do basic operations like one VM can) multiple virtual machines simultaneously.{% endblocktrans %}</p>
+<p>{% blocktrans %}On the dashboard, by clicking the <span class="btn btn-primary btn-xs disabled"><i class="fa fa-chevron-circle-right"></i> list</span> button, the virtual machine list page opens. Here can the owner manage (delete, rename or do basic operations like one VM can) multiple virtual machines simultaneously.{% endblocktrans %}</p>
 
 
 
@@ -292,7 +292,7 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 
 
 
-<h3 id="templates">{% trans "Templates" %}</h3>
+<h3 id="templates"><i class="fa fa-puzzle-piece"></i> {% trans "Templates" %}</h3>
 
 <p>{% blocktrans %}Templates are the prototypes of virtual machine instances: they contain <strong>configuration</strong> values for the different technical details <strong>of a VM to create</strong>, and also the network interfaces and disks to attach.{% endblocktrans %}</p>
 
@@ -359,7 +359,7 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 
 
 
-<h3 id="groups">{% trans "Groups" %}</h3>
+<h3 id="groups"><i class="fa fa-group"></i> {% trans "Groups" %}</h3>
 
 <p>{% blocktrans %}Groups are the main building blocks of permission management. On the dashboard you see a list of groups you have access to.{% endblocktrans %}</p>
 
@@ -391,7 +391,7 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 
 
 
-<h3 id="files">{% trans "Files" %}</h3>
+<h3 id="files"><i class="fa fa-briefcase"></i> {% trans "Files" %}</h3>
 
 <p>{% blocktrans %}Each user has a simple personal file store, which is the easiest way to keep and retrieve your work done on virtual machines.{% endblocktrans %}</p>
 
@@ -407,7 +407,7 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 
 
 
-<h3 id="profile">{% trans "Profile" %}</h3>
+<h3 id="profile"><i class="fa fa-user"></i> {% trans "Profile" %}</h3>
 
 <p>{% blocktrans %}On the profile page there are several options to manage your account.{% endblocktrans %}</p>
 
