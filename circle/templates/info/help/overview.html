@@ -100,7 +100,7 @@
 
 <h3 id="dashboard"><i class="fa fa-dashboard"></i> {% trans "Dashboard" %}</h3>
 
-<p>{% blocktrans %}You can reach this service at <a href="https://cloud.bme.hu/">https://cloud.bme.hu/</a> where you can log in to the dashboard. The dashboard is a summary about your virtual machines and other resources, and the main starting point to access the functions of the system.{% endblocktrans %}</p>
+<p>{% blocktrans with host=request.get_host %}You can reach this service at <a href=https://{{host}}>https://{{host}}</a> where you can log in to the dashboard. The dashboard is a summary about your virtual machines and other resources, and the main starting point to access the functions of the system.{% endblocktrans %}</p>
 
 
 
