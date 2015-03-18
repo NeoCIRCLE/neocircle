@@ -17,11 +17,12 @@
 from django.db.models import (
     Model, CharField, IntegerField, TextField, ForeignKey, ManyToManyField,
 )
+from django.db.models.signals import post_save
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from django.core.urlresolvers import reverse
 
 from model_utils.models import TimeStampedModel
@@ -180,3 +181,26 @@ class TemplateAccessAction(RequestAction):
     def accept(self, user):
         for t in self.template_type.templates.all():
             t.set_user_level(self.user, self.level)
+
+
+def send_notification_to_superusers(sender, instance, created, **kwargs):
+    if not created:
+        return
+
+    notification_msg = ugettext_noop(
+        'A new <a href="%(request_url)s">%(request_type)s</a> was submitted '
+        'by <a href="%(user_url)s">%(display_name)s</a>.')
+    context = {
+        'display_name': instance.user.profile.get_display_name(),
+        'user_url': instance.user.profile.get_absolute_url(),
+        'request_url': instance.get_absolute_url(),
+        'request_type': instance.get_readable_type()
+    }
+
+    for u in User.objects.filter(is_superuser=True):
+        u.profile.notify(
+            ugettext_noop("New %(request_type)s"), notification_msg, context
+        )
+
+
+post_save.connect(send_notification_to_superusers, sender=Request)
