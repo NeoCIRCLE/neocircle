@@ -149,6 +149,7 @@ class GroupListTable(Table):
         attrs = {'class': ('table table-bordered table-striped table-hover '
                            'group-list-table')}
         fields = ('pk', 'name', )
+        order_by = ('pk', )
 
 
 class UserListTable(Table):
@@ -176,6 +177,7 @@ class UserListTable(Table):
         attrs = {'class': ('table table-bordered table-striped table-hover')}
         fields = ('username', 'last_name', 'first_name', 'profile__org_id',
                   'email', 'is_active', 'is_superuser')
+        order_by = ('username', )
 
 
 class TemplateListTable(Table):

@@ -128,6 +128,9 @@ class ConnectCommand(Model):
                                      'host, port.'),
                          validators=[connect_command_template_validator])
 
+    class Meta:
+        ordering = ('id', )
+
     def __unicode__(self):
         return self.template
 
@@ -218,6 +221,7 @@ class Profile(Model):
         super(Profile, self).save(*args, **kwargs)
 
     class Meta:
+        ordering = ('id', )
         permissions = (
             ('use_autocomplete', _('Can use autocomplete.')),
         )
@@ -229,6 +233,7 @@ class FutureMember(Model):
     group = ForeignKey(Group)
 
     class Meta:
+        ordering = ('id', )
         unique_together = ('org_id', 'group')
 
     def __unicode__(self):
@@ -246,6 +251,9 @@ class GroupProfile(AclBase):
         unique=True, blank=True, null=True, max_length=64,
         help_text=_('Unique identifier of the group at the organization.'))
     description = TextField(blank=True)
+
+    class Meta:
+        ordering = ('id', )
 
     def __unicode__(self):
         return self.group.name
