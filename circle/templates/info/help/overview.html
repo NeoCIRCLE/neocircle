@@ -181,25 +181,15 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 
 <blockquote>
   <p><em>{% blocktrans %}Deploy</em>: Deploy and start the virtual machine (including storage and network configuration){% endblocktrans %}</p>
-  
   <p><em>{% blocktrans %}Sleep</em>: Suspend virtual machine. This means the machine is stopped and its memory is saved{% endblocktrans %}</p>
-  
   <p><em>{% blocktrans %}Wake up</em>: Wake up sleeping (suspended) virtual machine. This will load the saved memory of the system{% endblocktrans %}</p>
-  
   <p><em>{% blocktrans %}Save as Template</em>: Save virtual machine as a template so they can be shared with users and groups{% endblocktrans %}</p>
-  
   <p><em>{% blocktrans %}Reboot</em>: Warm reboot virtual machine by sending Ctrl+Alt+Del signal to its console{% endblocktrans %}</p>
-  
   <p><em>{% blocktrans %}Reset</em>: Cold reboot virtual machine (power cycle){% endblocktrans %}</p>
-  
   <p><em>{% blocktrans %}Shut down</em>: Try to halt virtual machine by a standard ACPI signal, allowing the operating system{% endblocktrans %}</p>
-  
   <p><em>{% blocktrans %}Shut off</em>: Forcibly halt a virtual machine without notifying the operating system{% endblocktrans %}</p>
-  
   <p><em>{% blocktrans %}Destroy</em>: Permanently destroy virtual machine, its network settings and disks{% endblocktrans %}</p>
 </blockquote>
-
-
 
 
 <h4 id="home">{% trans "Home" %}</h4>
@@ -260,10 +250,8 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 <blockquote>
   <p>{% blocktrans %}User <br>
   User level grants access to the virtual machine’s details page. Users are able to connect to this machine.{% endblocktrans %}</p>
-  
   <p>{% blocktrans %}Operator <br>
   Operator level permit the modification of the name and description fields. Allow the operator to open ports and grant/revoke User level access to the virtual machine.{% endblocktrans %}</p>
-  
   <p>{% blocktrans %}Owner <br>
   Owner level enables all operations on the virtual machine. Owners are able to grant/revoke Operator, User and Owner level access to others. The accountable owner (the one who deployed the machine) can not be demoted. The accountable ownership can be transferred to other User via the “Transfer onwership” button.{% endblocktrans %}</p>
 </blockquote>
