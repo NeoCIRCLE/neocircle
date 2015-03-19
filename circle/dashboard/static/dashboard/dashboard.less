@@ -1321,7 +1321,13 @@ textarea[name="new_members"] {
 
 
 #wrapper {
+    position: fixed;
     padding-left: 0px;
+    background: #252525;
+    left: 0px;
+    top: 46px;
+    height: 100%;
+    width: 210px;
     transition: all .4s ease 0s;
 /* Firefox */
 height: -moz-calc(100% - 130px);
@@ -1336,11 +1342,10 @@ height: calc(100% - 130px);
 #sidebar-wrapper {
     margin-left: 0px;
     left: 0px;
-    top: 46px;
-    width: 210px;
-    background: #222;
-    position: fixed;
-    height: 100%;
+    top: inherit;
+    bottom: 30px;
+    width: inherit;
+    position: inherit;
     z-index: 10000;
     transition: all .4s ease 0s;
     overflow: auto;
