@@ -16,9 +16,7 @@
 <p>{% blocktrans with host=request.get_host %}You can reach this service at <a href=https://{{host}}>https://{{host}}</a> where you can log in to the dashboard. The dashboard is a summary about your virtual machines and other resources, and the main starting point to access the functions of the system.{% endblocktrans %}</p>
 
 
-
 <h4 id="virtual-machines-box">{% trans "Virtual Machines box" %}</h4>
-
 <p>{% blocktrans %}In the virtual machines box you will find your recent virtual machines. A summary view is also available by clicking the dashboard button (<i class="fa fa-dashboard"></i>). Click on the name of a virtual machine to see its connection details, preferences, or to change its state.{% endblocktrans %}</p>
 
 
@@ -52,8 +50,13 @@
 <p>{% blocktrans %}In the templates box you will find your recent templates.  The searching, selecting, marking is the same procedure as the VMs.{% endblocktrans %}</p>
 
 
-
+<div id="vms" {% if not perms.vm %} class="text-muted" {% endif %}>
 <h3 id="virtual-machines"><i class="fa fa-desktop"></i> {% trans "Virtual Machines" %}</h3>
+{% if not perms.vm %}
+<p class="text-warning">
+  {% trans "Sorry, you have no permission to launch virtual machines." %}
+</p>
+{% endif %}
 
 <p>{% blocktrans %}After selecting a virtual machine, you will see the machine’s detailed page. Here, you can see the <strong>details</strong>, usage <strong>statistics</strong>, <strong>manage</strong> the virtual machine, change <strong>access rights</strong> and <strong>network interfaces</strong>, modify <strong>resources</strong> and show the <strong>activity log</strong>.{% endblocktrans %}</p>
 
@@ -136,7 +139,8 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 
 <p>{% blocktrans %}Resources contains details about how much <strong>memory</strong> and <strong>CPU</strong> the VM has, and how is it <strong>scheduled</strong>. Users with specific permission can change these settings if the machine is stopped.{% endblocktrans %}</p>
 
-
+<span{% if not perms.vm.change_resources %} class="text-muted"{% endif %}>
+{% blocktrans %} Users with specific permission can change these settings if the machine is stopped.{% endblocktrans %}</span>
 
 <h4 id="console"><i class="fa fa-desktop"></i> {% trans "Console" %}</h4>
 
@@ -202,11 +206,15 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 <blockquote>
   <p>{% blocktrans %}Check on the ‘Include deleted VMs’ checkbox to list already deleted machines.{% endblocktrans %}</p>
 </blockquote>
+</div> <!-- vms -->
 
-
-
+<div id="templates" {% if not perms.vm.create_template %}class="text-muted"{% endif %}>
 <h3 id="templates"><i class="fa fa-puzzle-piece"></i> {% trans "Templates" %}</h3>
-
+{% if not perms.vm.create_template %}
+<p class="text-warning">
+  {% trans "Sorry, you have no permission to create templates." %}
+</p>
+{% endif %}
 <p>{% blocktrans %}Templates are the prototypes of virtual machine instances: they contain <strong>configuration</strong> values for the different technical details <strong>of a VM to create</strong>, and also the network interfaces and disks to attach.{% endblocktrans %}</p>
 
 <p>{% blocktrans %}In the dashboard box you see your own templates and those, for which you have operator permission. This means that you can share them with your groups or other users.{% endblocktrans %}</p>
@@ -269,23 +277,26 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 <blockquote>
   <p>{% blocktrans %}Same as the VM access right handling, you can type the user or group ID at the template edit page Manage access box and select the {% endblocktrans %}</p>
 </blockquote>
+</div>
 
-
-
+<div id="groups" {% if not perms.auth %}class="text-muted"{% endif %}>
 <h3 id="groups"><i class="fa fa-group"></i> {% trans "Groups" %}</h3>
+{% if not perms.auth %}
+<p class="text-warning">
+  {% trans "Sorry, you have no permission to create groups." %}
+</p>
+{% endif %}
 
 <p>{% blocktrans %}Groups are the main building blocks of permission management. On the dashboard you see a list of groups you have access to.{% endblocktrans %}</p>
-
-
 
 <h4 id="how-can-i-create-groups">{% trans "How can I create groups?" %}</h4>
 
 <blockquote>
   <p>{% blocktrans %}You can create your own groups by clicking on the  new button of the groups box.{% endblocktrans %}</p>
 </blockquote>
-
-<p>{% blocktrans %}Users logged in with SSO authentication can automatically become members of groups based on its organizational identifier. Those who are administrators of an organizational group (or a professor of a subject in academics) can create groups with the specific organizational identifier set, so members will automatically added if they log in. You can also add users based on their identifier, also if they have not logged in at the time.{% endblocktrans %}</p>
-
+<p>
+<p{% if not saml %} class="text-muted"{% endif %}>{% blocktrans %}Users logged in with SSO authentication can automatically become members of groups based on its organizational identifier. Those who are administrators of an organizational group (or a professor of a subject in academics) can create groups with the specific organizational identifier set, so members will automatically added if they log in. You can also add users based on their identifier, also if they have not logged in at the time.{% endblocktrans %}</p>
+</p>
 
 
 <h4 id="how-can-i-manage-the-users-in-a-group">{% trans "How can I manage the users in a group?" %}</h4>
@@ -301,10 +312,16 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 <blockquote>
   <p>{% blocktrans %}The owner can add or remove privileges at the bottom of the group page like ‘can download disk’ or ‘can configure port forwards’.{% endblocktrans %}</p>
 </blockquote>
+</div>
 
-
+<div id="store" {% if not store or not user.is_authenticated %}class="text-muted"{% endif %}>
 
 <h3 id="files"><i class="fa fa-briefcase"></i> {% trans "Files" %}</h3>
+{% if not store %}
+<p class="text-warning">
+  {% trans "Sorry, this deployment of CIRCLE does not support file store." %}
+</p>
+{% endif %}
 
 <p>{% blocktrans %}Each user has a simple personal file store, which is the easiest way to keep and retrieve your work done on virtual machines.{% endblocktrans %}</p>
 
@@ -317,8 +334,7 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 <blockquote>
   <p>{% blocktrans %}To use the file store, press the  mount store button of the virtual machine.{% endblocktrans %}</p>
 </blockquote>
-
-
+</div>
 
 <h3 id="profile"><i class="fa fa-user"></i> {% trans "Profile" %}</h3>
 
