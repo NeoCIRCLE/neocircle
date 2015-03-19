@@ -4,7 +4,19 @@
 {% block title-page %}{% trans "Help" %}{% endblock %}
 {% block content %}
 <div class="row">
-  <div class="col-lg-8 col-lg-offset-2">
+ <div id="wrapper">
+  <div id="sidebar-wrapper">
+       <div id="help-tab-content" class="tab-content">
+          <div class="tab-pane active _faq">
+            {% include "info/help/faq_toc.html" %}
+          </div>
+          <div class="tab-pane _overview">
+            {% include "info/help/overview_toc.html" %}
+          </div>
+      </div>
+  </div>
+ </div>
+<div id="page-content" class="col-lg-6">
     <div class="page-header">
       <h1>{% trans "Help" %} <small>{% trans "user guide in short" %}</small></h1>
     </div>
@@ -12,27 +24,27 @@
       <ul class="help-tabs nav nav-tabs">
 
         <li class="active">
-          <a href="#" data-toggle="pill" data-target="#_faq" class="text-center" >
+          <a href="#" data-toggle="pill" data-target="._faq" class="text-center" >
             <i class="fa fa-comments-o fa-2x"></i><br>
             {% trans "FAQ" %}</a>
         </li>
         <li>
-          <a href="#" data-toggle="pill" data-target="#_overview" class="text-center" >
+          <a href="#" data-toggle="pill" data-target="._overview" class="text-center" >
             <i class="fa fa-book fa-2x"></i><br>
             {% trans "Overview" %}</a>
         </li>
       </ul>
 
       <div id="help-tab-content" class="tab-content">
-          <div class="tab-pane active" id="_faq">
+          <div class="tab-pane active _faq">
             {% include "info/help/faq.html" %}
           </div>
-          <div class="tab-pane" id="_overview">
+          <div class="tab-pane _overview">
             {% include "info/help/overview.html" %}
           </div>
       </div>
 
     </div> <!-- content -->
-  </div> <!-- col-lg -->
-</div> <!-- row -->
+</div> <!-- col-lg -->
+</div>
 {% endblock %}
