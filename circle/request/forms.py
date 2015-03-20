@@ -86,5 +86,7 @@ class LeaseRequestForm(InitialFromFileMixin, Form):
     initial_template = "request/initials/lease.html"
 
 
-class ResourceRequestForm(VmResourcesForm):
+class ResourceRequestForm(InitialFromFileMixin, VmResourcesForm):
     message = CharField(widget=forms.Textarea)
+
+    initial_template = "request/initials/resources.html"

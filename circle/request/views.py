@@ -227,6 +227,7 @@ class ResourceRequestView(VmRequestMixin, FormView):
     def get_form_kwargs(self):
         kwargs = super(ResourceRequestView, self).get_form_kwargs()
         kwargs['can_edit'] = True
+        kwargs['instance'] = self.get_vm()
         return kwargs
 
     def get_initial(self):
