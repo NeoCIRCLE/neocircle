@@ -1,9 +1,10 @@
 {% load i18n %}
 
 {% if user and user.pk %}
-  {% if user.profile %}
-    <img class="profile-avatar" src="{{ user.profile.get_avatar_url }}" title="
-  {% endif %}
+  {% if show_pic %}
+    <img class="profile-avatar" src="{{ user.profile.get_avatar_url }}" />
+  {% endif%}
+
   {% if user.get_full_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}{% if new_line %}<br />{% endif %}
 
   {% if show_org %}
@@ -13,5 +14,5 @@
       ({% trans "username" %}: {{ user.username }})
     {% endif %}
   {% endif %}
-  " >
+
 {% endif %}

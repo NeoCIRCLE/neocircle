@@ -21,7 +21,7 @@
 </strong>
 {% endspaceless %}{% if a.times < 2 %} <span title="{{ a.started }}">{{ a.started|arrowfilter:LANGUAGE_CODE }}</span>{% endif %}{% if a.user %},
   <a class="no-style-link" href="{% url "dashboard.views.profile" username=a.user.username %}">
-    {% include "dashboard/_display-name.html" with user=a.user show_org=True %}
+    {% include "dashboard/_display-name.html" with user=a.user show_org=True show_pic=True %}
   </a>
 {% endif %}
 {% if a.is_abortable_for_user %}

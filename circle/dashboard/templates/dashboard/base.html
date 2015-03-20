@@ -47,7 +47,18 @@
       </a>
     </li>
     {% endif %}
-   <li class="visible-xs">
+    <li>
+      <a href="{% url "dashboard.views.profile-preferences" %}">
+        <i class="fa fa-user"></i>
+        {% include "dashboard/_display-name.html" with user=user show_org=True %}
+      </a>
+    </li>
+    <li>
+      <a href="{% url "logout" %}?next={% url "login" %}">
+        <i class="fa fa-sign-out"></i> {% trans "Log out" %}
+      </a>
+    </li>
+    <li class="visible-xs">
       <a href="{% url "dashboard.views.notifications" %}">
         {% trans "Notifications" %}
         {% if NEW_NOTIFICATIONS_COUNT > 0 %}
@@ -70,17 +81,12 @@
           <li>{% trans "Loading..." %}</li>
       </ul>
     </li>
-   <li>
-      <a href="{% url "logout" %}?next={% url "login" %}">
-        <i class="fa fa-sign-out"></i> {% trans "Log out" %}
-      </a>
+    <li>
+        <a href="{% url "dashboard.views.profile-preferences" %}">
+          <img class="profile-avatar" src="{{ user.profile.get_avatar_url }}" />
+        </a>
     </li>
-     <li>
-      <a href="{% url "dashboard.views.profile-preferences" %}">
-        {% include "dashboard/_display-name.html" with user=user show_org=True %}
-      </a>
-    </li>
-   </ul>
+  </ul>
 
 {% else %}
   <a class="navbar-brand pull-right" href="{% url "login" %}?next={{ request.path }}"><i class="fa fa-sign-in"></i> {% trans "Log in " %}</a>
