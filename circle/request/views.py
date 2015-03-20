@@ -20,7 +20,7 @@ from django.views.generic import (
     UpdateView, TemplateView, DetailView, CreateView, FormView,
 )
 from django.shortcuts import redirect, get_object_or_404
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
 
 from braces.views import SuperuserRequiredMixin, LoginRequiredMixin
 from django_tables2 import SingleTableView
@@ -59,32 +59,39 @@ class RequestList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
         return data
 
 
-class RequestDetail(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
+class RequestDetail(LoginRequiredMixin, DetailView):
     model = Request
     template_name = "request/detail.html"
 
     def post(self, *args, **kwargs):
-        if self.get_object().status in ["PENDING", "UNSEEN"]:
-            user = self.request.user
+        user = self.request.user
+        request = self.get_object()  # not self.request!
+
+        if not user.is_superuser:
+            raise SuspiciousOperation
+
+        if self.get_object().status == "PENDING":
             accept = self.request.POST.get("accept")
-            request = self.get_object()  # not self.request!
+            reason = self.request.POST.get("reason")
             if accept:
                 request.accept(user)
             else:
-                request.decline(user)
+                request.decline(user, reason)
 
         return redirect(request.get_absolute_url())
 
     def get_context_data(self, **kwargs):
         request = self.object
+        user = self.request.user
+
+        if not user.is_superuser and request.user != user:
+            raise SuspiciousOperation
+
         context = super(RequestDetail, self).get_context_data(**kwargs)
 
         context['action'] = request.action
         context['accept_states'] = ResourcesRequestOperation.accept_states
 
-        if request.status == Request.STATUSES.UNSEEN:
-            request.status = Request.STATUSES.PENDING
-            request.save()
         return context
 
 
@@ -151,7 +158,7 @@ class TemplateRequestView(FormView):
 
         req = Request(
             user=user,
-            reason=data['reason'],
+            message=data['message'],
             type=Request.TYPES.template,
             action=ta
         )
@@ -203,7 +210,7 @@ class LeaseRequestView(VmRequestMixin, FormView):
 
         req = Request(
             user=user,
-            reason=data['reason'],
+            message=data['message'],
             type=Request.TYPES.lease,
             action=el
         )
@@ -245,7 +252,7 @@ class ResourceRequestView(VmRequestMixin, FormView):
 
         req = Request(
             user=user,
-            reason=data['reason'],
+            message=data['message'],
             type=Request.TYPES.resource,
             action=rc
         )

@@ -63,7 +63,7 @@ class InitialFromFileMixin(object):
         request = kwargs.pop("request", None)
         super(InitialFromFileMixin, self).__init__(*args, **kwargs)
 
-        self.initial['reason'] = render_to_string(
+        self.initial['message'] = render_to_string(
             self.initial_template,
             RequestContext(request, {}),
         )
@@ -74,17 +74,17 @@ class TemplateRequestForm(InitialFromFileMixin, Form):
                                 label=_("Template share"))
     level = ChoiceField(TemplateAccessAction.LEVELS, widget=RadioSelect,
                         initial=TemplateAccessAction.LEVELS.user)
-    reason = CharField(widget=forms.Textarea, label=_("Reason"))
+    message = CharField(widget=forms.Textarea, label=_("Message"))
 
     initial_template = "request/initials/template.html"
 
 
 class LeaseRequestForm(InitialFromFileMixin, Form):
     lease = ModelChoiceField(LeaseType.objects.all(), label=_("Lease"))
-    reason = CharField(widget=forms.Textarea)
+    message = CharField(widget=forms.Textarea)
 
     initial_template = "request/initials/lease.html"
 
 
 class ResourceRequestForm(VmResourcesForm):
-    reason = CharField(widget=forms.Textarea)
+    message = CharField(widget=forms.Textarea)

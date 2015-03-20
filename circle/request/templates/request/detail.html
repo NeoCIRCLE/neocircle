@@ -12,9 +12,11 @@
   <div class="col-md-12">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <a href="{% url "request.views.request-list" %}" class="btn btn-default btn-xs pull-right">
-          {% trans "Back" %}
-        </a>
+        {% if request.user.is_superuser %}
+          <a href="{% url "request.views.request-list" %}" class="btn btn-default btn-xs pull-right">
+            {% trans "Back" %}
+          </a>
+        {% endif %}
         <h3 class="no-margin">
           <i class="fa fa-{{ object.get_request_icon }}"></i>
           {{ object.get_readable_type|capfirst }}
@@ -32,7 +34,7 @@
           </a>
         </p>
         <p>
-          <pre>{{ object.reason }}</pre>
+          <pre>{{ object.message }}</pre>
         </p>
         <hr />
         {% if object.type == "lease" %}
@@ -87,36 +89,44 @@
           hacks!!!
         {% endif %}
 
-        {% if object.status == "PENDING" %}
+        {% if object.status == "PENDING" and request.user.is_superuser %}
           <hr />
 
-          <div class="pull-right">
-            <form method="POST" style="display: inline;">
+          <div class="pull-right" id="request-buttons">
+            <form method="POST">
               {% csrf_token %}
+              <p>
+              <textarea class="form-control" placeholder="{% trans "Reason (sent to the user if the request is declined)" %}" name="reason"></textarea>
+              </p>
               <button class="btn btn-danger" type="submit">
                 <i class="fa fa-thumbs-down"></i>
                 {% trans "Decline" %}
               </button>
             </form>
-            {{ acceptable_statuses }}
             {% if object.type == "resource" and action.instance.status not in accept_states %}
               {% trans "You can't accept this request because of the VM's state." %}
             {% else %}
-            <form method="POST" style="display: inline;">
-              {% csrf_token %}
-              <input type="hidden" name="accept" value="1"/>
-              <button class="btn btn-success">
-                <i class="fa fa-thumbs-up"></i>
-                {% trans "Accept" %}
-              </button>
-            </form>
+              <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="accept" value="1"/>
+                <button class="btn btn-success">
+                  <i class="fa fa-thumbs-up"></i>
+                  {% trans "Accept" %}
+                </button>
+              </form>
             {% endif %}
           </div>
-        {% else %}
+        {% endif %}
+        {% if object.status != "PENDING" %}
           <div class="text-right">
             {% blocktrans with closed=object.modified|arrowfilter:LANGUAGE_CODE user=object.closed_by.profile.get_display_name %}
             Closed {{ closed }} by <a href="{{ user.profile.get_absolute_url }}">{{ user }}</a>
             {% endblocktrans %}
+            {% if object.status == "DECLINED" %}
+              <p>
+                <strong>{% trans "Reason" %}:</strong> {{ object.reason }}
+              </p>
+            {% endif %}
           </div>
         {% endif %}
       </div><!-- .panel-body -->

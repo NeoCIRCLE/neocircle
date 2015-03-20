@@ -52,12 +52,11 @@ class RequestType(Model):
 
 class Request(TimeStampedModel):
     STATUSES = Choices(
-        ('UNSEEN', _("unseen")),
         ('PENDING', _('pending')),
         ('ACCEPTED', _('accepted')),
         ('DECLINED', _('declined')),
     )
-    status = CharField(choices=STATUSES, default=STATUSES.UNSEEN,
+    status = CharField(choices=STATUSES, default=STATUSES.PENDING,
                        max_length=10)
     user = ForeignKey(User, related_name="user")
     closed_by = ForeignKey(User, related_name="closed_by", null=True)
@@ -67,6 +66,7 @@ class Request(TimeStampedModel):
         ('template', _("template access")),
     )
     type = CharField(choices=TYPES, max_length=10)
+    message = TextField(verbose_name=_("Message"))
     reason = TextField(verbose_name=_("Reason"))
 
     content_type = ForeignKey(ContentType)
@@ -91,7 +91,6 @@ class Request(TimeStampedModel):
 
     def get_effect(self):
         return {
-            "UNSEEN": "primary",
             "PENDING": "warning",
             "ACCEPTED": "success",
             "DECLINED": "danger",
@@ -99,7 +98,6 @@ class Request(TimeStampedModel):
 
     def get_status_icon(self):
         return {
-            "UNSEEN": "eye-slash",
             "PENDING": "exclamation-triangle",
             "ACCEPTED": "check",
             "DECLINED": "times",
@@ -111,9 +109,10 @@ class Request(TimeStampedModel):
         self.closed_by = user
         self.save()
 
-    def decline(self, user):
+    def decline(self, user, reason):
         self.status = "DECLINED"
         self.closed_by = user
+        self.reason = reason
         self.save()
 
 
@@ -202,5 +201,10 @@ def send_notification_to_superusers(sender, instance, created, **kwargs):
             ugettext_noop("New %(request_type)s"), notification_msg, context
         )
 
+    instance.user.profile.notify(
+        ugettext_noop("Request submitted"),
+        ugettext_noop('You can view the request\'s status at this '
+                      '<a href="%(request_url)s">link</a>.'), context
+    )
 
 post_save.connect(send_notification_to_superusers, sender=Request)

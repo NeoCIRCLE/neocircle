@@ -24,7 +24,7 @@
           </div>
           {% include "display-form-errors.html" %}
           {% include "dashboard/_resources-sliders.html" with field_priority=form.priority field_num_cores=form.num_cores field_ram_size=form.ram_size %}
-          {{ form.reason|as_crispy_field }}
+          {{ form.message|as_crispy_field }}
           <button type="submit" class="btn btn-success">
             {% trans "Request new resources" %}
           </button>
