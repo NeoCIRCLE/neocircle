@@ -10,6 +10,16 @@ html {
   min-height: 100%;
 }
 
+.navbar-nav img {
+  width: 46px;
+  height: 46px;
+  margin-top: -4px;
+}
+
+.navbar-fixed-top {
+  border: 0px;
+}
+
 /* Set widths on the navbar form inputs since otherwise they're 100% wide */
 .navbar-form input[type="text"],
 .navbar-form input[type="password"] {
@@ -32,7 +42,7 @@ html {
 
 
 #dashboard-menu {
-  margin-right: 15px;
+  margin-right: 0px;
 }
 
 /* we need this for mobile view */
@@ -55,6 +65,13 @@ html {
     padding-top: 12.5px;
     padding-bottom: 12.5px;
   }
+
+  .navbar-nav > li:last-child > a {
+    padding-top: 4px;
+    padding-bottom: 0px;
+    padding-right: 0px;
+    padding-left: 0px;
+}
 
 }
 
@@ -108,6 +125,11 @@ html {
 
 .timeline .activity-active .timeline-icon {
   background-color: black!important;
+}
+
+.timeline img{
+  border-radius: 50%;
+  margin-bottom: 2px;
 }
 
 .timeline a {
