@@ -42,6 +42,7 @@
                 {% trans "Email address" %}: {{ profile.email }}
               {% endif %}
             </p>
+            <p>{% trans "Last login" %}: {{ request.user.last_login}}</p>
             {% if request.user == profile %}
             <p>
               {% trans "Use email address as Gravatar profile image" %}:
