@@ -22,7 +22,9 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
-from django.utils.translation import ugettext_lazy as _, ugettext_noop
+from django.utils.translation import (
+    ugettext_lazy as _, ugettext_noop, ungettext
+)
 from django.core.urlresolvers import reverse
 
 from model_utils.models import TimeStampedModel
@@ -34,6 +36,10 @@ from vm.models import Instance, InstanceTemplate, Lease
 class RequestAction(Model):
 
     def accept(self):
+        raise NotImplementedError
+
+    @property
+    def accept_msg(self):
         raise NotImplementedError
 
     class Meta:
@@ -109,6 +115,11 @@ class Request(TimeStampedModel):
         self.closed_by = user
         self.save()
 
+        self.user.profile.notify(
+            ugettext_noop("Request accepted"),
+            self.action.accept_msg
+        )
+
     def decline(self, user, reason):
         self.status = "DECLINED"
         self.closed_by = user
@@ -154,6 +165,21 @@ class ResourceChangeAction(RequestAction):
     def accept(self, user):
         self.instance.resources_request.async(user=user, resource_request=self)
 
+    @property
+    def accept_msg(self):
+        return _(
+            'The resources of <a href="%(url)s">%(name)s</a> were changed. '
+            'Number of cores: %(num_cores)d, RAM size: '
+            '<span class="nowrap">%(ram_size)d MiB</span>, '
+            'CPU priority: %(priority)d/100.'
+        ) % {
+            'url': self.instance.get_absolute_url(),
+            'name': self.instance.name,
+            'num_cores': self.num_cores,
+            'ram_size': self.ram_size,
+            'priority': self.priority,
+        }
+
 
 class ExtendLeaseAction(RequestAction):
     instance = ForeignKey(Instance)
@@ -162,6 +188,16 @@ class ExtendLeaseAction(RequestAction):
     def accept(self, user):
         self.instance.renew(lease=self.lease_type.lease, save=True, force=True,
                             user=user)
+
+    @property
+    def accept_msg(self):
+        return _(
+            'The lease of <a href="%(url)s">%(name)s</a> got extended. '
+            '(suspend: %(suspend)s, remove: %(remove)s)'
+        ) % {'name': self.instance.name,
+             'url': self.instance.get_absolute_url(),
+             'suspend': self.lease_type.lease.get_readable_suspend_time(),
+             'remove': self.lease_type.lease.get_readable_delete_time(), }
 
 
 class TemplateAccessAction(RequestAction):
@@ -180,6 +216,14 @@ class TemplateAccessAction(RequestAction):
     def accept(self, user):
         for t in self.template_type.templates.all():
             t.set_user_level(self.user, self.level)
+
+    @property
+    def accept_msg(self):
+        return ungettext(
+            "You got access to the following template: %s",
+            "You got access to the following templates: %s",
+            self.template_type.templates.count()
+        ) % ", ".join([x.name for x in self.template_type.templates.all()])
 
 
 def send_notification_to_superusers(sender, instance, created, **kwargs):
@@ -206,5 +250,6 @@ def send_notification_to_superusers(sender, instance, created, **kwargs):
         ugettext_noop('You can view the request\'s status at this '
                       '<a href="%(request_url)s">link</a>.'), context
     )
+
 
 post_save.connect(send_notification_to_superusers, sender=Request)
