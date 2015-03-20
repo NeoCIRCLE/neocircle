@@ -2,7 +2,7 @@
 
 {% if user and user.pk %}
   {% if user.profile %}
-    <img src="{{ user.profile.get_avatar_url }}" width="46px" height="46px" title="
+    <img class="profile-avatar" src="{{ user.profile.get_avatar_url }}" title="
   {% endif %}
   {% if user.get_full_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}{% if new_line %}<br />{% endif %}
 
