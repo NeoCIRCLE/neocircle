@@ -14,10 +14,14 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
+import json
+import logging
+
 from django.db.models import (
     Model, CharField, IntegerField, TextField, ForeignKey, ManyToManyField,
 )
 from django.db.models.signals import post_save
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
@@ -27,10 +31,13 @@ from django.utils.translation import (
 )
 from django.core.urlresolvers import reverse
 
+import requests
 from model_utils.models import TimeStampedModel
 from model_utils import Choices
 
 from vm.models import Instance, InstanceTemplate, Lease
+
+logger = logging.getLogger(__name__)
 
 
 class RequestAction(Model):
@@ -236,7 +243,7 @@ class TemplateAccessAction(RequestAction):
         ) % ", ".join([x.name for x in self.template_type.templates.all()])
 
 
-def send_notification_to_superusers(sender, instance, created, **kwargs):
+def send_notifications(sender, instance, created, **kwargs):
     if not created:
         return
 
@@ -247,7 +254,7 @@ def send_notification_to_superusers(sender, instance, created, **kwargs):
         'display_name': instance.user.profile.get_display_name(),
         'user_url': instance.user.profile.get_absolute_url(),
         'request_url': instance.get_absolute_url(),
-        'request_type': instance.get_readable_type()
+        'request_type': u"%s" % instance.get_readable_type()
     }
 
     for u in User.objects.filter(is_superuser=True):
@@ -261,5 +268,21 @@ def send_notification_to_superusers(sender, instance, created, **kwargs):
                       '<a href="%(request_url)s">link</a>.'), context
     )
 
+    if settings.REQUEST_HOOK_URL:
+        context.update({
+            'object_kind': "request",
+            'site_url': settings.DJANGO_URL,
+        })
+        try:
+            r = requests.post(settings.REQUEST_HOOK_URL, timeout=3,
+                              data=json.dumps(context, indent=2))
+            r.raise_for_status()
+        except requests.RequestException as e:
+            logger.warning("Error in HTTP POST: %s. url: %s params: %s",
+                           str(e), settings.REQUEST_HOOK_URL, context)
+        else:
+            logger.info("Successful HTTP POST. url: %s params: %s",
+                        settings.REQUEST_HOOK_URL, context)
 
-post_save.connect(send_notification_to_superusers, sender=Request)
+
+post_save.connect(send_notifications, sender=Request)

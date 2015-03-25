@@ -16,8 +16,8 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 from django.forms import (
     ModelForm, ModelChoiceField, ChoiceField, Form, CharField, RadioSelect,
+    Textarea,
 )
-from django import forms
 from django.utils.translation import ugettext_lazy as _
 from django.template import RequestContext
 from django.template.loader import render_to_string
@@ -74,19 +74,19 @@ class TemplateRequestForm(InitialFromFileMixin, Form):
                                 label=_("Template share"))
     level = ChoiceField(TemplateAccessAction.LEVELS, widget=RadioSelect,
                         initial=TemplateAccessAction.LEVELS.user)
-    message = CharField(widget=forms.Textarea, label=_("Message"))
+    message = CharField(widget=Textarea, label=_("Message"))
 
     initial_template = "request/initials/template.html"
 
 
 class LeaseRequestForm(InitialFromFileMixin, Form):
     lease = ModelChoiceField(LeaseType.objects.all(), label=_("Lease"))
-    message = CharField(widget=forms.Textarea)
+    message = CharField(widget=Textarea)
 
     initial_template = "request/initials/lease.html"
 
 
 class ResourceRequestForm(InitialFromFileMixin, VmResourcesForm):
-    message = CharField(widget=forms.Textarea)
+    message = CharField(widget=Textarea)
 
     initial_template = "request/initials/resources.html"
