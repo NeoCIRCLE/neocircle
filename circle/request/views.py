@@ -17,10 +17,11 @@
 from __future__ import unicode_literals, absolute_import
 
 from django.views.generic import (
-    UpdateView, TemplateView, DetailView, CreateView, FormView,
+    UpdateView, TemplateView, DetailView, CreateView, FormView, DeleteView,
 )
 from django.shortcuts import redirect, get_object_or_404
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.core.urlresolvers import reverse
 
 from braces.views import SuperuserRequiredMixin, LoginRequiredMixin
 from django_tables2 import SingleTableView
@@ -109,6 +110,15 @@ class TemplateAccessTypeCreate(LoginRequiredMixin, SuperuserRequiredMixin,
     form_class = TemplateAccessTypeForm
 
 
+class TemplateAccessTypeDelete(LoginRequiredMixin, SuperuserRequiredMixin,
+                               DeleteView):
+    model = TemplateAccessType
+    template_name = "dashboard/confirm/base-delete.html"
+
+    def get_success_url(self):
+        return reverse("request.views.type-list")
+
+
 class LeaseTypeDetail(LoginRequiredMixin, SuperuserRequiredMixin, UpdateView):
     model = LeaseType
     template_name = "request/lease-type-form.html"
@@ -119,6 +129,14 @@ class LeaseTypeCreate(LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
     model = LeaseType
     template_name = "request/lease-type-form.html"
     form_class = LeaseTypeForm
+
+
+class LeaseTypeDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
+    model = LeaseType
+    template_name = "dashboard/confirm/base-delete.html"
+
+    def get_success_url(self):
+        return reverse("request.views.type-list")
 
 
 class RequestTypeList(LoginRequiredMixin, SuperuserRequiredMixin,

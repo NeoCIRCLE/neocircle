@@ -14,9 +14,17 @@
   <div class="col-md-12">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <a class="btn btn-xs btn-default pull-right" href="{% url "request.views.type-list" %}">
-          {% trans "Back" %}
-        </a>
+        <div class="pull-right">
+          {% if object.pk %}
+            <a class="btn btn-xs btn-danger"
+              href="{% url "request.views.template-type-delete" pk=object.pk %}">
+              <i class="fa fa-times"></i> {% trans "Delete" %}
+          </a>
+          {% endif %}
+          <a class="btn btn-xs btn-default" href="{% url "request.views.type-list" %}">
+            {% trans "Back" %}
+          </a>
+        </div>
         <h3 class="no-margin">
           <i class="fa fa-puzzle-piece"></i>
           {% if form.instance.pk %}

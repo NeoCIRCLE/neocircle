@@ -47,7 +47,7 @@ class RequestAction(Model):
 
 
 class RequestType(Model):
-    name = CharField(max_length=25)
+    name = CharField(max_length=25, verbose_name=_("Name"))
 
     def __unicode__(self):
         return self.name
@@ -128,7 +128,7 @@ class Request(TimeStampedModel):
 
 
 class LeaseType(RequestType):
-    lease = ForeignKey(Lease)
+    lease = ForeignKey(Lease, verbose_name=_("Lease"))
 
     def __unicode__(self):
         return _("%(name)s (suspend: %(s)s, remove: %(r)s)") % {
@@ -142,7 +142,7 @@ class LeaseType(RequestType):
 
 
 class TemplateAccessType(RequestType):
-    templates = ManyToManyField(InstanceTemplate)
+    templates = ManyToManyField(InstanceTemplate, verbose_name=_("Templates"))
 
     def get_absolute_url(self):
         return reverse("request.views.template-type-detail",

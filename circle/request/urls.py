@@ -23,6 +23,7 @@ from .views import (
     LeaseTypeCreate, LeaseTypeDetail,
     TemplateAccessTypeCreate, TemplateAccessTypeDetail,
     TemplateRequestView, LeaseRequestView, ResourceRequestView,
+    LeaseTypeDelete, TemplateAccessTypeDelete,
 )
 
 urlpatterns = patterns(
@@ -35,17 +36,24 @@ urlpatterns = patterns(
     url(r'^type/list/$', RequestTypeList.as_view(),
         name="request.views.type-list"),
 
+    # request types
     url(r'^type/lease/create/$', LeaseTypeCreate.as_view(),
         name="request.views.lease-type-create"),
     url(r'^type/lease/(?P<pk>\d+)/$', LeaseTypeDetail.as_view(),
         name="request.views.lease-type-detail"),
+    url(r'^type/lease/delete/(?P<pk>\d+)/$', LeaseTypeDelete.as_view(),
+        name="request.views.lease-type-delete"),
 
     url(r'^type/template/create/$', TemplateAccessTypeCreate.as_view(),
         name="request.views.template-type-create"),
     url(r'^type/template/(?P<pk>\d+)/$',
         TemplateAccessTypeDetail.as_view(),
         name="request.views.template-type-detail"),
+    url(r'^type/template/delete/(?P<pk>\d+)/$',
+        TemplateAccessTypeDelete.as_view(),
+        name="request.views.template-type-delete"),
 
+    # request views (visible for users)
     url(r'template/$', TemplateRequestView.as_view(),
         name="request.views.request-template"),
     url(r'lease/(?P<vm_pk>\d+)/$', LeaseRequestView.as_view(),
