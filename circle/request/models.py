@@ -126,6 +126,16 @@ class Request(TimeStampedModel):
         self.reason = reason
         self.save()
 
+        decline_msg = ugettext_noop(
+            'Your <a href="%(url)s">request</a> was declined because of the '
+            'following reason: %(reason)s'
+        )
+
+        self.user.profile.notify(
+            ugettext_noop("Request declined"),
+            decline_msg, url=self.get_absolute_url(), reason=self.reason,
+        )
+
 
 class LeaseType(RequestType):
     lease = ForeignKey(Lease, verbose_name=_("Lease"))
