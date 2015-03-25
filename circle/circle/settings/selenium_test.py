@@ -14,37 +14,41 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
-
+import os# noqa
 from .base import *  # noqa
-
 # flake8: noqa
-
-########## IN-MEMORY TEST DATABASE
+os.environ['REUSE_DB'] = "1"
+os.environ['DJANGO_TEST_DB_NAME'] = "circle"
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": ":memory:",
-        "USER": "",
-        "PASSWORD": "",
-        "HOST": "",
-        "PORT": "",
-    },
+    'default': {
+        'ENGINE': 'django.db.backends.' +
+        get_env_variable('DJANG_DB_TYPE', 'postgresql_psycopg2'),
+        'NAME':  get_env_variable('DJANGO_DB_NAME', 'circle'),
+        'TEST_NAME': get_env_variable('DJANGO_TEST_DB_NAME', 'circle'),
+        'USER':  get_env_variable('DJANGO_DB_USER', 'circle'),
+        'PASSWORD':  get_env_variable('DJANGO_DB_PASSWORD'),
+        'HOST': get_env_variable('DJANGO_DB_HOST', ''),
+        'PORT': get_env_variable('DJANGO_DB_PORT', ''),
+    }
 }
 SOUTH_TESTS_MIGRATE = False
 
-
 INSTALLED_APPS += (
-    'acl.tests',
-    'django_nose',
+        'acl.tests',
+        'django_nose',
+        'django_jenkins',
 )
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_ARGS = ['--with-doctest', '--exclude-dir=dashboard/tests/selenium']
+
+path_to_selenium_test = os.path.expanduser('~/circle/circle/dashboard/tests/selenium')
+NOSE_ARGS = ['--stop', '--with-doctest', '--with-selenium-driver', '--selenium-driver=firefox', '-w%s' % path_to_selenium_test]
+
 PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
-    }
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
+        }
 }
 
 LOGGING['loggers']['djangosaml2'] = {'handlers': ['console'],
@@ -55,9 +59,4 @@ LOGGING['handlers']['console'] = {'level': level,
                                   'class': 'logging.StreamHandler',
                                   'formatter': 'simple'}
 for i in LOCAL_APPS:
-    LOGGING['loggers'][i] = {'handlers': ['console'], 'level': level}
-# Forbid store usage
-STORE_URL = ""
-
-# buildbot doesn't love pipeline
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+        LOGGING['loggers'][i] = {'handlers': ['console'], 'level': level}

@@ -56,7 +56,7 @@ pre_state_changed = Signal(providing_args=["new_state"])
 post_state_changed = Signal(providing_args=["new_state"])
 pwgen = partial(User.objects.make_random_password,
                 allowed_chars='abcdefghijklmnopqrstuvwx'
-                              'ABCDEFGHIJKLMNOPQRSTUVWX0123456789')
+                              'ABCDEFGHIJKLMNOPQRSTUVWX123456789')
 scheduler = import_module(name=django.conf.settings.VM_SCHEDULER)
 
 ACCESS_PROTOCOLS = django.conf.settings.VM_ACCESS_PROTOCOLS
@@ -818,7 +818,9 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         return acts
 
     def get_merged_activities(self, user=None):
-        whitelist = ("create_disk", "download_disk", "add_port", "remove_port")
+        whitelist = ("create_disk", "download_disk", "remove_disk",
+                     "add_port", "remove_port",
+                     "add_interface", "remove_interface")
         acts = self.get_activities(user)
         merged_acts = []
         latest = None

@@ -391,6 +391,11 @@ class Vlan(AclBase, models.Model):
     modified_at = models.DateTimeField(auto_now=True,
                                        verbose_name=_('modified at'))
 
+    class Meta:
+        verbose_name = _("vlan")
+        verbose_name_plural = _("vlans")
+        ordering = ('vid', )
+
     def clean(self):
         super(Vlan, self).clean()
         if self.ipv6_template:
@@ -540,6 +545,11 @@ class VlanGroup(models.Model):
     modified_at = models.DateTimeField(auto_now=True,
                                        verbose_name=_('modified at'))
 
+    class Meta:
+        verbose_name = _("vlan group")
+        verbose_name_plural = _("vlan groups")
+        ordering = ('id', )
+
     def __unicode__(self):
         return self.name
 
@@ -561,6 +571,11 @@ class Group(models.Model):
                                       verbose_name=_('created at'))
     modified_at = models.DateTimeField(auto_now=True,
                                        verbose_name=_('modified at'))
+
+    class Meta:
+        verbose_name = _("host group")
+        verbose_name_plural = _("host groups")
+        ordering = ('id', )
 
     def __unicode__(self):
         return self.name
@@ -935,6 +950,11 @@ class Firewall(models.Model):
     name = models.CharField(max_length=20, unique=True,
                             verbose_name=_('name'))
 
+    class Meta:
+        verbose_name = _("firewall")
+        verbose_name_plural = _("firewalls")
+        ordering = ('id', )
+
     def __unicode__(self):
         return self.name
 
@@ -980,6 +1000,11 @@ class Domain(models.Model):
                                        verbose_name=_('modified_at'))
     ttl = models.IntegerField(default=600, verbose_name=_('ttl'))
     description = models.TextField(blank=True, verbose_name=_('description'))
+
+    class Meta:
+        verbose_name = _("domain")
+        verbose_name_plural = _("domains")
+        ordering = ('id', )
 
     def __unicode__(self):
         return self.name
@@ -1058,6 +1083,8 @@ class Record(models.Model):
         return reverse('network.record', kwargs={'pk': self.pk})
 
     class Meta:
+        verbose_name = _("record")
+        verbose_name_plural = _("records")
         ordering = (
             'domain',
             'name',
@@ -1076,6 +1103,11 @@ class SwitchPort(models.Model):
                                       verbose_name=_('created_at'))
     modified_at = models.DateTimeField(auto_now=True,
                                        verbose_name=_('modified_at'))
+
+    class Meta:
+        verbose_name = _("switch port")
+        verbose_name_plural = _("switch ports")
+        ordering = ('id', )
 
     def __unicode__(self):
         devices = ','.join(self.ethernet_devices.values_list('name',
@@ -1103,6 +1135,11 @@ class EthernetDevice(models.Model):
                                       verbose_name=_('created_at'))
     modified_at = models.DateTimeField(auto_now=True,
                                        verbose_name=_('modified_at'))
+
+    class Meta:
+        verbose_name = _("ethernet device")
+        verbose_name_plural = _("ethernet devices")
+        ordering = ('id', )
 
     def __unicode__(self):
         return self.name
@@ -1136,7 +1173,8 @@ class BlacklistItem(models.Model):
 
     class Meta(object):
         verbose_name = _('blacklist item')
-        verbose_name_plural = _('blacklist')
+        verbose_name_plural = _('blacklist items')
+        ordering = ('id', )
 
     def get_absolute_url(self):
         return reverse('network.blacklist', kwargs={'pk': self.pk})

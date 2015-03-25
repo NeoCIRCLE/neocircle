@@ -24,6 +24,8 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils.translation import ugettext_lazy as _
 
+from common.tests.celery_mock import MockCeleryMixin
+
 from ..models import (
     Lease, Node, Interface, Instance, InstanceTemplate, InstanceActivity,
 )
@@ -166,7 +168,7 @@ class InstanceTestCase(TestCase):
         self.assertEqual(Instance.get_status_icon(inst), 'fa-play')
 
 
-class InterfaceTestCase(TestCase):
+class InterfaceTestCase(MockCeleryMixin, TestCase):
 
     def test_interface_create(self):
         from firewall.models import Vlan, Domain

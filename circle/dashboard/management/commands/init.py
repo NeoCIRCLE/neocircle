@@ -17,6 +17,7 @@
 
 from __future__ import unicode_literals, absolute_import
 
+import logging
 from optparse import make_option
 
 from django.contrib.auth.models import User
@@ -26,6 +27,9 @@ from firewall.models import (Vlan, VlanGroup, Domain, Firewall, Rule,
                              SwitchPort, EthernetDevice, Host)
 from storage.models import DataStore
 from vm.models import Lease
+
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -49,18 +53,18 @@ class Command(BaseCommand):
         qs = model.objects.filter(**{field: value})[:1]
         if not qs.exists():
             obj = model.objects.create(**kwargs)
-            self.changed.append('New %s: %s' % (model, obj))
+            logger.info('New %s: %s', model, obj)
+            self.changed = True
             return obj
         else:
             return qs[0]
 
 # http://docs.saltstack.com/en/latest/ref/states/all/salt.states.cmd.html
     def print_state(self):
-        changed = "yes" if len(self.changed) else "no"
-        print "\nchanged=%s comment='%s'" % (changed, ", ".join(self.changed))
+        print "\nchanged=%s" % ("yes" if self.changed else "no")
 
     def handle(self, *args, **options):
-        self.changed = []
+        self.changed = False
 
         if (DataStore.objects.exists() and Vlan.objects.exists()
                 and not options['force']):

@@ -20,7 +20,7 @@ Do you want to perform the following operation on
   <div class="pull-right">
     <a class="btn btn-default" href="{{object.get_absolute_url}}"
         data-dismiss="modal">{% trans "Cancel" %}</a>
-    <button class="btn btn-{{ opview.effect }} btn-op-form-send" type="submit" id="op-form-send">
+    <button class="btn btn-{{ opview.effect }} btn-op-form-send modal-accept" type="submit" id="op-form-send">
       {% if opview.icon %}<i class="fa fa-fw fa-{{opview.icon}}"></i> {% endif %}{{ op.name|capfirst }}
     </button>
   </div>

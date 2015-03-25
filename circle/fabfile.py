@@ -135,6 +135,18 @@ def test(test=""):
         run("./manage.py test --settings=circle.settings.test %s" % test)
 
 
+@roles('portal')
+def selenium(test=""):
+    "Run selenium tests"
+    with _workon("circle"), cd("~/circle/circle"):
+        if test == "f":
+            test = "--failed"
+        else:
+            test += " --with-id"
+        run("xvfb-run ./manage.py test "
+            "--settings=circle.settings.selenium_test %s" % test)
+
+
 def pull(dir="~/circle/circle"):
     "Pull from upstream branch (stash any changes)"
     now = unicode(datetime.datetime.now())

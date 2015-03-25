@@ -39,3 +39,15 @@
 </div>
 {% endfor %}
 </div>
+
+{% if show_show_all %}
+<div id="show-all-activities-container">
+  <a id="show-all-activities" href="#">
+    {% if activities|length > 10 %}
+      {% trans "Show less activities" %} <i class="fa fa-angle-double-up"></i>
+    {% else %}
+      {% trans "Show all activities" %} <i class="fa fa-angle-double-down"></i>
+    {% endif %}
+  </a>
+</div>
+{% endif %}
