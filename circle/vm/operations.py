@@ -1337,15 +1337,7 @@ class ResourcesOperation(InstanceOperation):
     accept_states = ('STOPPED', 'PENDING', )
 
     def _operation(self, user, activity,
-                   num_cores, ram_size, max_ram_size, priority,
-                   with_shutdown=True):
-        if with_shutdown:
-            try:
-                self.instance.shutdown(parent_activity=activity,
-                                       user=user)
-            except Instance.WrongStateError:
-                pass
-
+                   num_cores, ram_size, max_ram_size, priority):
         self.instance.num_cores = num_cores
         self.instance.ram_size = ram_size
         self.instance.max_ram_size = max_ram_size

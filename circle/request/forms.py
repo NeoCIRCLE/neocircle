@@ -41,6 +41,7 @@ class LeaseTypeForm(ModelForm):
 
     class Meta:
         model = LeaseType
+        fields = ["name", "lease", ]
 
 
 class TemplateAccessTypeForm(ModelForm):
@@ -56,6 +57,7 @@ class TemplateAccessTypeForm(ModelForm):
 
     class Meta:
         model = TemplateAccessType
+        fields = ["name", "templates", ]
 
 
 class InitialFromFileMixin(object):

@@ -20,8 +20,7 @@ import json
 # from unittest import skip
 from django.test import TestCase
 from django.test.client import Client
-from django.contrib.auth.models import User, Group
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import User, Group, Permission
 from django.contrib.auth import authenticate
 
 from common.tests.celery_mock import MockCeleryMixin
