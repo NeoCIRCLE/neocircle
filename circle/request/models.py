@@ -76,7 +76,7 @@ class Request(TimeStampedModel):
     TYPES = Choices(
         ('resource', _('resource request')),
         ('lease', _("lease request")),
-        ('template', _("template access")),
+        ('template', _("template access request")),
     )
     type = CharField(choices=TYPES, max_length=10)
     message = TextField(verbose_name=_("Message"))

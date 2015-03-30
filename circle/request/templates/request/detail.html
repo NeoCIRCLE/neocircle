@@ -43,9 +43,9 @@
             <dd><a href="{{ action.instance.get_absolute_url }}">{{ action.instance.name }}</a></dd>
             <dt>{% trans "VM description" %}</dt>
             <dd>{{ action.instance.description }}</dd>
-            <dt>{% trans "Current Lease" %}</dt>
+            <dt>{% trans "Current lease" %}</dt>
             <dd>{{ action.instance.lease }}</dd>
-            <dt>{% trans "Requested Lease" %}</dt>
+            <dt>{% trans "Requested lease" %}</dt>
             <dd>{{ action.lease_type.lease }}</dd>
           </dl>
         {% elif object.type == "template" %}

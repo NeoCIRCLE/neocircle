@@ -25,7 +25,9 @@
       </div>
       <div class="panel-body">
         <div class="text-muted little-margin-bottom">
-          {% trans "Lease types are used for sharing leases. User can request longer ones via these." %}
+          {% blocktrans %}
+            Lease types are used for sharing leases. User can request longer ones via these.
+          {% endblocktrans %}
         </div>
         <div class="table-responsive">
           {% render_table lease_table %}
@@ -33,8 +35,7 @@
 
         <div class="text-muted little-margin-bottom">
           {% blocktrans %}
-            Template access types are used for sharing multiple templates with users.
-            They can request these with user or operator level access on the included templates.
+            Using template access types users can request multiple templates with user with operator or user level access.
           {% endblocktrans %}
         </div>
         <div class="table-responsive">
