@@ -1605,7 +1605,7 @@ class DataStoreForm(ModelForm):
 
     class Meta:
         model = DataStore
-        exclude = ()
+        fields = ("name", "path", "hostname", )
 
 
 class DiskForm(ModelForm):
@@ -1617,4 +1617,5 @@ class DiskForm(ModelForm):
 
     class Meta:
         model = Disk
-        exclude = ()
+        fields = ("name", "filename", "datastore", "type", "bus", "size",
+                  "base", "dev_num", "destroyed", "is_ready", )

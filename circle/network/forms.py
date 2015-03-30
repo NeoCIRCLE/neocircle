@@ -69,7 +69,8 @@ class BlacklistItemForm(ModelForm):
 
     class Meta:
         model = BlacklistItem
-        exclude = ()
+        fields = ("ipv4", "host", "expires_at", "whitelisted", "reason",
+                  "snort_message", )
 
 
 class DomainForm(ModelForm):
@@ -91,7 +92,7 @@ class DomainForm(ModelForm):
 
     class Meta:
         model = Domain
-        exclude = ()
+        fields = ("name", "ttl", "owner", )
 
 
 class FirewallForm(ModelForm):
@@ -107,7 +108,7 @@ class FirewallForm(ModelForm):
 
     class Meta:
         model = Firewall
-        exclude = ()
+        fields = ("name", )
 
 
 class GroupForm(ModelForm):
@@ -129,7 +130,7 @@ class GroupForm(ModelForm):
 
     class Meta:
         model = Group
-        exclude = ()
+        fields = ("name", "description", "owner", )
 
 
 class HostForm(ModelForm):
@@ -169,7 +170,9 @@ class HostForm(ModelForm):
 
     class Meta:
         model = Host
-        exclude = ()
+        fields = ("hostname", "reverse", "mac", "vlan", "shared_ip", "ipv4",
+                  "ipv6", "external_ipv4", "description", "location",
+                  "comment", "owner", )
 
 
 class RecordForm(ModelForm):
@@ -196,7 +199,8 @@ class RecordForm(ModelForm):
 
     class Meta:
         model = Record
-        exclude = ()
+        fields = ("type", "host", "name", "domain", "address", "ttl",
+                  "description", "owner", )
 
 
 class RuleForm(ModelForm):
@@ -236,7 +240,10 @@ class RuleForm(ModelForm):
 
     class Meta:
         model = Rule
-        exclude = ()
+        fields = ("direction", "description", "foreign_network", "dport",
+                  "sport", "weight", "proto", "extra", "action", "owner",
+                  "nat", "nat_external_port", "nat_external_ipv4", "vlan",
+                  "vlangroup", "host", "hostgroup", "firewall", )
 
 
 class SwitchPortForm(ModelForm):
@@ -259,7 +266,7 @@ class SwitchPortForm(ModelForm):
 
     class Meta:
         model = SwitchPort
-        exclude = ()
+        fields = ("untagged_vlan", "tagged_vlans", "description", )
 
 
 class VlanForm(ModelForm):
@@ -313,7 +320,10 @@ class VlanForm(ModelForm):
         widgets = {
             'ipv6_template': widgets.TextInput,
         }
-        exclude = ()
+        fields = ("name", "vid", "network_type", "managed", "network4",
+                  "snat_to", "snat_ip", "dhcp_pool", "network6",
+                  "ipv6_template", "host_ipv6_prefixlen", "domain",
+                  "reverse_domain", "description", "comment", "owner", )
 
 
 class VlanGroupForm(ModelForm):
@@ -337,4 +347,4 @@ class VlanGroupForm(ModelForm):
 
     class Meta:
         model = VlanGroup
-        exclude = ()
+        fields = ("name", "vlans", "description", "owner", )
