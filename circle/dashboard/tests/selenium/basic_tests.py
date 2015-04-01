@@ -16,7 +16,9 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
+from datetime import datetime
 import logging
+from sys import _getframe
 import random
 import re
 import urlparse
@@ -52,7 +54,13 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
 
     @classmethod
     def setup_class(cls):
+        logger.warning("Selenium test started @ %(time)s" % {
+            'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
         if conf.create_user:
+            logger.warning(
+                "Creating selenium test user %(name)s:%(password)s" % {
+                    'name': conf.client_name,
+                    'password': conf.random_pass})
             cls._user = User.objects.create(username=conf.client_name,
                                             is_superuser=True)
             cls._user.set_password(conf.random_pass)
@@ -63,10 +71,18 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
         if conf.create_user:
             for instance in Instance.objects.all().filter(
                     ~Q(status=u'DESTROYED'), owner=cls._user):
+                logger.warning(
+                    "Destroying the test virtual machine: %(id)s" % {
+                        'id': instance.pk})
                 instance.destroy(system=True)
+            logger.warning("Deleting test user %(name)s" % {
+                'name': conf.client_name})
             cls._user.delete()
+        logger.warning("Selenium test finished @ %(time)s" % {
+            'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
 
     def test_01_login(self):
+        logger.warning("Starting test %s" % _getframe().f_code.co_name)
         title = 'Dashboard | CIRCLE'
         location = '/dashboard/'
         self.login()
@@ -78,6 +94,7 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
                              'URL path is not equal with %s' % location))
 
     def test_02_add_template_rights(self):
+        logger.warning("Starting test %s" % _getframe().f_code.co_name)
         self.login()
         template_pool = self.get_template_id(from_all=True)
         if len(template_pool) > 1:
@@ -118,6 +135,7 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
                       "Could not add user to template's ACL")
 
     def test_03_able_to_create_template(self):
+        logger.warning("Starting test %s" % _getframe().f_code.co_name)
         self.login()
         template_list = None
         create_template = self.get_link_by_href('/dashboard/template/choose/')
@@ -135,6 +153,7 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
                                "The create template list is empty"))
 
     def test_04_create_base_template(self):
+        logger.warning("Starting test %s" % _getframe().f_code.co_name)
         self.login()
         created_template_id = self.get_template_id(
             self.create_base_template())
@@ -146,6 +165,7 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
             "Could not found the created template in the template list")
 
     def test_05_create_template_from_base(self):
+        logger.warning("Starting test %s" % _getframe().f_code.co_name)
         self.login()
         created_template_id = self.get_template_id(
             self.create_template_from_base())
@@ -157,6 +177,7 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
             "Could not found the created template in the template list")
 
     def test_06_delete_templates(self):
+        logger.warning("Starting test %s" % _getframe().f_code.co_name)
         success = False
         self.login()
         for template_id in self.template_ids:
@@ -175,6 +196,7 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
             success, "Could not delete (all) the test template(s)")
 
     def test_07_able_to_create_vm(self):
+        logger.warning("Starting test %s" % _getframe().f_code.co_name)
         self.login()
         vm_list = None
         create_vm_link = self.get_link_by_href('/dashboard/vm/create/')
@@ -192,12 +214,14 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
             self.assertGreater(len(vm_list), 0, "The create VM list is empty"))
 
     def test_08_create_vm(self):
+        logger.warning("Starting test %s" % _getframe().f_code.co_name)
         self.login()
         pk = self.create_random_vm()
         self.vm_ids.append(pk)
         self.assertIsNotNone(pk, "Can not create a VM")
 
     def test_09_vm_view_change(self):
+        logger.warning("Starting test %s" % _getframe().f_code.co_name)
         self.login()
         expected_states = ["", "none",
                            "none", "",
@@ -209,6 +233,7 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
                              "The view mode does not change for VM listing")
 
     def test_10_node_view_change(self):
+        logger.warning("Starting test %s" % _getframe().f_code.co_name)
         self.login()
         expected_states = ["", "none",
                            "none", "",
@@ -220,6 +245,7 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
                              "The view mode does not change for NODE listing")
 
     def test_11_delete_vm(self):
+        logger.warning("Starting test %s" % _getframe().f_code.co_name)
         self.login()
         succes = True
         for vm in self.vm_ids:
