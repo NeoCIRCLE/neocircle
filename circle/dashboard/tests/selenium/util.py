@@ -23,7 +23,8 @@ import re
 import time
 import urlparse
 
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import (
+    NoSuchElementException, StaleElementReferenceException)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.select import Select
@@ -112,7 +113,8 @@ class CircleSeleniumMixin(object):
             self.wait_and_accept_operation()
             recent_deploy = self.recently(self.get_timeline_elements(
                 "vm.Instance.deploy"))
-            if not self.check_operation_result(recent_deploy):
+            if not self.check_operation_result(
+                    recent_deploy, "a[href*='#activity']"):
                 logger.warning("Selenium cannot deploy the "
                                "chosen template virtual machine")
                 raise Exception('Cannot deploy the virtual machine')
@@ -122,9 +124,13 @@ class CircleSeleniumMixin(object):
                         By.CSS_SELECTOR,
                         "a[href$='/op/shut_off/']"))))
             self.wait_and_accept_operation()
+            WebDriverWait(self.driver, self.conf.wait_max_sec).until(
+                ec.element_to_be_clickable((
+                    By.CSS_SELECTOR, "a[href$='/op/deploy/']")))
             recent_shut_off = self.recently(self.get_timeline_elements(
                 "vm.Instance.shut_off"))
-            if not self.check_operation_result(recent_shut_off):
+            if not self.check_operation_result(
+                    recent_shut_off, "a[href*='#activity']"):
                 logger.warning("Selenium cannot shut off the "
                                "chosen template virtual machine")
                 raise Exception('Cannot shut off the virtual machine')
@@ -234,7 +240,8 @@ class CircleSeleniumMixin(object):
             raise Exception(
                 'Cannot find the template\'s id')
 
-    def check_operation_result(self, operation_id, restore=True):
+    def check_operation_result(self, operation_id, restore_selector=None,
+                               restore=True):
         """
         Returns wheter the operation_id result is success (returns: boolean)
         """
@@ -254,19 +261,36 @@ class CircleSeleniumMixin(object):
             result = WebDriverWait(self.driver, self.conf.wait_max_sec).until(
                 ec.visibility_of_element_located((
                     By.ID, "activity_status")))
-            logger.warning("%(id)s result text is '%(result)s'" % {
+            logger.warning("%(id)s's result is '%(result)s'" % {
                 'id': operation_id,
                 'result': result.text})
             if (result.text == "success"):
                 out = True
             elif (result.text == "wait"):
                 time.sleep(2)
-                out = self.check_operation_result(operation_id, False)
+                out = self.check_operation_result(
+                    operation_id=operation_id, restore=False)
             else:
+                try:
+                    result_text = WebDriverWait(
+                        self.driver, self.conf.wait_max_sec).until(
+                            ec.visibility_of_element_located((
+                                By.ID, "activity_result_text")))
+                    logger.warning(
+                        "%(id)s's result text is: '%(result_text)s'" % {
+                            'id': operation_id,
+                            'result_text': result_text.text})
+                except:
+                    logger.warning("Cannot read %(id)s's result text" % {
+                        'id': operation_id})
                 out = False
             if restore:
                 logger.warning("Restoring to %s url" % url_save)
                 self.driver.get(url_save)
+                if restore_selector is not None and restore_selector:
+                    WebDriverWait(self.driver, self.conf.wait_max_sec).until(
+                        ec.visibility_of_element_located((
+                            By.CSS_SELECTOR, restore_selector)))
             return out
         except:
             logger.exception("Selenium cannot check the"
@@ -279,46 +303,73 @@ class CircleSeleniumMixin(object):
             second = self.conf.recently_sec
         try:
             if isinstance(timeline_dict, dict):
+                recent = None
                 for key, value in timeline_dict.iteritems():
-                    time = datetime.strptime(key, '%Y-%m-%d %H:%M')
-                    delta = datetime.now() - time
-                    if delta.total_seconds() <= second:
-                        return value
+                    if recent is None or int(key) > int(recent):
+                        recent = key
+                if len(timeline_dict) > 1:
+                    logger.warning(
+                        "Searching for most recent activity"
+                        " from the received %(count)s pieces" % {
+                            'count': len(timeline_dict)})
+                    logger.warning("Found at %(id)s @ %(time)s" % {
+                        'id': timeline_dict[recent],
+                        'time': datetime.fromtimestamp(
+                            int(recent)).strftime('%Y-%m-%d %H:%M:%S')})
+                logger.warning(
+                    "Checking wheter %(id)s started in the"
+                    " recent %(second)s seconds" % {
+                        'id': timeline_dict[recent],
+                        'second': second})
+                delta = datetime.now() - datetime.fromtimestamp(int(recent))
+                if delta.total_seconds() <= second:
+                    return timeline_dict[recent]
         except:
-            logger.exception("Selenium cannot filter"
-                             " timeline activities to recent")
+            logger.exception("Selenium cannot filter timeline "
+                             "activities to find most recent")
             raise Exception(
-                'Cannot filter timeline activities to recent')
+                'Cannot filter timeline activities to find most recent')
 
     def get_timeline_elements(self, code=None):
         try:
             if code is None:
                 css_activity_selector = "div[data-activity-code]"
-                code = "all activity"
+                code_text = "all activity"
             else:
+                code_text = code
                 css_activity_selector = ("div[data-activity-code="
                                          "'%(code)s']" % {
-                                             'code': code})
-            WebDriverWait(self.driver, self.conf.wait_max_sec).until(
-                ec.element_to_be_clickable((
-                    By.CSS_SELECTOR, "a[href*='#activity']"))).click()
-            activity_dict = {}
-            timeline = WebDriverWait(
+                                             'code': code_text})
+            self.click_on_link(WebDriverWait(
                 self.driver, self.conf.wait_max_sec).until(
-                    ec.visibility_of_element_located((
-                        By.ID, "activity-timeline")))
-            searched_activity = timeline.find_elements_by_css_selector(
-                css_activity_selector)
-            logger.warning("Found activity list for %s:" % code)
-            for activity in searched_activity:
-                activity_id = activity.get_attribute('data-activity-id')
-                activity_text = activity.text
-                key = re.search(
-                    r'\d+-\d+-\d+ \d+:\d+,', activity_text).group()[:-1]
-                logger.warning("%(id)s @ %(activity)s" % {
-                    'id': activity_id,
-                    'activity': key})
-                activity_dict[key] = activity_id
+                    ec.element_to_be_clickable((
+                        By.CSS_SELECTOR, "a[href*='#activity']"))))
+            try:
+                activity_dict = {}
+                timeline = WebDriverWait(
+                    self.driver, self.conf.wait_max_sec).until(
+                        ec.visibility_of_element_located((
+                            By.ID, "activity-timeline")))
+                searched_activity = timeline.find_elements_by_css_selector(
+                    css_activity_selector)
+                logger.warning("Found activity list for %s:" % code_text)
+                for activity in searched_activity:
+                    activity_id = activity.get_attribute('data-activity-id')
+                    key = activity.get_attribute('timestamp')
+                    logger.warning("%(id)s @ %(activity)s" % {
+                        'id': activity_id,
+                        'activity': datetime.fromtimestamp(
+                            int(key)).strftime('%Y-%m-%d %H:%M:%S')})
+                    activity_dict[key] = activity_id
+            except StaleElementReferenceException:
+                logger.warning('Timeline changed while processing it')
+                return self.get_timeline_elements(code)
+            except:
+                logger.exception('Selenium cannot get timeline elemets')
+                raise Exception('Cannot get timeline elements')
+            if len(activity_dict) == 0:
+                logger.warning('Found activity list is empty')
+                raise Exception('Selenium did not found any activity')
             return activity_dict
         except:
             logger.exception('Selenium cannot find the searched activity')
@@ -355,6 +406,10 @@ class CircleSeleniumMixin(object):
                     WebDriverWait(self.driver, self.conf.wait_max_sec).until(
                         ec.visibility_of_element_located((
                             By.ID, "_activity")))
+                    self.click_on_link(WebDriverWait(
+                        self.driver, self.conf.wait_max_sec).until(
+                            ec.element_to_be_clickable((
+                                By.CSS_SELECTOR, "a[href*='#activity']"))))
                     recent_remove_disk = self.recently(
                         self.get_timeline_elements(
                             "vm.Instance.remove_disk"))
@@ -401,7 +456,8 @@ class CircleSeleniumMixin(object):
             vm_list[choice].click()
             WebDriverWait(self.driver, self.conf.wait_max_sec).until(
                 ec.element_to_be_clickable((
-                    By.CLASS_NAME, 'vm-create-start'))).click()
+                    By.CSS_SELECTOR,
+                    "button[class*='vm-create-start']"))).click()
             WebDriverWait(self.driver, self.conf.wait_max_sec).until(
                 ec.visibility_of_element_located((
                     By.CLASS_NAME, 'alert-success')))

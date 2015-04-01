@@ -50,7 +50,7 @@ class SeleniumConfig:
     client_name = 'test_%s' % random_pass
 
     # Which webpage should selenium use (localhost is recommended)
-    host = 'https:127.0.0.1'
+    host = 'https://127.0.0.1'
     # In default the tests create a new user then delete it afteword
     # Disable this if selenium cannot acces the database
     create_user = True
