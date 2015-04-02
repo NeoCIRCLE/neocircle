@@ -224,27 +224,10 @@ class CircleSeleniumMixin(SeleniumMixin):
                         form.send_keys(argument)
             accept.click()
             if try_wait is not None:
-                try:
-                    WebDriverWait(self.driver, self.conf.wait_max_sec).until(
-                        ec.visibility_of_element_located((
-                            By.CSS_SELECTOR, try_wait)))
-                except TimeoutException:
-                    # Try to submit to form using other method
-                    try:
-                        accept = WebDriverWait(
-                            self.driver, self.conf.wait_max_sec).until(
-                                ec.element_to_be_clickable((
-                                    By.CLASS_NAME, "modal-accept")))
-                        accept.find_element_by_css_selector(
-                            "form[method*='POST']").submit()
-                    except:
-                        logger.exception(
-                            "Selenium couldn't find the modal at retry")
-                        raise Exception("Cannot find the modal")
-                except:
-                    logger.exception(
-                        "Selenium couldn't find the specified css element")
-                    raise Exception("Cannot find the css element")
+                WebDriverWait(self.driver, self.conf.wait_max_sec).until(
+                    ec.visibility_of_element_located((
+                        By.CSS_SELECTOR, try_wait)))
+
         except:
             logger.exception("Selenium cannot accept the"
                              " operation confirmation")
