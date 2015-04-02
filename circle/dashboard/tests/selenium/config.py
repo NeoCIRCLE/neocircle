@@ -29,7 +29,7 @@ class SeleniumConfig:
     # File where the log should be stored
     log_file = "selenium.log"
     # Log file max size in Bytes
-    log_size = 1024 * 100
+    log_size = 1024 * 1024 * 10
     # Format of the log file
     log_format = "%(asctime)s: %(name)s: %(levelname)s:  %(message)s"
     # Backup count of the logfiles
