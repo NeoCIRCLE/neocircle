@@ -143,8 +143,8 @@ def selenium(test=""):
             test = "--failed"
         else:
             test += " --with-id"
-        run("xvfb-run ./manage.py test "
-            "--settings=circle.settings.selenium_test %s" % test)
+        run('xvfb-run --server-args="-screen 0, 1920x1080x24" ./manage.py'
+            ' test --settings=circle.settings.selenium_test %s' % test)
 
 
 def pull(dir="~/circle/circle"):
