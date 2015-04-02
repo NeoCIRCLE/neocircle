@@ -24,7 +24,8 @@ import time
 import urlparse
 
 from selenium.common.exceptions import (
-    NoSuchElementException, StaleElementReferenceException)
+    NoSuchElementException, StaleElementReferenceException,
+    TimeoutException)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.select import Select
@@ -35,7 +36,131 @@ from .config import SeleniumConfig
 logger = logging.getLogger(SeleniumConfig.logger_name)
 
 
-class CircleSeleniumMixin(object):
+class SeleniumMixin(object):
+    def list_options(self, select):
+        try:
+            option_dic = {}
+            select = Select(select)
+            for option in select.options:
+                key = option.get_attribute('value')
+                if key is not None and key:
+                    option_dic[key] = [option.text]
+            return option_dic
+        except:
+            logger.exception("Selenium cannot list the"
+                             " select possibilities")
+            raise Exception(
+                'Cannot list the select possibilities')
+
+    def select_option(self, select, what=None):
+        """
+        From an HTML select imput type try to choose the specified one.
+        Select is a selenium web element type. What represent both the
+        text of the option and it's ID.
+        """
+        try:
+            my_choice = None
+            options = self.list_options(select)
+            select = Select(select)
+            if what is not None:
+                for key, value in options.iteritems():
+                    if what in key:
+                        my_choice = key
+                    else:
+                        if isinstance(value, list):
+                            for single_value in value:
+                                if what in single_value:
+                                    my_choice = key
+                        else:
+                            if what in value:
+                                my_choice = key
+            if my_choice is None:
+                my_choose_list = options.keys()
+                my_choice = my_choose_list[random.randint(
+                    0, len(my_choose_list) - 1)]
+            select.select_by_value(my_choice)
+        except:
+            logger.exception("Selenium cannot select the chosen one")
+            raise Exception(
+                'Cannot select the chosen one')
+
+    def get_link_by_href(self, target_href, attributes=None):
+        try:
+            links = self.driver.find_elements_by_tag_name('a')
+            for link in links:
+                href = link.get_attribute('href')
+                if href is not None and href:
+                    if target_href in href:
+                        perfect_fit = True
+                        if isinstance(attributes, dict):
+                            for key, target_value in attributes.iteritems():
+                                attr_check = link.get_attribute(key)
+                                if attr_check is not None and attr_check:
+                                    if target_value not in attr_check:
+                                        perfect_fit = False
+                        if perfect_fit:
+                            return link
+        except:
+            logger.exception(
+                "Selenium cannot find the href=%s link" % target_href)
+            raise Exception('Cannot find the requested href')
+
+    def click_on_link(self, link):
+        """
+        There are situations when selenium built in click() function
+        doesn't work as intended, that's when this function is used.
+        Fires a click event via javascript injection.
+        """
+        try:
+            # Javascript function to simulate a click on a link
+            javascript = """
+                var link = arguments[0];
+                var cancelled = false;
+                if(document.createEvent) {
+                   var event = document.createEvent("MouseEvents");
+                   event.initMouseEvent(
+                       "click", true, true, window, 0, 0, 0, 0, 0,
+                       false,false,false,false,0,null);
+                   cancelled = !link.dispatchEvent(event);
+                } else if(link.fireEvent) {
+                   cancelled = !link.fireEvent("onclick");
+                } if (!cancelled) {
+                   window.location = link.href;
+                }"""
+            self.driver.execute_script(javascript, link)
+        except:
+            logger.exception("Selenium cannot inject javascript to the page")
+            raise Exception(
+                'Cannot inject javascript to the page')
+
+    def get_text(self, node, tag):
+        """
+        There are some cases where selenium default WebElement text()
+        method returns less then it actually could contain. Solving that
+        here is a simple regular expression. Give the closest html element
+        then specify the html tag of the enclosed text.
+        """
+        text = ""
+        try:
+            text_whole = re.search(
+                r'<%(tag)s[^>]*>([^<]+)</%(tag)s>' % {
+                    'tag': tag},
+                node.get_attribute("outerHTML")).group()
+            text_parts = text_whole.splitlines()
+            for part in text_parts:
+                if '<' not in part and '>' not in part:
+                    text += part
+            text = text.replace(" ", "")
+        except:
+            return node.text
+        if len(node.text) >= len(text):
+            text = node.text
+        else:
+            logger.warning("Better text found which is '%s'" % text)
+        return text.strip()
+
+
+class CircleSeleniumMixin(SeleniumMixin):
     def login(self, location=None):
         driver = self.driver
         if location is None:
@@ -76,7 +201,8 @@ class CircleSeleniumMixin(object):
                 logger.exception("Selenium cannot find the form controls")
                 raise Exception('Cannot find the form controls')
 
-    def wait_and_accept_operation(self, argument=None):
+    def wait_and_accept_operation(self, argument=None, try_wait=None,
+                                  fallback_url=None):
         """
         Accepts the operation confirmation pop up window.
         Fills out the text inputs before accepting if argument is given.
@@ -97,20 +223,56 @@ class CircleSeleniumMixin(object):
                         form.clear()
                         form.send_keys(argument)
             accept.click()
+            if try_wait is not None:
+                try:
+                    WebDriverWait(self.driver, self.conf.wait_max_sec).until(
+                        ec.visibility_of_element_located((
+                            By.CSS_SELECTOR, try_wait)))
+                except TimeoutException:
+                    # Try to submit to form using other method
+                    try:
+                        accept = WebDriverWait(
+                            self.driver, self.conf.wait_max_sec).until(
+                                ec.element_to_be_clickable((
+                                    By.CLASS_NAME, "modal-accept")))
+                        accept.find_element_by_css_selector(
+                            "form[method*='POST']").submit()
+                    except:
+                        logger.exception(
+                            "Selenium couldn't find the modal at retry")
+                        raise Exception("Cannot find the modal")
+                except:
+                    logger.exception(
+                        "Selenium couldn't find the specified css element")
+                    raise Exception("Cannot find the css element")
         except:
             logger.exception("Selenium cannot accept the"
                              " operation confirmation")
-            raise Exception(
-                'Cannot accept the operation confirmation')
+            if fallback_url is not None:
+                logger.warning(
+                    "However error was anticipated falling back to %(url)s" % {
+                        'url': fallback_url})
+                self.driver.get(fallback_url)
+                self.wait_and_accept_operation(argument, try_wait)
+            else:
+                self.driver.save_screenshot('error_at_try_wait.png')
+                raise Exception(
+                    'Cannot accept the operation confirmation')
 
     def save_template_from_vm(self, name):
         try:
+            url_base = urlparse.urlparse(self.driver.current_url)
+            url_save = ("%(host)s%(url)s" % {
+                'host': self.conf.host,
+                'url': urlparse.urljoin(url_base.path, url_base.query)})
             WebDriverWait(self.driver, self.conf.wait_max_sec).until(
                 ec.element_to_be_clickable((
                     By.CSS_SELECTOR,
                     "a[href$='/op/deploy/']")))
             self.click_on_link(self.get_link_by_href("/op/deploy/"))
-            self.wait_and_accept_operation()
+            fallback_url = "%sop/deploy/" % url_save
+            self.wait_and_accept_operation(
+                try_wait="a[href$='/op/shut_off/']", fallback_url=fallback_url)
             recent_deploy = self.recently(self.get_timeline_elements(
                 "vm.Instance.deploy"))
             if not self.check_operation_result(
@@ -123,10 +285,9 @@ class CircleSeleniumMixin(object):
                     ec.element_to_be_clickable((
                         By.CSS_SELECTOR,
                         "a[href$='/op/shut_off/']"))))
-            self.wait_and_accept_operation()
-            WebDriverWait(self.driver, self.conf.wait_max_sec).until(
-                ec.element_to_be_clickable((
-                    By.CSS_SELECTOR, "a[href$='/op/deploy/']")))
+            fallback_url = "%sop/shut_off/" % url_save
+            self.wait_and_accept_operation(
+                try_wait="a[href$='/op/deploy/']", fallback_url=fallback_url)
             recent_shut_off = self.recently(self.get_timeline_elements(
                 "vm.Instance.shut_off"))
             if not self.check_operation_result(
@@ -140,6 +301,8 @@ class CircleSeleniumMixin(object):
                         By.CSS_SELECTOR,
                         "a[href$='/op/save_as_template/']"))))
             self.wait_and_accept_operation(name)
+            logger.warning("Selenium created %(name)s template" % {
+                'name': name})
             return name
         except:
             logger.exception("Selenium cannot save a vm as a template")
@@ -150,7 +313,7 @@ class CircleSeleniumMixin(object):
                              method=None, op_system=None, lease=None,
                              network="vm"):
         if name is None:
-            name = "template_new_%s" % self.conf.client_name
+            name = "new_%s" % self.conf.client_name
         if op_system is None:
             op_system = "!os %s" % self.conf.client_name
         try:
@@ -213,7 +376,9 @@ class CircleSeleniumMixin(object):
             templates = template_table.find_elements_by_css_selector("td.name")
             found_template_ids = []
             for template in templates:
-                if name is None or name in template.text:
+                # Little magic to outsmart accented naming errors
+                template_name = self.get_text(template, "a")
+                if name is None or name in template_name:
                     try:
                         template_link = template.find_element_by_css_selector(
                             css_selector_of_a_template)
@@ -223,12 +388,21 @@ class CircleSeleniumMixin(object):
                         found_template_ids.append(template_id)
                         logger.warning("Found '%(name)s' "
                                        "template's ID as %(id)s" % {
-                                           'name': template.text,
+                                           'name': template_name,
                                            'id': template_id})
                     except NoSuchElementException:
                         pass
                     except:
                         raise
+                else:
+                    logger.warning(
+                        "Searching for %(searched)s so"
+                        " %(name)s is dismissed" % {
+                            'searched': name,
+                            'name': template_name})
+                    logger.warning(
+                        "Dismissed template html code: %(code)s" % {
+                            'code': template.get_attribute("outerHTML")})
             if not found_template_ids and name is not None:
                 logger.warning("Selenium could not find the specified "
                                "%(name)s template in the list" % {
@@ -339,7 +513,7 @@ class CircleSeleniumMixin(object):
                 code_text = code
                 css_activity_selector = ("div[data-activity-code="
                                          "'%(code)s']" % {
-                                             'code': code_text})
+                                             'code': code})
             self.click_on_link(WebDriverWait(
                 self.driver, self.conf.wait_max_sec).until(
                     ec.element_to_be_clickable((
@@ -378,7 +552,7 @@ class CircleSeleniumMixin(object):
     def create_template_from_base(self, delete_disk=True, name=None):
         try:
             if name is None:
-                name = "template_from_base_%s" % self.conf.client_name
+                name = "from_%s" % self.conf.client_name
             self.driver.get('%s/dashboard/template/choose/' % self.conf.host)
             choice_list = []
             choices = self.driver.find_elements_by_css_selector(
@@ -402,14 +576,8 @@ class CircleSeleniumMixin(object):
                 if len(disk_list) > 0:
                     self.click_on_link(
                         self.get_link_by_href("/op/remove_disk/"))
-                    self.wait_and_accept_operation()
-                    WebDriverWait(self.driver, self.conf.wait_max_sec).until(
-                        ec.visibility_of_element_located((
-                            By.ID, "_activity")))
-                    self.click_on_link(WebDriverWait(
-                        self.driver, self.conf.wait_max_sec).until(
-                            ec.element_to_be_clickable((
-                                By.CSS_SELECTOR, "a[href*='#activity']"))))
+                    self.wait_and_accept_operation(
+                        try_wait="a[href*='#activity']")
                     recent_remove_disk = self.recently(
                         self.get_timeline_elements(
                             "vm.Instance.remove_disk"))
@@ -454,10 +622,16 @@ class CircleSeleniumMixin(object):
                 'vm-create-template-summary')
             choice = random.randint(0, len(vm_list) - 1)
             vm_list[choice].click()
-            WebDriverWait(self.driver, self.conf.wait_max_sec).until(
-                ec.element_to_be_clickable((
-                    By.CSS_SELECTOR,
-                    "button[class*='vm-create-start']"))).click()
+            try:
+                WebDriverWait(self.driver, self.conf.wait_max_sec).until(
+                    ec.element_to_be_clickable((
+                        By.CLASS_NAME, "vm-create-start"))).click()
+            except TimeoutException:
+                # Selenium can time out not findig it even though it is present
+                self.driver.find_element_by_tag_name('form').submit()
+            except:
+                logger.exception("Selenium could not submit create vm form")
+                raise Exception('Could not submit a form')
             WebDriverWait(self.driver, self.conf.wait_max_sec).until(
                 ec.visibility_of_element_located((
                     By.CLASS_NAME, 'alert-success')))
@@ -498,7 +672,7 @@ class CircleSeleniumMixin(object):
             self.driver.get("%(host)s/dashboard/vm/%(id)s/op/destroy/" % {
                 'host': self.conf.host,
                 'id': pk})
-            self.wait_and_accept_operation()
+            self.wait_and_accept_operation(try_wait="a[href*='/op/recover/']")
             try:
                 status_span = WebDriverWait(
                     self.driver, self.conf.wait_max_sec).until(
@@ -528,101 +702,3 @@ class CircleSeleniumMixin(object):
         except:
             logger.exception("Selenium can not destroy a VM")
             raise Exception("Can not destroy a VM")
-
-
-class SeleniumMixin(object):
-    def list_options(self, select):
-        try:
-            option_dic = {}
-            select = Select(select)
-            for option in select.options:
-                key = option.get_attribute('value')
-                if key is not None and key:
-                    option_dic[key] = [option.text]
-            return option_dic
-        except:
-            logger.exception("Selenium cannot list the"
-                             " select possibilities")
-            raise Exception(
-                'Cannot list the select possibilities')
-
-    def select_option(self, select, what=None):
-        """
-        From an HTML select imput type try to choose the specified one.
-        Select is a selenium web element type. What represent both the
-        text of the option and it's ID.
-        """
-        try:
-            my_choice = None
-            options = self.list_options(select)
-            select = Select(select)
-            if what is not None:
-                for key, value in options.iteritems():
-                    if what in key:
-                        my_choice = key
-                    else:
-                        if isinstance(value, list):
-                            for single_value in value:
-                                if what in single_value:
-                                    my_choice = key
-                        else:
-                            if what in value:
-                                my_choice = key
-            if my_choice is None:
-                my_choose_list = options.keys()
-                my_choice = my_choose_list[random.randint(
-                    0, len(my_choose_list) - 1)]
-            select.select_by_value(my_choice)
-        except:
-            logger.exception("Selenium cannot select the chosen one")
-            raise Exception(
-                'Cannot select the chosen one')
-
-    def get_link_by_href(self, target_href, attributes=None):
-        try:
-            links = self.driver.find_elements_by_tag_name('a')
-            for link in links:
-                href = link.get_attribute('href')
-                if href is not None and href:
-                    if target_href in href:
-                        perfect_fit = True
-                        if isinstance(attributes, dict):
-                            for key, target_value in attributes.iteritems():
-                                attr_check = link.get_attribute(key)
-                                if attr_check is not None and attr_check:
-                                    if target_value not in attr_check:
-                                        perfect_fit = False
-                        if perfect_fit:
-                            return link
-        except:
-            logger.exception(
-                "Selenium cannot find the href=%s link" % target_href)
-            raise Exception('Cannot find the requested href')
-
-    def click_on_link(self, link):
-        """
-        There are situations when selenium built in click() function
-        doesn't work as intended, that's when this function is used.
-        Fires a click event via javascript injection.
-        """
-        try:
-            # Javascript function to simulate a click on a link
-            javascript = (
-                "var link = arguments[0];"
-                "var cancelled = false;"
-                "if(document.createEvent) {"
-                "   var event = document.createEvent(\"MouseEvents\");"
-                "   event.initMouseEvent("
-                "       \"click\", true, true, window, 0, 0, 0, 0, 0,"
-                "       false,false,false,false,0,null);"
-                "   cancelled = !link.dispatchEvent(event);"
-                "} else if(link.fireEvent) {"
-                "   cancelled = !link.fireEvent(\"onclick\");"
-                "} if (!cancelled) {"
-                "   window.location = link.href;"
-                "}")
-            self.driver.execute_script(javascript, link)
-        except:
-            logger.exception("Selenium cannot inject javascript to the page")
-            raise Exception(
-                'Cannot inject javascript to the page')
