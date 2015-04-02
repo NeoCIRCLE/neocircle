@@ -33,7 +33,7 @@ from selenose.cases import SeleniumTestCase
 
 from vm.models import Instance
 from .config import SeleniumConfig
-from .util import CircleSeleniumMixin, SeleniumMixin
+from .util import CircleSeleniumMixin
 
 conf = SeleniumConfig()
 log_formatter = logging.Formatter(conf.log_format)
@@ -45,7 +45,7 @@ fileHandler.setLevel(logging.WARNING)
 logger.addHandler(fileHandler)
 
 
-class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
+class BasicSeleniumTests(SeleniumTestCase, CircleSeleniumMixin):
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
         self.conf = conf
@@ -106,10 +106,11 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
             raise Exception(
                 "Selenium did not found any templates")
         self.driver.get('%s/dashboard/template/%s/' % (conf.host, chosen))
-        acces_form = self.driver.find_element_by_css_selector(
+        acces_form_css = (
             "form[action*='/dashboard/template/%(template_id)s/acl/']"
             "[method='post']" % {
                 'template_id': chosen})
+        acces_form = self.driver.find_element_by_css_selector(acces_form_css)
         user_name = acces_form.find_element_by_css_selector(
             "input[type='text'][id='id_name']")
         user_status = acces_form.find_element_by_css_selector(
@@ -120,7 +121,8 @@ class BasicSeleniumTests(SeleniumTestCase, SeleniumMixin, CircleSeleniumMixin):
         # For strange reasons clicking on submit button doesn't work anymore
         acces_form.submit()
         found_users = []
-        acl_users = self.driver.find_elements_by_css_selector(
+        acces_form = self.driver.find_element_by_css_selector(acces_form_css)
+        acl_users = acces_form.find_elements_by_css_selector(
             "a[href*='/dashboard/profile/']")
         for user in acl_users:
             user_text = re.split(r':[ ]?', user.text)
