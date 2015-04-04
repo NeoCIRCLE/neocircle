@@ -19,7 +19,7 @@
 import random
 
 
-class SeleniumConfig:
+class SeleniumConfig(object):
     # How many sec can selenium wait till certain parts of a page appears
     wait_max_sec = 10
     # How much sec can pass before the activity is no longer happened recently
