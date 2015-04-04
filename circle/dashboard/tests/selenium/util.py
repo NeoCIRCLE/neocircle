@@ -37,15 +37,19 @@ logger = logging.getLogger(SeleniumConfig.logger_name)
 
 
 class SeleniumMixin(object):
-    def current_url(self):
+    def get_url(self, fragment_needed=False, fragment=None):
         url_base = urlparse.urlparse(self.driver.current_url)
         url_save = ("%(host)s%(url)s" % {
             'host': self.conf.host,
             'url': urlparse.urljoin(url_base.path, url_base.query)})
-        if url_base.fragment:
+        if fragment is None:
+            fragment = url_base.fragment
+        else:
+            fragment_needed = True
+        if fragment_needed and fragment:
             url_save = ("%(url)s#%(fragment)s" % {
                 'url': url_save,
-                'fragment': url_base.fragment})
+                'fragment': fragment})
         return url_save
 
     def list_options(self, select):
@@ -255,7 +259,7 @@ class CircleSeleniumMixin(SeleniumMixin):
 
     def save_template_from_vm(self, name):
         try:
-            url_save = self.current_url()
+            url_save = self.get_url()
             WebDriverWait(self.driver, self.conf.wait_max_sec).until(
                 ec.element_to_be_clickable((
                     By.CSS_SELECTOR,
@@ -412,7 +416,7 @@ class CircleSeleniumMixin(SeleniumMixin):
         """
         try:
             if restore:
-                url_save = self.current_url()
+                url_save = self.get_url(True)
             self.driver.get('%(host)s/dashboard/vm/activity/%(id)s/' % {
                 'host': self.conf.host,
                 'id': operation_id})
@@ -488,7 +492,7 @@ class CircleSeleniumMixin(SeleniumMixin):
             raise Exception(
                 'Cannot filter timeline activities to find most recent')
 
-    def get_timeline_elements(self, code=None):
+    def get_timeline_elements(self, code=None, time_out_handle=True):
         try:
             if code is None:
                 css_activity_selector = "div[data-activity-code]"
@@ -498,12 +502,13 @@ class CircleSeleniumMixin(SeleniumMixin):
                 css_activity_selector = ("div[data-activity-code="
                                          "'%(code)s']" % {
                                              'code': code})
-            self.click_on_link(WebDriverWait(
-                self.driver, self.conf.wait_max_sec).until(
-                    ec.element_to_be_clickable((
-                        By.CSS_SELECTOR, "a[href*='#activity']"))))
             try:
+                self.click_on_link(WebDriverWait(
+                    self.driver, self.conf.wait_max_sec).until(
+                        ec.element_to_be_clickable((
+                            By.CSS_SELECTOR, "a[href*='#activity']"))))
                 activity_dict = {}
+                self.driver.save_screenshot('activity.png')
                 timeline = WebDriverWait(
                     self.driver, self.conf.wait_max_sec).until(
                         ec.visibility_of_element_located((
@@ -522,6 +527,14 @@ class CircleSeleniumMixin(SeleniumMixin):
             except StaleElementReferenceException:
                 logger.warning('Timeline changed while processing it')
                 return self.get_timeline_elements(code)
+            except TimeoutException:
+                logger.warning('Can not found timeline in the page')
+                if time_out_handle:
+                    self.driver.save_screenshot('lost-timeline.png')
+                    self.driver.get(self.get_url(fragment='activity'))
+                    return self.get_timeline_elements(code, False)
+                else:
+                    raise Exception('Selenium could not locate the timeline')
             except:
                 logger.exception('Selenium cannot get timeline elemets')
                 raise Exception('Cannot get timeline elements')
