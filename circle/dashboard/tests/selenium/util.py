@@ -37,6 +37,17 @@ logger = logging.getLogger(SeleniumConfig.logger_name)
 
 
 class SeleniumMixin(object):
+    def current_url(self):
+        url_base = urlparse.urlparse(self.driver.current_url)
+        url_save = ("%(host)s%(url)s" % {
+            'host': self.conf.host,
+            'url': urlparse.urljoin(url_base.path, url_base.query)})
+        if url_base.fragment:
+            url_save = ("%(url)s#%(fragment)s" % {
+                'url': url_save,
+                'fragment': url_base.fragment})
+        return url_save
+
     def list_options(self, select):
         try:
             option_dic = {}
@@ -244,10 +255,7 @@ class CircleSeleniumMixin(SeleniumMixin):
 
     def save_template_from_vm(self, name):
         try:
-            url_base = urlparse.urlparse(self.driver.current_url)
-            url_save = ("%(host)s%(url)s" % {
-                'host': self.conf.host,
-                'url': urlparse.urljoin(url_base.path, url_base.query)})
+            url_save = self.current_url()
             WebDriverWait(self.driver, self.conf.wait_max_sec).until(
                 ec.element_to_be_clickable((
                     By.CSS_SELECTOR,
@@ -404,14 +412,7 @@ class CircleSeleniumMixin(SeleniumMixin):
         """
         try:
             if restore:
-                url_base = urlparse.urlparse(self.driver.current_url)
-                url_save = ("%(host)s%(url)s" % {
-                    'host': self.conf.host,
-                    'url': urlparse.urljoin(url_base.path, url_base.query)})
-                if url_base.fragment:
-                    url_save = ("%(url)s#%(fragment)s" % {
-                        'url': url_save,
-                        'fragment': url_base.fragment})
+                url_save = self.current_url()
             self.driver.get('%(host)s/dashboard/vm/activity/%(id)s/' % {
                 'host': self.conf.host,
                 'id': operation_id})
@@ -512,7 +513,7 @@ class CircleSeleniumMixin(SeleniumMixin):
                 logger.warning("Found activity list for %s:" % code_text)
                 for activity in searched_activity:
                     activity_id = activity.get_attribute('data-activity-id')
-                    key = activity.get_attribute('timestamp')
+                    key = activity.get_attribute('data-timestamp')
                     logger.warning("%(id)s @ %(activity)s" % {
                         'id': activity_id,
                         'activity': datetime.fromtimestamp(
