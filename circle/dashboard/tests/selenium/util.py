@@ -216,6 +216,13 @@ class CircleSeleniumMixin(SeleniumMixin):
                 logger.exception("Selenium cannot find the form controls")
                 raise Exception('Cannot find the form controls')
 
+    def fallback(self, fallback_url, fallback_function):
+        logger.warning(
+            "However error was anticipated falling back to %(url)s" % {
+                'url': fallback_url})
+        self.driver.get(fallback_url)
+        return fallback_function()
+
     def wait_and_accept_operation(self, argument=None, try_wait=None,
                                   fallback_url=None):
         """
@@ -242,16 +249,20 @@ class CircleSeleniumMixin(SeleniumMixin):
                 WebDriverWait(self.driver, self.conf.wait_max_sec).until(
                     ec.visibility_of_element_located((
                         By.CSS_SELECTOR, try_wait)))
-
+        except TimeoutException:
+            logger.exception("Selenium cannot accept the"
+                             " operation confirmation")
+            if fallback_url is not None:
+                self.fallback(
+                    fallback_url,
+                    lambda: self.wait_and_accept_operation(argument))
         except:
             logger.exception("Selenium cannot accept the"
                              " operation confirmation")
             if fallback_url is not None:
-                logger.warning(
-                    "However error was anticipated falling back to %(url)s" % {
-                        'url': fallback_url})
-                self.driver.get(fallback_url)
-                self.wait_and_accept_operation(argument, try_wait)
+                self.fallback(
+                    fallback_url,
+                    lambda: self.wait_and_accept_operation(argument, try_wait))
             else:
                 self.driver.save_screenshot('error_at_try_wait.png')
                 raise Exception(
@@ -269,7 +280,7 @@ class CircleSeleniumMixin(SeleniumMixin):
             self.wait_and_accept_operation(
                 try_wait="a[href$='/op/shut_off/']", fallback_url=fallback_url)
             recent_deploy = self.recently(self.get_timeline_elements(
-                "vm.Instance.deploy"))
+                "vm.Instance.deploy", url_save))
             if not self.check_operation_result(
                     recent_deploy, "a[href*='#activity']"):
                 logger.warning("Selenium cannot deploy the "
@@ -284,7 +295,7 @@ class CircleSeleniumMixin(SeleniumMixin):
             self.wait_and_accept_operation(
                 try_wait="a[href$='/op/deploy/']", fallback_url=fallback_url)
             recent_shut_off = self.recently(self.get_timeline_elements(
-                "vm.Instance.shut_off"))
+                "vm.Instance.shut_off", url_save))
             if not self.check_operation_result(
                     recent_shut_off, "a[href*='#activity']"):
                 logger.warning("Selenium cannot shut off the "
@@ -295,7 +306,17 @@ class CircleSeleniumMixin(SeleniumMixin):
                     ec.element_to_be_clickable((
                         By.CSS_SELECTOR,
                         "a[href$='/op/save_as_template/']"))))
-            self.wait_and_accept_operation(name)
+            fallback_url = "%sop/save_as_template/" % url_save
+            self.wait_and_accept_operation(
+                argument=name, fallback_url=fallback_url)
+            recent_save_template = self.recently(self.get_timeline_elements(
+                "vm.Instance.save_as_template", url_save))
+            if not self.check_operation_result(
+                    recent_save_template, "a[href*='#activity']"):
+                logger.warning("Selenium cannot save the "
+                               "chosen virtual machine as a template")
+                raise Exception(
+                    'Cannot save the virtual machine as a template')
             logger.warning("Selenium created %(name)s template" % {
                 'name': name})
             return name
@@ -492,7 +513,7 @@ class CircleSeleniumMixin(SeleniumMixin):
             raise Exception(
                 'Cannot filter timeline activities to find most recent')
 
-    def get_timeline_elements(self, code=None, time_out_handle=True):
+    def get_timeline_elements(self, code=None, fallback_url=None):
         try:
             if code is None:
                 css_activity_selector = "div[data-activity-code]"
@@ -508,7 +529,6 @@ class CircleSeleniumMixin(SeleniumMixin):
                         ec.element_to_be_clickable((
                             By.CSS_SELECTOR, "a[href*='#activity']"))))
                 activity_dict = {}
-                self.driver.save_screenshot('activity.png')
                 timeline = WebDriverWait(
                     self.driver, self.conf.wait_max_sec).until(
                         ec.visibility_of_element_located((
@@ -526,14 +546,15 @@ class CircleSeleniumMixin(SeleniumMixin):
                     activity_dict[key] = activity_id
             except StaleElementReferenceException:
                 logger.warning('Timeline changed while processing it')
-                return self.get_timeline_elements(code)
+                return self.get_timeline_elements(code, fallback_url)
             except TimeoutException:
                 logger.warning('Can not found timeline in the page')
-                if time_out_handle:
-                    self.driver.save_screenshot('lost-timeline.png')
-                    self.driver.get(self.get_url(fragment='activity'))
-                    return self.get_timeline_elements(code, False)
+                if fallback_url is not None:
+                    return self.fallback(
+                        fallback_url,
+                        lambda: self.get_timeline_elements(code))
                 else:
+                    self.driver.save_screenshot('lost-timeline.png')
                     raise Exception('Selenium could not locate the timeline')
             except:
                 logger.exception('Selenium cannot get timeline elemets')
@@ -562,6 +583,7 @@ class CircleSeleniumMixin(SeleniumMixin):
             self.driver.find_element_by_id(
                 "template-choose-next-button").click()
             if delete_disk:
+                url_save = self.get_url(fragment='activity')
                 self.click_on_link(
                     self.get_link_by_href("#resources"))
                 disks = WebDriverWait(
@@ -577,7 +599,7 @@ class CircleSeleniumMixin(SeleniumMixin):
                         try_wait="a[href*='#activity']")
                     recent_remove_disk = self.recently(
                         self.get_timeline_elements(
-                            "vm.Instance.remove_disk"))
+                            "vm.Instance.remove_disk", url_save))
                     if not self.check_operation_result(recent_remove_disk):
                         logger.warning("Selenium cannot delete disk "
                                        "of the chosen template")
@@ -593,11 +615,13 @@ class CircleSeleniumMixin(SeleniumMixin):
         try:
             self.driver.get(
                 '%s/dashboard/template/%s/' % (self.conf.host, template_id))
-            url = urlparse.urlparse(self.driver.current_url)
+            url_save = "%(host)s/dashboard/template/delete/%(pk)s/" % {
+                'host': self.conf.host,
+                'pk': template_id}
             self.click_on_link(
                 self.get_link_by_href(
                     "/dashboard/template/delete/%s/" % template_id))
-            self.wait_and_accept_operation()
+            self.wait_and_accept_operation(fallback_url=url_save)
             WebDriverWait(self.driver, self.conf.wait_max_sec).until(
                 ec.visibility_of_element_located((
                     By.CLASS_NAME, 'alert-success')))
@@ -606,6 +630,8 @@ class CircleSeleniumMixin(SeleniumMixin):
                 logger.warning('CIRCLE does not redirect to /template/list/')
                 raise Exception(
                     'System does not redirect to template listing')
+            logger.warning('Successfully deleted template: id - %(pk)s' % {
+                'pk': template_id})
         except:
             logger.exception("Selenium cannot delete the desired template")
             raise Exception('Cannot delete the desired template')
@@ -680,8 +706,10 @@ class CircleSeleniumMixin(SeleniumMixin):
                         By.CLASS_NAME, 'fa-trash-o')))
             except:
                 # Selenium can time-out by not realising the JS refresh
+                url_save = self.get_url(fragment='activity')
                 recent_destroy_vm = self.recently(
-                    self.get_timeline_elements("vm.Instance.destroy"))
+                    self.get_timeline_elements(
+                        "vm.Instance.destroy", url_save))
                 if not self.check_operation_result(recent_destroy_vm):
                     logger.warning("Selenium cannot destroy "
                                    "the chosen %(id)s vm" % {
@@ -693,6 +721,9 @@ class CircleSeleniumMixin(SeleniumMixin):
                     ec.visibility_of_element_located((
                         By.CSS_SELECTOR,
                         "span[data-status*='DESTROYED']")))
+                logger.warning(
+                    'Successfully deleted virtual machine: id - %(pk)s' % {
+                        'pk': pk})
                 return True
             except:
                 return False

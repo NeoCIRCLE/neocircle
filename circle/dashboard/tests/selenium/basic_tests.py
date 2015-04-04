@@ -46,11 +46,12 @@ logger.addHandler(fileHandler)
 
 
 class BasicSeleniumTests(SeleniumTestCase, CircleSeleniumMixin):
+    template_ids = []
+    vm_ids = []
+
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
         self.conf = conf
-        self.template_ids = []
-        self.vm_ids = []
 
     @classmethod
     def setup_class(cls):
@@ -208,8 +209,8 @@ class BasicSeleniumTests(SeleniumTestCase, CircleSeleniumMixin):
                 By.ID, 'confirmation-modal')))
         vm_list = self.driver.find_elements_by_class_name(
             'vm-create-template-summary')
-        logger.warning("Selenium found %(vm_number)s virtual machine template "
-                       " possibilities" % {
+        logger.warning("Selenium found %(vm_number)s virtual machine"
+                       " template possibilities" % {
                            'vm_number': len(vm_list)})
         (self.assertIsNotNone(
             vm_list, "Selenium can not find the VM list") or
