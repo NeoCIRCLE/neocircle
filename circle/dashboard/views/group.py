@@ -63,6 +63,8 @@ class GroupCodeMixin(object):
             client = Saml2Client(conf, state_cache=state,
                                  identity_cache=IdentityCache(request.session))
             subject_id = _get_subject_id(request.session)
+            if not subject_id:
+                return newgroups
             identity = client.users.get_identity(subject_id,
                                                  check_not_on_or_after=False)
             if identity:
