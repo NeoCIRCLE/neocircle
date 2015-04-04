@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 from datetime import datetime
+import inspect
 import logging
 import random
 import re
@@ -37,6 +38,12 @@ logger = logging.getLogger(SeleniumConfig.logger_name)
 
 
 class SeleniumMixin(object):
+    def create_screenshot(self):
+        name = 'ss_from_%(caller_name)s.png' % {
+            'caller_name': inspect.stack()[1][3]}
+        logger.warning('Creating screenshot "%s"' % name)
+        self.driver.save_screenshot(name)
+
     def get_url(self, fragment_needed=False, fragment=None):
         url_base = urlparse.urlparse(self.driver.current_url)
         url_save = ("%(host)s%(url)s" % {
@@ -64,6 +71,7 @@ class SeleniumMixin(object):
         except:
             logger.exception("Selenium cannot list the"
                              " select possibilities")
+            self.create_screenshot()
             raise Exception(
                 'Cannot list the select possibilities')
 
@@ -96,6 +104,7 @@ class SeleniumMixin(object):
             select.select_by_value(my_choice)
         except:
             logger.exception("Selenium cannot select the chosen one")
+            self.create_screenshot()
             raise Exception(
                 'Cannot select the chosen one')
 
@@ -118,6 +127,7 @@ class SeleniumMixin(object):
         except:
             logger.exception(
                 "Selenium cannot find the href=%s link" % target_href)
+            self.create_screenshot()
             raise Exception('Cannot find the requested href')
 
     def click_on_link(self, link):
@@ -145,6 +155,7 @@ class SeleniumMixin(object):
             self.driver.execute_script(javascript, link)
         except:
             logger.exception("Selenium cannot inject javascript to the page")
+            self.create_screenshot()
             raise Exception(
                 'Cannot inject javascript to the page')
 
@@ -214,6 +225,7 @@ class CircleSeleniumMixin(SeleniumMixin):
                     time.sleep(0.5)
             except:
                 logger.exception("Selenium cannot find the form controls")
+                self.create_screenshot()
                 raise Exception('Cannot find the form controls')
 
     def fallback(self, fallback_url, fallback_function):
@@ -256,6 +268,10 @@ class CircleSeleniumMixin(SeleniumMixin):
                 self.fallback(
                     fallback_url,
                     lambda: self.wait_and_accept_operation(argument))
+            else:
+                self.create_screenshot()
+                raise Exception(
+                    'Cannot accept the operation confirmation')
         except:
             logger.exception("Selenium cannot accept the"
                              " operation confirmation")
@@ -264,7 +280,7 @@ class CircleSeleniumMixin(SeleniumMixin):
                     fallback_url,
                     lambda: self.wait_and_accept_operation(argument, try_wait))
             else:
-                self.driver.save_screenshot('error_at_try_wait.png')
+                self.create_screenshot()
                 raise Exception(
                     'Cannot accept the operation confirmation')
 
@@ -322,6 +338,7 @@ class CircleSeleniumMixin(SeleniumMixin):
             return name
         except:
             logger.exception("Selenium cannot save a vm as a template")
+            self.create_screenshot()
             raise Exception(
                 'Cannot save a vm as a template')
 
@@ -344,6 +361,7 @@ class CircleSeleniumMixin(SeleniumMixin):
                         By.ID, 'id_name')))
             template_name.clear()
             template_name.send_keys(name)
+
             self.select_option(self.driver.find_element_by_id(
                 "id_arch"), architecture)
             self.select_option(self.driver.find_element_by_id(
@@ -361,6 +379,7 @@ class CircleSeleniumMixin(SeleniumMixin):
         except:
             logger.exception("Selenium cannot create a base"
                              " template virtual machine")
+            self.create_screenshot()
             raise Exception(
                 'Cannot create a base template virtual machine')
 
@@ -427,6 +446,7 @@ class CircleSeleniumMixin(SeleniumMixin):
             return found_template_ids
         except:
             logger.exception('Selenium cannot find the template\'s id')
+            self.create_screenshot()
             raise Exception(
                 'Cannot find the template\'s id')
 
@@ -478,6 +498,7 @@ class CircleSeleniumMixin(SeleniumMixin):
         except:
             logger.exception("Selenium cannot check the"
                              " result of an operation")
+            self.create_screenshot()
             raise Exception(
                 'Cannot check the result of an operation')
 
@@ -510,6 +531,7 @@ class CircleSeleniumMixin(SeleniumMixin):
         except:
             logger.exception("Selenium cannot filter timeline "
                              "activities to find most recent")
+            self.create_screenshot()
             raise Exception(
                 'Cannot filter timeline activities to find most recent')
 
@@ -554,17 +576,20 @@ class CircleSeleniumMixin(SeleniumMixin):
                         fallback_url,
                         lambda: self.get_timeline_elements(code))
                 else:
-                    self.driver.save_screenshot('lost-timeline.png')
+                    self.create_screenshot()
                     raise Exception('Selenium could not locate the timeline')
             except:
                 logger.exception('Selenium cannot get timeline elemets')
+                self.create_screenshot()
                 raise Exception('Cannot get timeline elements')
             if len(activity_dict) == 0:
                 logger.warning('Found activity list is empty')
+                self.create_screenshot()
                 raise Exception('Selenium did not found any activity')
             return activity_dict
         except:
             logger.exception('Selenium cannot find the searched activity')
+            self.create_screenshot()
             raise Exception('Cannot find the searched activity')
 
     def create_template_from_base(self, delete_disk=True, name=None):
@@ -608,6 +633,7 @@ class CircleSeleniumMixin(SeleniumMixin):
         except:
             logger.exception("Selenium cannot start a"
                              " template from a base one")
+            self.create_screenshot()
             raise Exception(
                 'Cannot start a template from a base one')
 
@@ -634,6 +660,7 @@ class CircleSeleniumMixin(SeleniumMixin):
                 'pk': template_id})
         except:
             logger.exception("Selenium cannot delete the desired template")
+            self.create_screenshot()
             raise Exception('Cannot delete the desired template')
 
     def create_random_vm(self):
@@ -663,6 +690,7 @@ class CircleSeleniumMixin(SeleniumMixin):
             return pk
         except:
             logger.exception("Selenium cannot start a VM")
+            self.create_screenshot()
             raise Exception('Cannot start a VM')
 
     def view_change(self, target_box):
@@ -729,4 +757,5 @@ class CircleSeleniumMixin(SeleniumMixin):
                 return False
         except:
             logger.exception("Selenium can not destroy a VM")
-            raise Exception("Can not destroy a VM")
+            self.create_screenshot()
+            raise Exception("Cannot destroy a VM")
