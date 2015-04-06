@@ -441,7 +441,7 @@ class TransferTemplateOwnershipView(TransferOwnershipView):
     confirm_view = TransferTemplateOwnershipConfirmView
     model = InstanceTemplate
     notification_msg = ugettext_noop(
-        '%(user)s offered you to take the ownership of '
+        '%(owner)s offered you to take the ownership of '
         'his/her template called %(instance)s. '
         '<a href="%(token)s" '
         'class="btn btn-success btn-small">Accept</a>')

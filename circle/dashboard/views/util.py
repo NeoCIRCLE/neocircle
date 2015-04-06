@@ -610,7 +610,7 @@ class TransferOwnershipView(CheckedDetailView, DetailView):
             new_owner.profile.notify(
                 ugettext_noop('Ownership offer'),
                 self.notification_msg,
-                {'instance': obj, 'token': token_path})
+                {'instance': obj, 'token': token_path, 'owner': request.user})
         except Profile.DoesNotExist:
             messages.error(request, _('Can not notify selected user.'))
         else:
@@ -665,8 +665,8 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
             old.profile.notify(
                 ugettext_noop('Ownership accepted'),
                 ugettext_noop('Your ownership offer of %(instance)s has been '
-                              'accepted by %(user)s.'),
-                {'instance': instance})
+                              'accepted by %(owner)s.'),
+                {'instance': instance, 'owner': request.user})
         return redirect(instance.get_absolute_url())
 
     def get_instance(self, key, user):

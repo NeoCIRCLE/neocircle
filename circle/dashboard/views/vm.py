@@ -1297,7 +1297,7 @@ class TransferInstanceOwnershipView(TransferOwnershipView):
     confirm_view = TransferInstanceOwnershipConfirmView
     model = Instance
     notification_msg = ugettext_noop(
-        '%(user)s offered you to take the ownership of '
+        '%(owner)s offered you to take the ownership of '
         'his/her virtual machine called %(instance)s. '
         '<a href="%(token)s" '
         'class="btn btn-success btn-small">Accept</a>')

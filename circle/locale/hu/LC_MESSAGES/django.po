@@ -2686,11 +2686,11 @@ msgstr ""
 #: dashboard/views/template.py:444
 #, python-format
 msgid ""
-"%(user)s offered you to take the ownership of his/her template called "
+"%(owner)s offered you to take the ownership of his/her template called "
 "%(instance)s. <a href=\"%(token)s\" class=\"btn btn-success btn-"
 "small\">Accept</a>"
 msgstr ""
-"%(user)s át kívánja ruházni %(instance)s nevű sablonját Önre. <a "
+"%(owner)s át kívánja ruházni %(instance)s nevű sablonját Önre. <a "
 "href=\"%(token)s\" class=\"btn btn-success btn-small\">Elfogadás</a>"
 
 #: dashboard/views/user.py:150
@@ -2856,8 +2856,8 @@ msgstr "Átruházás elfogadva"
 
 #: dashboard/views/util.py:667
 #, python-format
-msgid "Your ownership offer of %(instance)s has been accepted by %(user)s."
-msgstr "%(instance)s gépre vonatkozó átruházási ajánlatát elfogadta %(user)s."
+msgid "Your ownership offer of %(instance)s has been accepted by %(owner)s."
+msgstr "%(instance)s gépre vonatkozó átruházási ajánlatát elfogadta %(owner)s."
 
 #: dashboard/views/util.py:716
 msgid "Only the owners can delete the selected object."
@@ -2924,11 +2924,11 @@ msgstr "tulajdon átruházása"
 #: dashboard/views/vm.py:1300
 #, python-format
 msgid ""
-"%(user)s offered you to take the ownership of his/her virtual machine called"
+"%(owner)s offered you to take the ownership of his/her virtual machine called"
 " %(instance)s. <a href=\"%(token)s\" class=\"btn btn-success btn-"
 "small\">Accept</a>"
 msgstr ""
-"%(user)s át kívánja ruházni %(instance)s nevű virtuális gépét Önre. <a "
+"%(owner)s át kívánja ruházni %(instance)s nevű virtuális gépét Önre. <a "
 "href=\"%(token)s\" class=\"btn btn-success btn-small\">Elfogadás</a>"
 
 #: firewall/fields.py:42
