@@ -185,7 +185,6 @@ class ResourceChangeAction(RequestAction):
             max_ram_size=self.ram_size, priority=self.priority,
             with_shutdown=True)
 
-
     @property
     def accept_msg(self):
         return _(
