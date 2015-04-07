@@ -31,7 +31,7 @@ from request.models import (
     ExtendLeaseAction, ResourceChangeAction,
 )
 from vm.models import Instance
-from vm.operations import ResourcesRequestOperation
+from vm.operations import ResourcesOperation
 from request.tables import (
     RequestTable, TemplateAccessTypeTable, LeaseTypeTable,
 )
@@ -91,7 +91,7 @@ class RequestDetail(LoginRequiredMixin, DetailView):
         context = super(RequestDetail, self).get_context_data(**kwargs)
 
         context['action'] = request.action
-        context['accept_states'] = ResourcesRequestOperation.accept_states
+        context['accept_states'] = ResourcesOperation.accept_states
 
         return context
 

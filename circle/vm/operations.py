@@ -1334,10 +1334,21 @@ class ResourcesOperation(InstanceOperation):
     description = _("Change resources of a stopped virtual machine.")
     acl_level = "owner"
     required_perms = ('vm.change_resources', )
-    accept_states = ('STOPPED', 'PENDING', )
+    accept_states = ('STOPPED', 'PENDING', 'RUNNING')
 
     def _operation(self, user, activity,
-                   num_cores, ram_size, max_ram_size, priority):
+                   num_cores, ram_size, max_ram_size, priority,
+                   with_shutdown=False, task=None):
+        if self.instance.status == 'RUNNING' and not with_shutdown:
+            raise Instance.WrongStateError(self.instance)
+
+        try:
+            self.instance.shutdown(parent_activity=activity, task=task)
+        except Instance.WrongStateError:
+            pass
+
+        self.instance._update_status()
+
         self.instance.num_cores = num_cores
         self.instance.ram_size = ram_size
         self.instance.max_ram_size = max_ram_size
@@ -1350,32 +1361,6 @@ class ResourcesOperation(InstanceOperation):
             "Priority: %(priority)s, Num cores: %(num_cores)s, "
             "Ram size: %(ram_size)s"), priority=priority, num_cores=num_cores,
             ram_size=ram_size
-        )
-
-
-@register_operation
-class ResourcesRequestOperation(InstanceOperation):
-    id = "resources_request"
-    name = _("resources request")
-    description = ""
-    required_perms = ()
-    accept_states = ("STOPPED", "RUNNING", "PENDING", )
-    async_queue = "localhost.man.slow"
-
-    def _operation(self, user, activity, resource_request, task=None):
-        try:
-            self.instance.shutdown(parent_activity=activity, task=task)
-        except Instance.WrongStateError:
-            pass
-
-        self.instance._update_status()
-
-        self.instance.resources_change(
-            parent_activity=activity,
-            num_cores=resource_request.num_cores,
-            ram_size=resource_request.ram_size,
-            max_ram_size=resource_request.ram_size,
-            priority=resource_request.priority
         )
 
 

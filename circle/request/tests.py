@@ -27,7 +27,7 @@ from vm.models import Instance, InstanceTemplate, Lease
 from dashboard.models import Profile
 from request.models import Request, LeaseType, TemplateAccessType
 from dashboard.tests.test_views import LoginMixin
-from vm.operations import ResourcesRequestOperation
+from vm.operations import ResourcesOperation
 
 
 class RequestTest(LoginMixin, MockCeleryMixin, TestCase):
@@ -85,9 +85,9 @@ class RequestTest(LoginMixin, MockCeleryMixin, TestCase):
 
         # workaround for NOSTATE
         inst.emergency_change_state(new_state="STOPPED", system=True)
-        with patch.object(ResourcesRequestOperation, 'async') as mock_method:
+        with patch.object(ResourcesOperation, 'async') as mock_method:
             mock_method.side_effect = (
-                new_request.action.instance.resources_request)
+                new_request.action.instance.resources_change)
             new_request.accept(self.us)
 
         inst = Instance.objects.get(pk=1)

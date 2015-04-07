@@ -180,7 +180,11 @@ class ResourceChangeAction(RequestAction):
                             validators=[MinValueValidator(0)])
 
     def accept(self, user):
-        self.instance.resources_request.async(user=user, resource_request=self)
+        self.instance.resources_change.async(
+            user=user, num_cores=self.num_cores, ram_size=self.ram_size,
+            max_ram_size=self.ram_size, priority=self.priority,
+            with_shutdown=True)
+
 
     @property
     def accept_msg(self):
