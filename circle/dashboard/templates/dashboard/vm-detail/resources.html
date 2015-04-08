@@ -22,12 +22,12 @@
 
 <div id="vm-details-resources-disk">
   <h3>
-    {% trans "Disks" %}
     <div class="pull-right">
       <div id="disk-ops">
         {% include "dashboard/vm-detail/_disk-operations.html" %}
       </div>
     </div>
+    {% trans "Disks" %}
   </h3>
   <div class="clearfix"></div>
 
@@ -46,7 +46,7 @@
 {% if user.is_superuser %}
 <hr/>
 
-<div class="row" id="">
+<div class="row">
   <div class="col-sm-12">
     <h3>
       {% trans "Required traits" %}
@@ -58,7 +58,7 @@
 
 <hr/>
 
-<div class="row" id="">
+<div class="row">
   <div class="col-sm-12">
     <h3>
       {% trans "Raw data" %}

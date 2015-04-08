@@ -45,7 +45,7 @@
             {{ s.finished|arrowfilter:LANGUAGE_CODE }}
           </span>
         {% else %}
-          <i class="fa fa-refresh fa-spin" class="sub-activity-loading-icon"></i>
+          <i class="fa fa-refresh fa-spin"></i>
         {% endif %}
         {% if s.has_failed %}
           <div class="label label-danger">{% trans "failed" %}</div>
