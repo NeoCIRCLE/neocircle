@@ -5,7 +5,7 @@
 
 {% for a in activities %}
 <div class="activity{% if a.pk == active.pk %} activity-active{%endif%}"
-  data-activity-id="{{ a.pk }}" data-activity-code="{{ a.activity_code }}">
+  data-activity-id="{{ a.pk }}" data-activity-code="{{ a.activity_code }}" data-timestamp="{{ a.started|date:"U" }}">
   <span class="timeline-icon{% if a.has_failed %} timeline-icon-failed{% endif %}">
   <i class="fa {% if not a.finished %}fa-refresh fa-spin {% else %}fa-{{a.icon}}{% endif %}"></i>
 </span>
