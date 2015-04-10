@@ -54,7 +54,7 @@ class RequestAction(Model):
 
 
 class RequestType(Model):
-    name = CharField(max_length=25, verbose_name=_("Name"))
+    name = CharField(max_length=100, verbose_name=_("Name"))
 
     def __unicode__(self):
         return self.name
