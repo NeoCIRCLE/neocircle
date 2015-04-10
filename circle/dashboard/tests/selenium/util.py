@@ -286,11 +286,11 @@ class CircleSeleniumMixin(SeleniumMixin):
 
     def save_template_from_vm(self, name):
         try:
-            url_save = self.get_url()
             WebDriverWait(self.driver, self.conf.wait_max_sec).until(
                 ec.element_to_be_clickable((
                     By.CSS_SELECTOR,
                     "a[href$='/op/deploy/']")))
+            url_save = self.get_url()
             self.click_on_link(self.get_link_by_href("/op/deploy/"))
             fallback_url = "%sop/deploy/" % url_save
             self.wait_and_accept_operation(
@@ -625,7 +625,8 @@ class CircleSeleniumMixin(SeleniumMixin):
                     recent_remove_disk = self.recently(
                         self.get_timeline_elements(
                             "vm.Instance.remove_disk", url_save))
-                    if not self.check_operation_result(recent_remove_disk):
+                    if not self.check_operation_result(
+                            recent_remove_disk, "a[href*='#activity']"):
                         logger.warning("Selenium cannot delete disk "
                                        "of the chosen template")
                         raise Exception('Cannot delete disk')
@@ -738,7 +739,8 @@ class CircleSeleniumMixin(SeleniumMixin):
                 recent_destroy_vm = self.recently(
                     self.get_timeline_elements(
                         "vm.Instance.destroy", url_save))
-                if not self.check_operation_result(recent_destroy_vm):
+                if not self.check_operation_result(
+                        recent_destroy_vm, "a[href*='#activity']"):
                     logger.warning("Selenium cannot destroy "
                                    "the chosen %(id)s vm" % {
                                        'id': pk})
