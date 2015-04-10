@@ -1334,10 +1334,20 @@ class ResourcesOperation(InstanceOperation):
     description = _("Change resources of a stopped virtual machine.")
     acl_level = "owner"
     required_perms = ('vm.change_resources', )
-    accept_states = ('STOPPED', 'PENDING', )
+    accept_states = ('STOPPED', 'PENDING', 'RUNNING')
 
     def _operation(self, user, activity,
-                   num_cores, ram_size, max_ram_size, priority):
+                   num_cores, ram_size, max_ram_size, priority,
+                   with_shutdown=False, task=None):
+        if self.instance.status == 'RUNNING' and not with_shutdown:
+            raise Instance.WrongStateError(self.instance)
+
+        try:
+            self.instance.shutdown(parent_activity=activity, task=task)
+        except Instance.WrongStateError:
+            pass
+
+        self.instance._update_status()
 
         self.instance.num_cores = num_cores
         self.instance.ram_size = ram_size

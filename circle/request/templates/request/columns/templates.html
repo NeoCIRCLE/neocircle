@@ -1,0 +1,5 @@
+{% for t in record.templates.all %}
+  <a href="{% url "dashboard.views.template-detail" pk=t.pk %}">
+    {{ t.name }}</a>
+  {% if not forloop.last %} | {% endif %}
+{% endfor %}

@@ -355,6 +355,7 @@ LOCAL_APPS = (
     'manager',
     'acl',
     'monitor',
+    'request',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -555,3 +556,4 @@ ADMIN_ENABLED = False
 
 BLACKLIST_PASSWORD = get_env_variable("BLACKLIST_PASSWORD", "")
 BLACKLIST_HOOK_URL = get_env_variable("BLACKLIST_HOOK_URL", "")
+REQUEST_HOOK_URL = get_env_variable("REQUEST_HOOK_URL", "")

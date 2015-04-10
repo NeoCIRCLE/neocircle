@@ -223,4 +223,25 @@ $(function() {
     return false;
   });
 
+  $(document).on("click", "#vm-renew-request-lease-button", function(e) {
+    $("#vm-renew-request-lease").stop().slideToggle();
+    e.preventDefault();
+  });
+
+  $("#vm-request-resource").click(function(e) {
+    $(".cpu-priority-slider, .cpu-count-slider, .ram-slider").simpleSlider("setDisabled", false);
+    $(".ram-input, .cpu-count-input, .cpu-priority-input").prop("disabled", false);
+
+    $("#vm-details-resources-form").prop("action", $(this).prop("href"));
+    $("#vm-request-resource-form").show();
+    $("#modify-the-resources").show();
+    $(this).hide();
+
+    $("html, body").animate({
+      scrollTop: $("#modify-the-resources").offset().top - 60
+    });
+
+    return e.preventDefault();
+  });
+
 });

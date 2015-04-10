@@ -228,7 +228,6 @@ urlpatterns = patterns(
     url(r'^vm/opensearch.xml$', OpenSearchDescriptionView.as_view(),
         name="dashboard.views.vm-opensearch"),
 
-
     url(r'^storage/$', StorageDetail.as_view(),
         name="dashboard.views.storage"),
     url(r'^disk/(?P<pk>\d+)/$', DiskDetail.as_view(),
