@@ -450,7 +450,7 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
     )
     AUTHENTICATION_BACKENDS = (
         'django.contrib.auth.backends.ModelBackend',
-        'djangosaml2.backends.Saml2Backend',
+        'common.backends.Saml2Backend',
     )
 
     remote_metadata = join(SITE_ROOT, 'remote_metadata.xml')
