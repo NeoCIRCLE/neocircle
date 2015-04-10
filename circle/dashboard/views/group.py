@@ -146,7 +146,7 @@ class GroupDetailView(CheckedDetailView):
             self.object.user_set.add(entity)
         except User.DoesNotExist:
             if saml_available:
-                FutureMember.objects.get_or_create(org_id=name,
+                FutureMember.objects.get_or_create(org_id=name.upper(),
                                                    group=self.object)
             else:
                 messages.warning(request, _('User "%s" not found.') % name)

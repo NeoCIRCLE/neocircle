@@ -70,7 +70,7 @@ def search_user(keyword):
         return User.objects.get(username=keyword)
     except User.DoesNotExist:
         try:
-            return User.objects.get(profile__org_id=keyword)
+            return User.objects.get(profile__org_id__iexact=keyword)
         except User.DoesNotExist:
             return User.objects.get(email=keyword)
 

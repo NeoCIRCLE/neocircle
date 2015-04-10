@@ -309,7 +309,7 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
         attributes = kwargs.pop('attributes')
         atr = settings.SAML_ORG_ID_ATTRIBUTE
         try:
-            value = attributes[atr][0]
+            value = attributes[atr][0].upper()
         except Exception as e:
             value = None
             logger.info("save_org_id couldn't find attribute. %s", unicode(e))
@@ -339,7 +339,7 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
                              group, unicode(g))
                 g.user_set.add(sender)
 
-        for i in FutureMember.objects.filter(org_id=value):
+        for i in FutureMember.objects.filter(org_id__iexact=value):
             i.group.user_set.add(sender)
             i.delete()
 
