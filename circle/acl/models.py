@@ -182,7 +182,7 @@ class AclBase(Model):
     def get_users_with_level(self, **kwargs):
         logger.debug('%s.get_users_with_level() called', unicode(self))
         object_levels = (self.object_level_set.filter(**kwargs).select_related(
-            'users', 'level').all())
+            'level').prefetch_related('users').all())
         users = []
         for object_level in object_levels:
             name = object_level.level.codename
@@ -194,7 +194,7 @@ class AclBase(Model):
     def get_groups_with_level(self):
         logger.debug('%s.get_groups_with_level() called', unicode(self))
         object_levels = (self.object_level_set.select_related(
-            'groups', 'level').all())
+            'level').prefetch_related('groups').all())
         groups = []
         for object_level in object_levels:
             name = object_level.level.codename
