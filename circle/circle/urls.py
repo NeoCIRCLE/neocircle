@@ -88,3 +88,4 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
     )
 
 handler500 = 'common.views.handler500'
+handler403 = 'common.views.handler403'

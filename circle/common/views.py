@@ -19,32 +19,42 @@ from sys import exc_info
 
 import logging
 
-from django.template import RequestContext
 from django.shortcuts import render_to_response
+from django.template import RequestContext
 
 from .models import HumanReadableException
 
 logger = logging.getLogger(__name__)
 
 
+def get_context(request, exception):
+    ctx = {}
+    if issubclass(exception.__class__, HumanReadableException):
+        try:
+            if request.user.is_superuser:
+                ctx['error'] = exception.get_admin_text()
+            else:
+                ctx['error'] = exception.get_user_text()
+        except:
+            pass
+    return ctx
+
+
 def handler500(request):
     cls, exception, traceback = exc_info()
     logger.exception("unhandled exception")
-    ctx = {}
-    if isinstance(exception, HumanReadableException):
-        try:
-            ctx['error'] = exception.get_user_text()
-        except:
-            pass
-        else:
-            try:
-                if request.user.is_superuser():
-                    ctx['error'] = exception.get_admin_text()
-            except:
-                pass
+    ctx = get_context(request, exception)
     try:
         resp = render_to_response("500.html", ctx, RequestContext(request))
     except:
         resp = render_to_response("500.html", ctx)
     resp.status_code = 500
+    return resp
+
+
+def handler403(request):
+    cls, exception, traceback = exc_info()
+    ctx = get_context(request, exception)
+    resp = render_to_response("403.html", ctx)
+    resp.status_code = 403
     return resp
