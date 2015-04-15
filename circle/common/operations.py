@@ -76,7 +76,7 @@ class Operation(object):
         user = auxargs.pop('user')
         parent_activity = auxargs.pop('parent_activity')
         if parent_activity and user is None and not skip_auth_check:
-            user = parent_activity.user
+            user = allargs['user'] = parent_activity.user
             if user is None:  # parent was a system call
                 skip_auth_check = True
 
