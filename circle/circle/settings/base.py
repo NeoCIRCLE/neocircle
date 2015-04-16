@@ -528,6 +528,10 @@ except:
 LOCALE_PATHS = (join(SITE_ROOT, 'locale'), )
 COMPANY_NAME = get_env_variable("COMPANY_NAME", "BME IK 2015")
 
+first, last = get_env_variable(
+    'VNC_PORT_RANGE', '20000, 65536').replace(' ', '').split(',')
+VNC_PORT_RANGE = (int(first), int(last))  # inclusive start, exclusive end
+
 graphite_host = environ.get("GRAPHITE_HOST", None)
 graphite_port = environ.get("GRAPHITE_PORT", None)
 if graphite_host and graphite_port:
