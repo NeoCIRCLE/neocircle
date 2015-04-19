@@ -38,6 +38,8 @@ class Saml2Backend(Saml2BackendBase):
             match = match.group()
             return '+%04x' % ord(match)
 
+        if isinstance(main_attribute, str):
+            main_attribute = main_attribute.decode('UTF-8')
         assert isinstance(main_attribute, unicode)
         return re.sub(r'[^\w.@-]', replace, main_attribute)
 
