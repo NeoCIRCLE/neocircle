@@ -173,6 +173,10 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         context['is_operator'] = is_operator
         context['is_owner'] = is_owner
 
+        # operation also allows RUNNING (if with_shutdown is present)
+        context['save_resources_enabled'] = instance.status not in ("RUNNING",
+                                                                    "PENDING")
+
         return context
 
     def post(self, request, *args, **kwargs):

@@ -13,11 +13,11 @@
 {% if op.resources_change %}
   <button type="submit" class="btn btn-success btn-sm change-resources-button"
     id="vm-details-resources-save" data-vm="{{ instance.pk }}"
-    {% if op.resources_change.disabled %}disabled{% endif %}>
+    {% if not save_resources_enabled %}disabled{% endif %}>
     <i class="fa fa-floppy-o"></i> {% trans "Save resources" %}
   </button>
   <span class="change-resources-help"
-    {% if not op.resources_change.disabled %}style="display: none;"{% endif %}>
+    {% if save_resources_enabled %}style="display: none;"{% endif %}>
     {% trans "Stop your VM to change resources." %}
   </span>
 {% else %}
