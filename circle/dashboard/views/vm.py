@@ -66,7 +66,7 @@ from ..forms import (
     VmPortRemoveForm, VmPortAddForm,
     VmRemoveInterfaceForm,
 )
-from request.models import TemplateAccessType
+from request.models import TemplateAccessType, LeaseType
 from request.forms import LeaseRequestForm, TemplateRequestForm
 from ..models import Favourite
 from manager.scheduler import has_traits
@@ -172,6 +172,10 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         # is operator/owner
         context['is_operator'] = is_operator
         context['is_owner'] = is_owner
+
+        # operation also allows RUNNING (if with_shutdown is present)
+        context['save_resources_enabled'] = instance.status not in ("RUNNING",
+                                                                    "PENDING")
 
         return context
 
@@ -681,6 +685,7 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
     def get_context_data(self, **kwargs):
         context = super(VmRenewView, self).get_context_data(**kwargs)
         context['lease_request_form'] = LeaseRequestForm(request=self.request)
+        context['lease_types'] = LeaseType.objects.exists()
         return context
 
 
