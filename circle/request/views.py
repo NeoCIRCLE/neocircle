@@ -162,7 +162,7 @@ class RequestTypeList(LoginRequiredMixin, SuperuserRequiredMixin,
         return context
 
 
-class TemplateRequestView(FormView):
+class TemplateRequestView(LoginRequiredMixin, FormView):
     form_class = TemplateRequestForm
     template_name = "request/request-template.html"
 
@@ -193,7 +193,7 @@ class TemplateRequestView(FormView):
         return redirect("/")
 
 
-class VmRequestMixin(object):
+class VmRequestMixin(LoginRequiredMixin, object):
     def get_vm(self):
         return get_object_or_404(Instance, pk=self.kwargs['vm_pk'])
 
