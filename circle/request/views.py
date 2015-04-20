@@ -19,9 +19,11 @@ from __future__ import unicode_literals, absolute_import
 from django.views.generic import (
     UpdateView, TemplateView, DetailView, CreateView, FormView, DeleteView,
 )
+from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import redirect, get_object_or_404
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext as _
 
 from braces.views import SuperuserRequiredMixin, LoginRequiredMixin
 from django_tables2 import SingleTableView
@@ -97,17 +99,19 @@ class RequestDetail(LoginRequiredMixin, DetailView):
 
 
 class TemplateAccessTypeDetail(LoginRequiredMixin, SuperuserRequiredMixin,
-                               UpdateView):
+                               SuccessMessageMixin, UpdateView):
     model = TemplateAccessType
     template_name = "request/template-type-form.html"
     form_class = TemplateAccessTypeForm
+    success_message = _("Template access type successfully updated.")
 
 
 class TemplateAccessTypeCreate(LoginRequiredMixin, SuperuserRequiredMixin,
-                               CreateView):
+                               SuccessMessageMixin, CreateView):
     model = TemplateAccessType
     template_name = "request/template-type-form.html"
     form_class = TemplateAccessTypeForm
+    success_message = _("New template access type successfully created.")
 
 
 class TemplateAccessTypeDelete(LoginRequiredMixin, SuperuserRequiredMixin,
@@ -119,16 +123,20 @@ class TemplateAccessTypeDelete(LoginRequiredMixin, SuperuserRequiredMixin,
         return reverse("request.views.type-list")
 
 
-class LeaseTypeDetail(LoginRequiredMixin, SuperuserRequiredMixin, UpdateView):
+class LeaseTypeDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+                      SuccessMessageMixin, UpdateView):
     model = LeaseType
     template_name = "request/lease-type-form.html"
     form_class = LeaseTypeForm
+    success_message = _("Lease type successfully updated.")
 
 
-class LeaseTypeCreate(LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
+class LeaseTypeCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+                      SuccessMessageMixin, CreateView):
     model = LeaseType
     template_name = "request/lease-type-form.html"
     form_class = LeaseTypeForm
+    success_message = _("New lease type successfully created.")
 
 
 class LeaseTypeDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
