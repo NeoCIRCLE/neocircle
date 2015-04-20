@@ -16,7 +16,6 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf import settings
-from django.templatetags.static import static
 
 
 def notifications(request):
@@ -31,5 +30,4 @@ def extract_settings(request):
     return {
         'COMPANY_NAME': getattr(settings, "COMPANY_NAME", None),
         'ADMIN_ENABLED': getattr(settings, "ADMIN_ENABLED", False),
-        'OG_IMAGE': settings.DJANGO_URL[:-1] + static("dashboard/img/og.png")
     }

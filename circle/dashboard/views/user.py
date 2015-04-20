@@ -34,6 +34,7 @@ from django.core.paginator import Paginator, InvalidPage
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import redirect, get_object_or_404
+from django.templatetags.static import static
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_POST
 from django.views.generic import (
@@ -101,6 +102,8 @@ def circle_login(request):
     authentication_form = CircleAuthenticationForm
     extra_context = {
         'saml2': saml_available,
+        'og_image': (settings.DJANGO_URL.rstrip("/") +
+                     static("dashboard/img/og.png"))
     }
     response = login_view(request, authentication_form=authentication_form,
                           extra_context=extra_context)
