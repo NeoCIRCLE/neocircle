@@ -19,7 +19,7 @@
   - {{ a.percentage }}%
 {% endif %}
 </strong>
-{% endspaceless %}{% if a.times < 2 %} <span title="{{ a.started }}">{{ a.started|arrowfilter:LANGUAGE_CODE }}</span>{% endif %}{% if a.user %},
+{% endspaceless %}{% if a.times < 2 %}&nbsp;<span title="{{ a.started }}">{{ a.started|arrowfilter:LANGUAGE_CODE }}</span>{% endif %}{% if a.user %},
   <a class="no-style-link" href="{% url "dashboard.views.profile" username=a.user.username %}">
     {% include "dashboard/_display-name.html" with user=a.user show_org=True %}
   </a>
