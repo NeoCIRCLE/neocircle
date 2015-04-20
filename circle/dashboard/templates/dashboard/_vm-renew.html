@@ -1,0 +1,30 @@
+{% extends "dashboard/operate.html" %}
+
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block formbuttons %}
+<div class="pull-right">
+  <a class="btn btn-default" href="{{object.get_absolute_url}}" data-dismiss="modal">
+    {% trans "Cancel" %}
+  </a>
+  {% if lease_types %}
+  <a class="btn btn-primary" id="vm-renew-request-lease-button"
+   href="{% url "request.views.request-lease" vm_pk=object.pk %}">
+    <i class="fa fa-forward"></i>
+    {% trans "Request longer lease" %}
+  </a>
+  {% endif %}
+  <button class="btn btn-{{ opview.effect }} btn-op-form-send" type="submit" id="op-form-send">
+    {% if opview.icon %}<i class="fa fa-fw fa-{{opview.icon}}"></i> {% endif %}{{ op.name|capfirst }}
+  </button>
+</div>
+{% endblock %}
+
+{% block extra %}
+<div class="clearfix"></div>
+<div id="vm-renew-request-lease">
+  <hr />
+  {% include "request/_request-lease-form.html" with form=lease_request_form vm=object %}
+</div>
+{% endblock %}

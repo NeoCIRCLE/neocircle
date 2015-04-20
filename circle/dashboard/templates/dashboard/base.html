@@ -22,16 +22,29 @@
     {% if user.is_superuser %}
     {% if ADMIN_ENABLED %}
     <li>
-      <a href="/admin/"><i class="fa fa-cogs"></i> {% trans "Admin" %}</a>
+      <a href="/admin/">
+        <i class="fa fa-cogs"></i>
+        <span class="hidden-sm">{% trans "Admin" %}</span>
+      </a>
     </li>
     {% endif %}
     <li>
-      <a href="{% url "dashboard.views.storage" %}"><i class="fa fa-database"></i>
-        {% trans "Storage" %}
+      <a href="{% url "dashboard.views.storage" %}">
+        <i class="fa fa-database"></i>
+        <span class="hidden-sm">{% trans "Storage" %}</span>
       </a>
     </li>
     <li>
-      <a href="/network/"><i class="fa fa-globe"></i> {% trans "Network" %}</a>
+      <a href="{% url "network.index" %}">
+        <i class="fa fa-globe"></i>
+        <span class="hidden-sm">{% trans "Network" %}</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url "request.views.request-list" %}">
+        <i class="fa fa-phone"></i>
+        <span class="hidden-sm">{% trans "Requests" %}</span>
+      </a>
     </li>
     {% endif %}
     <li>

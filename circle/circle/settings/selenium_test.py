@@ -40,7 +40,8 @@ INSTALLED_APPS += (
 )
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
-path_to_selenium_test = os.path.expanduser('~/circle/circle/dashboard/tests/selenium')
+
+path_to_selenium_test = os.path.join(SITE_ROOT, "dashboard/tests/selenium")
 NOSE_ARGS = ['--stop', '--with-doctest', '--with-selenium-driver', '--selenium-driver=firefox', '-w%s' % path_to_selenium_test]
 
 PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']

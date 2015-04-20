@@ -739,6 +739,7 @@ class LeaseForm(forms.ModelForm):
 
     class Meta:
         model = Lease
+        exclude = ()
 
 
 class VmRenewForm(OperationForm):
@@ -1604,6 +1605,7 @@ class DataStoreForm(ModelForm):
 
     class Meta:
         model = DataStore
+        fields = ("name", "path", "hostname", )
 
 
 class DiskForm(ModelForm):
@@ -1620,3 +1622,5 @@ class DiskForm(ModelForm):
 
     class Meta:
         model = Disk
+        fields = ("name", "filename", "datastore", "type", "bus", "size",
+                  "base", "dev_num", "destroyed", "is_ready", )

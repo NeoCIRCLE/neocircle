@@ -1,0 +1,136 @@
+{% extends "dashboard/base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+{% load arrowfilter %}
+
+{% block title-page %}{% trans "Request" %}{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        {% if request.user.is_superuser %}
+          <a href="{% url "request.views.request-list" %}" class="btn btn-default btn-xs pull-right">
+            {% trans "Back" %}
+          </a>
+        {% endif %}
+        <h3 class="no-margin">
+          <i class="fa fa-{{ object.get_request_icon }}"></i>
+          {{ object.get_readable_type|capfirst }}
+        </h3>
+      </div>
+      <div class="panel-body">
+        <div class="label label-{{ object.get_effect }} pull-right" style="font-size: 1.5em; margin-top: 10px;">
+          <i class="fa fa-{{ object.get_status_icon }}"></i>
+          {{ object.get_readable_status|upper }}
+        </div>
+        <p>
+          <img src="{{ object.user.profile.get_avatar_url }}" width="50" height="50"/>
+          <a href="{{ object.user.profile.get_absolute_url }}">
+            {{ object.user.profile.get_display_name }}
+          </a>
+        </p>
+        <p>
+          <pre>{{ object.message }}</pre>
+        </p>
+        <hr />
+        {% if object.type == "lease" %}
+          <dl>
+            <dt>{% trans "VM name" %}</dt>
+            <dd><a href="{{ action.instance.get_absolute_url }}">{{ action.instance.name }}</a></dd>
+            <dt>{% trans "VM description" %}</dt>
+            <dd>{{ action.instance.description }}</dd>
+            <dt>{% trans "Current lease" %}</dt>
+            <dd>{{ action.instance.lease }}</dd>
+            <dt>{% trans "Requested lease" %}</dt>
+            <dd>{{ action.lease_type.lease }}</dd>
+          </dl>
+        {% elif object.type == "template" %}
+          <dl>
+            <dt>
+              {% trans "Template type" %}:
+              <span style="font-weight: normal;">{{ action.template_type.name }}</span>
+            </dt>
+            <dd>
+              <ul>
+                {% for t in action.template_type.templates.all %}
+                  <li><a href="{{ t.get_absolute_url }}">{{ t }}</a></li>
+                {% endfor %}
+              </ul>
+            </dd>
+            <dt>{% trans "Level" %}<dt>
+            <dd>{{ action.get_readable_level }}</dd>
+          </dl>
+        {% elif object.type == "resource" %}
+          <dl>
+            <dt>{% trans "VM name" %}</dt>
+            <dd><a href="{{ action.instance.get_absolute_url }}">{{ action.instance.name }}</a></dd>
+            <dt>{% trans "Status" %}</dt>
+            <dd>
+              <i class="fa {{ action.instance.get_status_icon }}"></i>
+              {{ action.instance.get_status_display|upper }}
+            </dd>
+            <dt>{% trans "VM description" %}</dt>
+            <dd>{{ action.instance.description }}</dd>
+            <dt>
+              {% trans "Priority" %}
+              <span class="text-muted" style="font-weight: normal;">{% trans "(old values in parentheses)" %}</span>
+            </dt>
+            <dd>{{ action.priority }} ({{ action.instance.priority }})</dd>
+            <dt>{% trans "Number of cores" %}</dt>
+            <dd>{{ action.num_cores }} ({{ action.instance.num_cores }})</dd>
+            <dt>{% trans "Ram size" %}</dt>
+            <dd>{{ action.ram_size }} ({{ action.instance.ram_size }}) MiB</dd>
+          </dl>
+        {% else %}
+          hacks!!!
+        {% endif %}
+
+        {% if object.status == "PENDING" and request.user.is_superuser %}
+          <hr />
+
+          <div class="pull-right" id="request-buttons">
+            <form method="POST">
+              {% csrf_token %}
+              <p>
+              <textarea class="form-control" placeholder="{% trans "Reason (sent to the user if the request is declined)" %}" name="reason"></textarea>
+              </p>
+              <button class="btn btn-danger" type="submit">
+                <i class="fa fa-thumbs-down"></i>
+                {% trans "Decline" %}
+              </button>
+            </form>
+            {% if object.type == "resource" and action.instance.status not in accept_states %}
+              {% trans "You can't accept this request because of the VM's state." %}
+            {% else %}
+              <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="accept" value="1"/>
+                <button class="btn btn-success">
+                  <i class="fa fa-thumbs-up"></i>
+                  {% trans "Accept" %}
+                </button>
+              </form>
+            {% endif %}
+          </div>
+        {% endif %}
+        {% if object.status != "PENDING" %}
+          <div class="text-right">
+            {% blocktrans with closed=object.modified|arrowfilter:LANGUAGE_CODE user=object.closed_by.profile.get_display_name %}
+            Closed {{ closed }} by <a href="{{ user.profile.get_absolute_url }}">{{ user }}</a>
+            {% endblocktrans %}
+            {% if object.status == "DECLINED" %}
+              <p>
+                <strong>{% trans "Reason" %}:</strong> {{ object.reason }}
+              </p>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div><!-- .panel-body -->
+    </div>
+  </div>
+</div>
+{% endblock %}

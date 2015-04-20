@@ -38,6 +38,7 @@ urlpatterns = patterns(
     url(r'^network/', include('network.urls')),
     url(r'^blacklist-add/', add_blacklist_item),
     url(r'^dashboard/', include('dashboard.urls')),
+    url(r'^request/', include('request.urls')),
 
     # django/contrib/auth/urls.py (care when new version)
     url((r'^accounts/reset/(?P<uidb64>[0-9A-Za-z_\-]+)/'
@@ -87,3 +88,4 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
     )
 
 handler500 = 'common.views.handler500'
+handler403 = 'common.views.handler403'

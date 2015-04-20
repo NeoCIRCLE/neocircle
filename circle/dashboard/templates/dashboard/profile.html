@@ -2,6 +2,7 @@
 {% load staticfiles %}
 {% load i18n %}
 {% load crispy_forms_tags %}
+{% load arrowfilter %}
 
 {% block title-page %}{{ profile.username}} | {% trans "Profile" %}{% endblock %}
 
@@ -42,6 +43,7 @@
                 {% trans "Email address" %}: {{ profile.email }}
               {% endif %}
             </p>
+            <p>{% trans "Last login" %}: <span title="{{ request.user.last_login  }}">{{ request.user.last_login|arrowfilter:LANGUAGE_CODE}}</span></p>
             {% if request.user == profile %}
             <p>
               {% trans "Use email address as Gravatar profile image" %}:

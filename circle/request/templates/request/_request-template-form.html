@@ -1,0 +1,26 @@
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+<form action="{% url "request.views.request-template" %}" method="POST">
+  {% include "display-form-errors.html" %}
+  {% csrf_token %}
+  {{ form.template|as_crispy_field }}
+
+  <div style="font-weight: bold;">{% trans "Level" %}*</div>
+  {% for radio in form.level %}
+  <div class="myradio" style="display: inline-block; padding-left: 20px;">
+    <label>
+      {{ radio }}
+      <div class="text-muted" style="padding-left: 16px; font-weight: normal;">
+        {% if forloop.last %}
+          {% trans "For users who want to share the template with others." %}
+        {% else %}
+          {% trans "For users who want to start a virtual machine." %}
+        {% endif %}
+      </div>
+    </label>
+  </div>
+  {% endfor %}
+  {{ form.message|as_crispy_field }}
+  <input type="submit" class="btn btn-primary"/>
+</form>

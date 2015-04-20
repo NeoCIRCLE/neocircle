@@ -62,7 +62,6 @@ scheduler = import_module(name=django.conf.settings.VM_SCHEDULER)
 ACCESS_PROTOCOLS = django.conf.settings.VM_ACCESS_PROTOCOLS
 ACCESS_METHODS = [(key, name) for key, (name, port, transport)
                   in ACCESS_PROTOCOLS.iteritems()]
-VNC_PORT_RANGE = (20000, 65536)  # inclusive start, exclusive end
 
 
 def find_unused_port(port_range, used_ports=[]):
@@ -81,7 +80,7 @@ def find_unused_port(port_range, used_ports=[]):
 
 def find_unused_vnc_port():
     port = find_unused_port(
-        port_range=VNC_PORT_RANGE,
+        port_range=django.conf.settings.VNC_PORT_RANGE,
         used_ports=Instance.objects.values_list('vnc_port', flat=True))
 
     if port is None:

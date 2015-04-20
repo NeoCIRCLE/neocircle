@@ -16,6 +16,7 @@ Do you want to perform the following operation on
       {% crispy form %}
     {% endif %}
   {% endblock %}
+  {% block formbuttons %}
   <div class="pull-right">
     <a class="btn btn-default" href="{{object.get_absolute_url}}"
         data-dismiss="modal">{% trans "Cancel" %}</a>
@@ -23,4 +24,7 @@ Do you want to perform the following operation on
       {% if opview.icon %}<i class="fa fa-fw fa-{{opview.icon}}"></i> {% endif %}{{ op.name|capfirst }}
     </button>
   </div>
+  {% endblock %}
 </form>
+
+{% block extra %}{% endblock %}

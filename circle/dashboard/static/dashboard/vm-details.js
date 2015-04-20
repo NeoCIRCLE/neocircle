@@ -38,6 +38,13 @@ $(function() {
     e.preventDefault();
   });
 
+  /* save as (close vnc console) */
+  $('.operation-save_as_template').click(function(e) {
+    if ($('li.active > a[href$="console"]').length > 0) {
+      $('a[data-toggle$="pill"][href$="#activity"]').click();
+    }
+  });
+
   /* remove tag */
   $('.vm-details-remove-tag').click(function() {
     var to_remove =  $.trim($(this).parent('div').text());
@@ -221,6 +228,27 @@ $(function() {
       });
     });
     return false;
+  });
+
+  $(document).on("click", "#vm-renew-request-lease-button", function(e) {
+    $("#vm-renew-request-lease").stop().slideToggle();
+    e.preventDefault();
+  });
+
+  $("#vm-request-resource").click(function(e) {
+    $(".cpu-priority-slider, .cpu-count-slider, .ram-slider").simpleSlider("setDisabled", false);
+    $(".ram-input, .cpu-count-input, .cpu-priority-input").prop("disabled", false);
+
+    $("#vm-details-resources-form").prop("action", $(this).prop("href"));
+    $("#vm-request-resource-form").show();
+    $("#modify-the-resources").show();
+    $(this).hide();
+
+    $("html, body").animate({
+      scrollTop: $("#modify-the-resources").offset().top - 60
+    });
+
+    return e.preventDefault();
   });
 
 });

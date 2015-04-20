@@ -2,19 +2,42 @@
 {% load sizefieldtags %}
 {% load crispy_forms_tags %}
 
+
+<div class="label label-info label-100" id="modify-the-resources">
+  {% trans "Modify the resources" %}
+</div>
 <form method="POST" action="{{ op.resources_change.get_url }}" id="vm-details-resources-form">
   {% csrf_token %}
   {% include "dashboard/_resources-sliders.html" with field_priority=resources_form.priority field_num_cores=resources_form.num_cores field_ram_size=resources_form.ram_size %}
 
 {% if op.resources_change %}
-    <button type="submit" class="btn btn-success btn-sm change-resources-button" 
-      id="vm-details-resources-save" data-vm="{{ instance.pk }}"
-      {% if op.resources_change.disabled %}disabled{% endif %}>
-      <i class="fa fa-floppy-o"></i> {% trans "Save resources" %}
-    </button>
-    <span class="change-resources-help"
-      {% if not op.resources_change.disabled %}style="display: none;"{% endif %}
-      >{% trans "Stop your VM to change resources." %}</span>
+  <button type="submit" class="btn btn-success btn-sm change-resources-button"
+    id="vm-details-resources-save" data-vm="{{ instance.pk }}"
+    {% if not save_resources_enabled %}disabled{% endif %}>
+    <i class="fa fa-floppy-o"></i> {% trans "Save resources" %}
+  </button>
+  <span class="change-resources-help"
+    {% if save_resources_enabled %}style="display: none;"{% endif %}>
+    {% trans "Stop your VM to change resources." %}
+  </span>
+{% else %}
+  <div id="vm-request-resource-form">
+    <div class="alert alert-info text-justify">
+      {% trans "Changing resources is only possible on virtual machines with STOPPED state. We suggest to turn off the VM after submitting the request otherwise it will be automatically stopped in the future when the request is accepted." %}
+    </div>
+    <div class="form-group">
+      <label>{% trans "Message" %}*</label>
+      <textarea class="form-control" name="message">{% include "request/initials/resources.html" %}</textarea>
+    </div>
+    <input type="submit" class="btn btn-success btn-sm"/>
+  </div>
+
+  <a href="{% url "request.views.request-resource" vm_pk=object.pk %}"
+   class="btn btn-primary btn-sm" id="vm-request-resource">
+    <i class="fa fa-tasks"></i>
+    {% trans "Request resources" %}
+  </a>
+
 {% endif %}
 </form>
 

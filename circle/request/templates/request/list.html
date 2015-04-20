@@ -1,0 +1,34 @@
+{% extends "dashboard/base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+
+{% block title-page %}{% trans "Requests" %}{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <a class="btn btn-xs btn-primary pull-right "href="{% url "request.views.type-list" %}">
+          {% trans "Request types" %}
+        </a>
+        <h3 class="no-margin"><i class="fa fa-phone"></i> {% trans "Requests" %}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="panel-body">
+          {% trans "Filter by status" %}:
+          <a href="{{ request.path }}">{% trans "ALL" %}</a>
+          {% for s in statuses %}
+            <a href="?status={{ s.0 }}">{{ s.1|upper }}</a>
+          {% endfor %}
+          <div class="table-responsive">
+            {% render_table table %}
+          </div>
+        </div>
+      </div><!-- .panel-body -->
+    </div>
+  </div>
+</div>
+{% endblock %}
