@@ -66,7 +66,7 @@ from ..forms import (
     VmPortRemoveForm, VmPortAddForm,
     VmRemoveInterfaceForm,
 )
-from request.models import TemplateAccessType
+from request.models import TemplateAccessType, LeaseType
 from request.forms import LeaseRequestForm, TemplateRequestForm
 from ..models import Favourite
 from manager.scheduler import has_traits
@@ -681,6 +681,7 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
     def get_context_data(self, **kwargs):
         context = super(VmRenewView, self).get_context_data(**kwargs)
         context['lease_request_form'] = LeaseRequestForm(request=self.request)
+        context['lease_types'] = LeaseType.objects.exists()
         return context
 
 
