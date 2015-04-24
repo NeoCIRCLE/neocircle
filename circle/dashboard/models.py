@@ -59,6 +59,31 @@ def pwgen():
     return User.objects.make_random_password()
 
 
+class Message(TimeStampedModel):
+    message = CharField(max_length=500, verbose_name=_('message'))
+    starts_at = DateTimeField(
+        null=True, blank=True, verbose_name=_('starts at'))
+    ends_at = DateTimeField(
+        null=True, blank=True, verbose_name=_('ends at'))
+    effect = CharField(
+        default='info', max_length=10, verbose_name=_('effect'),
+        choices=(('success', _('success')), ('info', _('info')),
+                 ('warning', _('warning')), ('danger', _('danger'))))
+    enabled = BooleanField(default=False, verbose_name=_('enabled'))
+
+    class Meta:
+        ordering = ["id"]
+        verbose_name = _('message')
+        verbose_name_plural = _('messages')
+
+    def __unicode__(self):
+        return self.message
+
+    @permalink
+    def get_absolute_url(self):
+        return ('dashboard.views.message-detail', None, {'pk': self.pk})
+
+
 class Favourite(Model):
     instance = ForeignKey("vm.Instance")
     user = ForeignKey(User)

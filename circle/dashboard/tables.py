@@ -29,7 +29,7 @@ from django_sshkey.models import UserKey
 
 from storage.models import Disk
 from vm.models import Node, InstanceTemplate, Lease
-from dashboard.models import ConnectCommand
+from dashboard.models import ConnectCommand, Message
 
 
 class FileSizeColumn(Column):
@@ -354,3 +354,18 @@ class DiskListTable(Table):
         order_by = ("-pk", )
         per_page = 15
         empty_text = _("No disk found.")
+
+
+class MessageListTable(Table):
+    message = LinkColumn(
+        'dashboard.views.message-detail',
+        args=[A('pk')],
+        attrs={'th': {'data-sort': "string"}}
+    )
+
+    class Meta:
+        model = Message
+        attrs = {'class': "table table-bordered table-striped table-hover",
+                 'id': "disk-list-table"}
+        order_by = ("-pk", )
+        fields = ('pk', 'message', 'enabled', 'effect')

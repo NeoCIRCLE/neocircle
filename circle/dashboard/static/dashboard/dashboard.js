@@ -527,3 +527,22 @@ function replaceTag(tag) {
 function safe_tags_replace(str) {
     return str.replace(/[&<>]/g, replaceTag);
 }
+
+$(function () {
+  var closed = JSON.parse(getCookie('broadcast-messages'));
+  $('.broadcast-message').each(function() {
+    var id = $(this).data('id');
+    if (closed && closed.indexOf(id) != -1) {
+      $(this).remove()
+    }
+  });
+
+  $('.broadcast-message').on('closed.bs.alert', function () {
+    var closed = JSON.parse(getCookie('broadcast-messages'));
+    if (!closed) {
+      closed = [];
+    }
+    closed.push($(this).data('id'));
+    setCookie('broadcast-messages', JSON.stringify(closed), 7 * 24 * 60 * 60 * 1000, "/");
+  });
+});

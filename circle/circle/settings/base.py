@@ -282,6 +282,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'dashboard.context_processors.notifications',
     'dashboard.context_processors.extract_settings',
+    'dashboard.context_processors.broadcast_messages',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs

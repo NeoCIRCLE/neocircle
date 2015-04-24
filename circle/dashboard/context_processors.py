@@ -16,6 +16,10 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf import settings
+from django.db.models import Q
+from django.utils import timezone
+
+from .models import Message
 
 
 def notifications(request):
@@ -31,3 +35,10 @@ def extract_settings(request):
         'COMPANY_NAME': getattr(settings, "COMPANY_NAME", None),
         'ADMIN_ENABLED': getattr(settings, "ADMIN_ENABLED", False),
     }
+
+
+def broadcast_messages(request):
+    now = timezone.now()
+    messages = Message.objects.filter(enabled=True).exclude(
+        Q(starts_at__gt=now) | Q(ends_at__lt=now))
+    return {'broadcast_messages': messages}
