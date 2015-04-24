@@ -533,7 +533,7 @@ $(function () {
   $('.broadcast-message').each(function() {
     var id = $(this).data('id');
     if (closed && closed.indexOf(id) != -1) {
-      $(this).remove()
+      $(this).remove();
     }
   });
 
