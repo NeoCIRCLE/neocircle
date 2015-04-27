@@ -27,7 +27,7 @@ from django.contrib.auth.signals import user_logged_in
 from django.core.urlresolvers import reverse
 from django.db.models import (
     Model, ForeignKey, OneToOneField, CharField, IntegerField, TextField,
-    DateTimeField, permalink, BooleanField
+    DateTimeField, BooleanField
 )
 from django.db.models.signals import post_save, pre_delete, post_delete
 from django.templatetags.static import static
@@ -75,9 +75,9 @@ class Message(TimeStampedModel, TimeFramedModel):
     def __unicode__(self):
         return self.message
 
-    @permalink
     def get_absolute_url(self):
-        return ('dashboard.views.message-detail', None, {'pk': self.pk})
+        return reverse('dashboard.views.message-detail',
+                       kwargs={'pk': self.pk})
 
 
 class Favourite(Model):
@@ -291,10 +291,9 @@ class GroupProfile(AclBase):
         except cls.DoesNotExist:
             return Group.objects.get(name=name)
 
-    @permalink
     def get_absolute_url(self):
-        return ('dashboard.views.group-detail', None,
-                {'pk': self.group.pk})
+        return reverse('dashboard.views.group-detail',
+                       kwargs={'pk': self.group.pk})
 
 
 def get_or_create_profile(self):
