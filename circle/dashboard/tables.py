@@ -364,6 +364,7 @@ class MessageListTable(Table):
     )
 
     class Meta:
+        template = "django_tables2/with_pagination.html"
         model = Message
         attrs = {'class': "table table-bordered table-striped table-hover",
                  'id': "disk-list-table"}
