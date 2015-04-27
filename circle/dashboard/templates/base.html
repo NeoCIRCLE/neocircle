@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load staticfiles %}
+{% load cache %}
 {% load compressed %}
 <!DOCTYPE html>
 <html lang="{{lang}}">
@@ -40,6 +41,22 @@
     </div><!-- navbar navbar-inverse navbar-fixed-top -->
 
     <div class="container">
+      {% block broadcast_messages %}
+        {% cache 30 broadcast_messages %}
+          <div id="broadcast-messages">
+            {% for message in broadcast_messages %}
+              <div data-id={{ message.id }} class="alert alert-{{ message.effect }}
+                  text-center broadcast-message">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+                {{ message.message|safe }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endcache %}
+      {% endblock broadcast_messages %}
+
       {% block messages %}
         <div class="messagelist">
         {% if messages %}

@@ -27,7 +27,7 @@ from django.contrib.auth.signals import user_logged_in
 from django.core.urlresolvers import reverse
 from django.db.models import (
     Model, ForeignKey, OneToOneField, CharField, IntegerField, TextField,
-    DateTimeField, permalink, BooleanField
+    DateTimeField, BooleanField
 )
 from django.db.models.signals import post_save, pre_delete, post_delete
 from django.templatetags.static import static
@@ -39,7 +39,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from sizefield.models import FileSizeField
 
 from jsonfield import JSONField
-from model_utils.models import TimeStampedModel
+from model_utils.models import TimeFramedModel, TimeStampedModel
 from model_utils.fields import StatusField
 from model_utils import Choices
 
@@ -57,6 +57,27 @@ logger = getLogger(__name__)
 
 def pwgen():
     return User.objects.make_random_password()
+
+
+class Message(TimeStampedModel, TimeFramedModel):
+    message = CharField(max_length=500, verbose_name=_('message'))
+    effect = CharField(
+        default='info', max_length=10, verbose_name=_('effect'),
+        choices=(('success', _('success')), ('info', _('info')),
+                 ('warning', _('warning')), ('danger', _('danger'))))
+    enabled = BooleanField(default=False, verbose_name=_('enabled'))
+
+    class Meta:
+        ordering = ["id"]
+        verbose_name = _('message')
+        verbose_name_plural = _('messages')
+
+    def __unicode__(self):
+        return self.message
+
+    def get_absolute_url(self):
+        return reverse('dashboard.views.message-detail',
+                       kwargs={'pk': self.pk})
 
 
 class Favourite(Model):
@@ -270,10 +291,9 @@ class GroupProfile(AclBase):
         except cls.DoesNotExist:
             return Group.objects.get(name=name)
 
-    @permalink
     def get_absolute_url(self):
-        return ('dashboard.views.group-detail', None,
-                {'pk': self.group.pk})
+        return reverse('dashboard.views.group-detail',
+                       kwargs={'pk': self.group.pk})
 
 
 def get_or_create_profile(self):
