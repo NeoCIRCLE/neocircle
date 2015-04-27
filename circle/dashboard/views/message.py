@@ -16,6 +16,8 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.cache import cache
+from django.core.cache.utils import make_template_fragment_key
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from django.views.generic import CreateView, DeleteView, UpdateView
@@ -28,29 +30,37 @@ from ..models import Message
 from ..tables import MessageListTable
 
 
+class InvalidateMessageCacheMixin(object):
+    def post(self, *args, **kwargs):
+        key = make_template_fragment_key('broadcast_messages')
+        cache.delete(key)
+        return super(InvalidateMessageCacheMixin, self).post(*args, **kwargs)
+
+
 class MessageList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     template_name = "dashboard/message-list.html"
     model = Message
     table_class = MessageListTable
 
 
-class MessageDetail(LoginRequiredMixin, SuperuserRequiredMixin,
-                    SuccessMessageMixin, UpdateView):
+class MessageDetail(InvalidateMessageCacheMixin, LoginRequiredMixin,
+                    SuperuserRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Message
     template_name = "dashboard/message-edit.html"
     form_class = MessageForm
     success_message = _("Broadcast message successfully updated.")
 
 
-class MessageCreate(LoginRequiredMixin, SuperuserRequiredMixin,
-                    SuccessMessageMixin, CreateView):
+class MessageCreate(InvalidateMessageCacheMixin, LoginRequiredMixin,
+                    SuperuserRequiredMixin, SuccessMessageMixin, CreateView):
     model = Message
     template_name = "dashboard/message-create.html"
     form_class = MessageForm
     success_message = _("New broadcast message successfully created.")
 
 
-class MessageDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
+class MessageDelete(InvalidateMessageCacheMixin, LoginRequiredMixin,
+                    SuperuserRequiredMixin, DeleteView):
     model = Message
     template_name = "dashboard/confirm/base-delete.html"
 
