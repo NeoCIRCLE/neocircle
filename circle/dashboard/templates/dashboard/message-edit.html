@@ -31,4 +31,26 @@
     </div>
   </div>
 </div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin">
+          <i class="fa fa-eye"></i>
+          {% trans "Preview" %}
+        </h3>
+      </div>
+      <div class="panel-body">
+        <div class="alert alert-{{ message.effect }} text-center broadcast-message">
+          {{ message.message|safe }}
+        </div>
+      </div><!-- .panel-body -->
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block broadcast_messages %}
 {% endblock %}

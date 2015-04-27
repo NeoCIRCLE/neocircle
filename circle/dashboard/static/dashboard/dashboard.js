@@ -545,4 +545,14 @@ $(function () {
     closed.push($(this).data('id'));
     setCookie('broadcast-messages', JSON.stringify(closed), 7 * 24 * 60 * 60 * 1000, "/");
   });
+
+  $("#id_message").on('input', function() {
+    $('.broadcast-message').html($(this).val());
+  });
+
+  $("#id_effect").on('input', function() {
+    $('.broadcast-message').removeClass(
+      'alert-info alert-warning alert-success alert-danger').addClass(
+      "alert-" + $(this).val());
+  });
 });
