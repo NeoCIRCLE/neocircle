@@ -42,7 +42,7 @@
 
     <div class="container">
       {% block broadcast_messages %}
-        {% cache 1 broadcast_messages %}
+        {% cache 30 broadcast_messages %}
           <div id="broadcast-messages">
             {% for message in broadcast_messages %}
               <div data-id={{ message.id }} class="alert alert-{{ message.effect }}
