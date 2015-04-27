@@ -1629,7 +1629,7 @@ class DiskForm(ModelForm):
 class MessageForm(ModelForm):
     class Meta:
         model = Message
-        fields = ("message", "enabled", "effect", "starts_at", "ends_at")
+        fields = ("message", "enabled", "effect", "start", "end")
 
     @property
     def helper(self):

@@ -39,7 +39,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from sizefield.models import FileSizeField
 
 from jsonfield import JSONField
-from model_utils.models import TimeStampedModel
+from model_utils.models import TimeFramedModel, TimeStampedModel
 from model_utils.fields import StatusField
 from model_utils import Choices
 
@@ -59,12 +59,8 @@ def pwgen():
     return User.objects.make_random_password()
 
 
-class Message(TimeStampedModel):
+class Message(TimeStampedModel, TimeFramedModel):
     message = CharField(max_length=500, verbose_name=_('message'))
-    starts_at = DateTimeField(
-        null=True, blank=True, verbose_name=_('starts at'))
-    ends_at = DateTimeField(
-        null=True, blank=True, verbose_name=_('ends at'))
     effect = CharField(
         default='info', max_length=10, verbose_name=_('effect'),
         choices=(('success', _('success')), ('info', _('info')),
