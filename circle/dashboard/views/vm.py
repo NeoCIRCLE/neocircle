@@ -776,6 +776,10 @@ vm_ops = OrderedDict([
         op='mount_store', icon='briefcase', effect='info',
         show_in_toolbar=False,
     )),
+    ('install_keys', VmOperationView.factory(
+        op='install_keys', icon='key', effect='info',
+        show_in_toolbar=False,
+    )),
 ])
 
 

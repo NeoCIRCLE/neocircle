@@ -1390,6 +1390,34 @@ class PasswordResetOperation(RemoteAgentOperation):
 
 
 @register_operation
+class InstallKeysOperation(RemoteAgentOperation):
+    id = 'install_keys'
+    name = _("install SSH keys")
+    acl_level = "user"
+    task = agent_tasks.add_keys
+    required_perms = ()
+
+    def _get_remote_args(self, user, keys=None, **kwargs):
+        if keys is None:
+            keys = list(user.userkey_set.values_list('key', flat=True))
+        return (super(InstallKeysOperation, self)._get_remote_args(**kwargs)
+                + [keys])
+
+
+@register_operation
+class RemoveKeysOperation(RemoteAgentOperation):
+    id = 'remove_keys'
+    name = _("remove SSH keys")
+    acl_level = "user"
+    task = agent_tasks.del_keys
+    required_perms = ()
+
+    def _get_remote_args(self, user, keys, **kwargs):
+        return (super(RemoveKeysOperation, self)._get_remote_args(**kwargs)
+                + [keys])
+
+
+@register_operation
 class AgentStartedOperation(InstanceOperation):
     id = 'agent_started'
     name = _("agent")
@@ -1462,6 +1490,7 @@ class AgentStartedOperation(InstanceOperation):
             self.instance._cleanup(parent_activity=activity)
             self.instance.password_reset(
                 parent_activity=activity, password=self.instance.pw)
+            self.instance.install_keys(parent_activity=activity)
             self.instance._set_time(parent_activity=activity)
             self.instance._set_hostname(parent_activity=activity)
 

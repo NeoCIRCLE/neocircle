@@ -46,7 +46,6 @@ from model_utils import Choices
 from acl.models import AclBase
 from common.models import HumanReadableObject, create_readable, Encoder
 
-from vm.tasks.agent_tasks import add_keys, del_keys
 from vm.models.instance import ACCESS_METHODS
 
 from .store_api import Store, NoStoreException, NotOkException, Timeout
@@ -429,9 +428,7 @@ def add_ssh_keys(sender, **kwargs):
         'user', userkey.user).filter(status='RUNNING')
     for i in instances:
         logger.info('called add_keys(%s, %s)', i, userkey)
-        queue = i.get_remote_queue_name("agent")
-        add_keys.apply_async(args=(i.vm_name, [userkey.key]),
-                             queue=queue)
+        i.install_keys(user=userkey.user, keys=[userkey.key])
 
 
 def del_ssh_keys(sender, **kwargs):
@@ -442,9 +439,7 @@ def del_ssh_keys(sender, **kwargs):
         'user', userkey.user).filter(status='RUNNING')
     for i in instances:
         logger.info('called del_keys(%s, %s)', i, userkey)
-        queue = i.get_remote_queue_name("agent")
-        del_keys.apply_async(args=(i.vm_name, [userkey.key]),
-                             queue=queue)
+        i.remove_keys(user=userkey.user, keys=[userkey.key])
 
 
 post_save.connect(add_ssh_keys, sender=UserKey)
