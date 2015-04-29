@@ -27,6 +27,12 @@
         <span class="hidden-sm">{% trans "Admin" %}</span>
       </a>
     </li>
+    <li>
+      <a href="/rosetta/">
+        <i class="fa fa-space-shuttle"></i>
+        <span class="hidden-sm">{% trans "Translations" %}</span>
+      </a>
+    </li>
     {% endif %}
     <li>
       <a href="{% url "dashboard.views.message-list" %}">
