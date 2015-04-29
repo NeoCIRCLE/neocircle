@@ -28,6 +28,7 @@ import time
 from urlparse import urlsplit
 
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from django.conf import settings
@@ -794,7 +795,10 @@ class SaveAsTemplateOperation(InstanceOperation):
             tmpl.delete()
             raise
         else:
-            return tmpl
+            return create_readable(
+                ugettext_noop("New template: %(template)s"),
+                template=reverse('dashboard.views.template-detail',
+                                 kwargs={'pk': tmpl.pk}))
 
 
 @register_operation
