@@ -21,7 +21,8 @@ from logging import getLogger
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.utils.translation import ugettext_noop
 
-from .models import activity_context, has_suffix, humanize_exception
+from .models import (activity_context, has_suffix, humanize_exception,
+                     HumanReadableObject)
 
 logger = getLogger(__name__)
 
@@ -110,8 +111,12 @@ class Operation(object):
         arguments.update(auxargs)
 
         with activity_context(allargs['activity'], on_abort=self.on_abort,
-                              on_commit=self.on_commit):
-            return self._operation(**arguments)
+                              on_commit=self.on_commit) as act:
+            retval = self._operation(**arguments)
+            if (act.result is None and isinstance(
+                    retval, (basestring, int, HumanReadableObject))):
+                act.result = retval
+            return retval
 
     def _operation(self, **kwargs):
         """This method is the operation's particular implementation.

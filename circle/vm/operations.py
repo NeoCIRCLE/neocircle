@@ -986,7 +986,7 @@ class RenewOperation(InstanceOperation):
         if save:
             self.instance.lease = lease
         self.instance.save()
-        activity.result = create_readable(ugettext_noop(
+        return create_readable(ugettext_noop(
             "Renewed to suspend at %(suspend)s and destroy at %(delete)s."),
             suspend=suspend, delete=delete)
 
@@ -1357,7 +1357,7 @@ class ResourcesOperation(InstanceOperation):
         self.instance.full_clean()
         self.instance.save()
 
-        activity.result = create_readable(ugettext_noop(
+        return create_readable(ugettext_noop(
             "Priority: %(priority)s, Num cores: %(num_cores)s, "
             "Ram size: %(ram_size)s"), priority=priority, num_cores=num_cores,
             ram_size=ram_size
