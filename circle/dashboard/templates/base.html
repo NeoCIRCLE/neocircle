@@ -10,6 +10,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <link rel="icon" type="image/png" href="{% static "dashboard/img/favicon.png" %}"/>
+    {% block extra_link %}{% endblock %}
 
     <title>{% block title %}{% block title-page %}{% endblock %} | {% block title-site %}CIRCLE{% endblock %}{% endblock %}</title>
 
@@ -20,7 +21,6 @@
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
-    {% block extra_link %}{% endblock %}
 
     {% block extra_css %}{% endblock %}
   </head>
