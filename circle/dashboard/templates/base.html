@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load staticfiles %}
 {% load cache %}
-{% load compressed %}
+{% load pipeline %}
 <!DOCTYPE html>
 <html lang="{{lang}}">
   <head>
@@ -14,7 +14,7 @@
 
     <title>{% block title %}{% block title-page %}{% endblock %} | {% block title-site %}CIRCLE{% endblock %}{% endblock %}</title>
 
-    {% compressed_css 'all' %}
+    {% stylesheet 'all' %}
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -84,7 +84,7 @@
 
   <script src="{% static "jquery/dist/jquery.min.js" %}"></script>
   <script src="{{ STATIC_URL }}jsi18n/{{ LANGUAGE_CODE }}/djangojs.js"></script>
-  {% compressed_js 'all' %}
+  {% javascript 'all' %}
 
   {% block extra_script %}
   {% endblock %}

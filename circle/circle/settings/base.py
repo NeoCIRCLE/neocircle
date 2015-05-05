@@ -156,6 +156,7 @@ STATIC_URL = get_env_variable('DJANGO_STATIC_URL', default='/static/')
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'pipeline.finders.PipelineFinder',
 )
 ########## END STATIC FILE CONFIGURATION
 STATICFILES_DIRS = [normpath(join(SITE_ROOT, 'bower_components'))]

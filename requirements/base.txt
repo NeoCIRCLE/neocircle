@@ -42,4 +42,4 @@ sqlparse==0.1.13
 pika==0.9.14
 Fabric==1.10.0
 lxml==3.4.0
-git+https://github.com/BME-IK/django-pipeline.git
+django-pipeline==1.4.7
