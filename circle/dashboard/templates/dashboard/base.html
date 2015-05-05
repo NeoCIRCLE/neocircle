@@ -84,8 +84,13 @@
         {% endif %}
       </a>
       <ul class="dropdown-menu" id="notification-messages">
-          <li>{% trans "Loading..." %}</li>
+        <li>{% trans "Loading..." %}</li>
       </ul>
+    </li>
+    <li class="hidden-xs">
+      <a href="{% url "dashboard.views.profile-preferences" %}">
+        <img class="profile-avatar" src="{{ user.profile.get_avatar_url }}" />
+      </a>
     </li>
   </ul>
 

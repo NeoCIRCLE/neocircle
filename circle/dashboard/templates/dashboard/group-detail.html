@@ -90,7 +90,7 @@
               {% for i in users %}
                 <tr>
                   <td>
-                    <i class="fa fa-user"></i>
+                    <img class="profile-avatar" src="{{ i.profile.get_avatar_url}}"/>
                   </td>
                   <td>
                     <a href="{% url "dashboard.views.profile" username=i.username %}" title="{{ i.username }}"
