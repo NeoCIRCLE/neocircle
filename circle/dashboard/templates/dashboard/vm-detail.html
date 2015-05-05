@@ -1,7 +1,7 @@
 {% extends "dashboard/base.html" %}
 {% load staticfiles %}
 {% load i18n %}
-{% load compressed %}
+{% load pipeline %}
 
 {% block title-page %}{{ instance.name }} | vm{% endblock %}
 
@@ -242,5 +242,5 @@
 {% endblock %}
 
 {% block extra_js %}
-  {% compressed_js 'vm-detail' %}
+  {% javascript 'vm-detail' %}
 {% endblock %}
