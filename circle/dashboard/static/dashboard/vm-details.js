@@ -185,12 +185,13 @@ $(function() {
     $("i", this).addClass("fa-spinner fa-spin");
     $(this).prop("disabled", true);
     ct.slideDown();
-    var img = $("img", ct).prop("src", '/dashboard/vm/' + vm + '/screenshot/');
+    var img = $("img", ct).prop("src", '/dashboard/vm/' + vm + '/screenshot/?rnd=' + Math.random());
   });
 
   // if the image is loaded remove the spinning stuff
   // note: this should not work if the image is cached, but it's not
   // see: http://stackoverflow.com/a/3877079/1112653
+  // note #2: it actually gets cached, so a random number is appended
   $("#vm-console-screenshot img").load(function(e) {
     $("#getScreenshotButton").prop("disabled", false)
     .find("i").removeClass("fa-spinner fa-spin");
@@ -200,7 +201,7 @@ $(function() {
 
   // screenshot close
   $("#vm-console-screenshot button").click(function() {
-    $(this).parent("div").slideUp();
+    $(this).closest("div").slideUp();
   });
 
   // select connection string

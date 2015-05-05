@@ -145,11 +145,13 @@ $(function() {
               $("#dashboard-vm-details-connect-button").removeClass('disabled');
           }
           $("[data-target=#_console]").attr("data-toggle", "pill").attr("href", "#console").parent("li").removeClass("disabled");
+          $("#getScreenshotButton").prop("disabled", false);
         } else {
           if(data.connect_uri) {
               $("#dashboard-vm-details-connect-button").addClass('disabled');
           }
           $("[data-target=#_console]").attr("data-toggle", "_pill").attr("href", "#").parent("li").addClass("disabled");
+          $("#getScreenshotButton").prop("disabled", true);
         }
 
         if(data.status == "STOPPED" || data.status == "PENDING") {
