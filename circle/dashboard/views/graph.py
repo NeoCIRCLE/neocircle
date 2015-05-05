@@ -212,7 +212,7 @@ class VmNetwork(object):
                 'alias(scaleToSeconds(nonNegativeDerivative('
                 '%s.network.bytes_sent-%s), 10), "in - %s (bits/s)")' % (
                     params))
-        return 'group(%s)' % ','.join(metrics)
+        return 'group(%s)' % ','.join(metrics) if metrics else None
 
 register_graph(VmNetwork, 'network', VmGraphView)
 
