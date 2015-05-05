@@ -10,12 +10,6 @@
   {% include "open-graph.html" %}
 {% endblock %}
 
-{% block navbar-brand %}
-  <a class="navbar-brand" href="{% url "dashboard.index" %}" style="padding: 10px 15px;">
-    <img src="{% static "dashboard/img/logo.png" %}" style="height: 25px;"/>
-  </a>
-{% endblock %}
-
 {% block content_box %}
   <div class="row">
     {% if form.password.errors or form.username.errors %}
@@ -25,10 +19,7 @@
     {% endif %}
     <div class="col-xs-{% if saml2 %}6{% else %}12{% endif %}">
       <div class="login-form">
-        <form action="" method="POST">
-          {% csrf_token %}
-          {% crispy form %}
-        </form>
+        {% crispy form %}
       </div>
     </div>
     {% if saml2 %}
@@ -37,11 +28,12 @@
       <a href="{% url "saml2_login" %}">{% trans "Click here!" %}</a>
     </div>
     {% endif %}
-    </div>
     <div class="row">
       <div class="col-sm-12">
-        <a class="pull-right" href="{% url "accounts.password-reset" %}">{% trans "Forgot your password?" %}</a>
+        <a class="pull-right" href="{% url "accounts.password-reset" %}" style="margin-right: 15px;">
+          {% trans "Forgot your password?" %}
+        </a>
       </div>
+    </div>
   </div>
-</div>
 {% endblock %}

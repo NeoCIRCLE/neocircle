@@ -15,12 +15,12 @@
 <div id="vm-console-screenshot">
   <button class="btn btn-danger btn-sm pull-right">{% trans "Close" %}</button>
   <h3>{% trans "Screenshot" %}</h3>
-  <img />
+  <img alt="{% trans "Screenshot" %}"/>
   <hr />
 </div>
 
 {% if perms.vm.access_console %}
-<canvas id="noVNC_canvas" width="640px" height="20px">Canvas not supported.
+<canvas id="noVNC_canvas" width="640" height="20">Canvas not supported.
 </canvas>
 
 <script>
