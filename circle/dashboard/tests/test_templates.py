@@ -19,9 +19,8 @@ from os import listdir
 from os.path import isfile, isdir, join
 import unittest
 
-from django.conf import settings
 from django.template import Template, Context, VariableDoesNotExist
-from django.template.loader import find_template_loader
+from django.template.engine import Engine
 from django.core.urlresolvers import NoReverseMatch
 
 
@@ -29,9 +28,8 @@ class TemplateSyntaxTestCase(unittest.TestCase):
 
     def test_templates(self):
         """Test all templates for syntax errors."""
-        for loader_name in settings.TEMPLATE_LOADERS:
-            print loader_name
-            loader = find_template_loader(loader_name)
+        for loader in Engine.get_default().template_loaders:
+            print loader
             self._test_dir(loader.get_template_sources(''))
 
     def _test_dir(self, dir, path="/"):
