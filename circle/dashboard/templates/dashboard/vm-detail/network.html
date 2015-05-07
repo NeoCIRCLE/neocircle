@@ -1,13 +1,14 @@
 {% load i18n %}
 {% load network_tags %}
+
+<div id="vm-details-add-interface">
+  {% with op=op.add_interface %}{% if op %}
+  <a href="{{op.get_url}}" class="btn btn-{{op.effect}} operation pull-right"
+      {% if op.disabled %}disabled{% endif %}>
+  <i class="fa fa-{{op.icon}}"></i> {% trans "add interface" %}</a>
+  {% endif %}{% endwith %}
+</div>
 <h2>
-    <div id="vm-details-add-interface">
-    {% with op=op.add_interface %}{% if op %}
-    <a href="{{op.get_url}}" class="btn btn-{{op.effect}} operation pull-right"
-        {% if op.disabled %}disabled{% endif %}>
-    <i class="fa fa-{{op.icon}}"></i> {% trans "add interface" %}</a>
-    {% endif %}{% endwith %}
-    </div>
   {% trans "Interfaces" %}
 </h2>
 

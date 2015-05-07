@@ -39,6 +39,4 @@ six==1.9.0
 slimit==0.8.1
 sqlparse==0.1.15
 pika==0.9.14
-Fabric==1.10.1
-lxml==3.4.4
-git+https://github.com/BME-IK/django-pipeline.git
+django-pipeline==1.4.7

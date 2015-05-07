@@ -19,9 +19,9 @@
   - {{ a.percentage }}%
 {% endif %}
 </strong>
-{% endspaceless %}{% if a.times < 2 %} <span title="{{ a.started }}">{{ a.started|arrowfilter:LANGUAGE_CODE }}</span>{% endif %}{% if a.user %},
+{% endspaceless %}{% if a.times < 2 %}&nbsp;<span title="{{ a.started }}">{{ a.started|arrowfilter:LANGUAGE_CODE }}</span>{% endif %}{% if a.user %},
   <a class="no-style-link" href="{% url "dashboard.views.profile" username=a.user.username %}">
-    {% include "dashboard/_display-name.html" with user=a.user show_org=True %}
+    {% include "dashboard/_display-name.html" with user=a.user show_org=True show_pic=True %}
   </a>
 {% endif %}
 {% if a.is_abortable_for_user %}
@@ -45,7 +45,7 @@
             {{ s.finished|arrowfilter:LANGUAGE_CODE }}
           </span>
         {% else %}
-          <i class="fa fa-refresh fa-spin" class="sub-activity-loading-icon"></i>
+          <i class="fa fa-refresh fa-spin"></i>
         {% endif %}
         {% if s.has_failed %}
           <div class="label label-danger">{% trans "failed" %}</div>

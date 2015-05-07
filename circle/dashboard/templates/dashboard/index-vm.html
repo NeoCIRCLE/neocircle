@@ -90,7 +90,7 @@
     <p class="pull-right">
     <input class="knob" data-fgColor="chartreuse" data-thickness=".4" data-max="{{ request.user.profile.instance_limit }}" data-width="100" data-height="100" data-readOnly="true" value="{{ instances|length|add:more_instances }}">
     </p>
-    <span class="bigbig">{% blocktrans with count=running_vm_num %}<big>{{ count }}</big> running{% endblocktrans %}</span>
+    <span class="bigbig">{% blocktrans with count=running_vm_num %}<span class="big-tag">{{ count }}</span> running{% endblocktrans %}</span>
       <ul class="list-inline" style="max-height: 95px; overflow: hidden;">
         {% for vm in running_vms %}
         <li style="display: inline-block; padding: 2px;">
@@ -111,7 +111,9 @@
           <strong>{{ counter }}</strong> machines total
         {% endblocktrans %}
       </a>
-      <p class="big text-warning">{% blocktrans with count=stopped_vm_num %}<big>{{ count }}</big> stopped{% endblocktrans %}</p>
+      <p class="big text-warning">
+      {% blocktrans with count=stopped_vm_num %}{{ count }} stopped{% endblocktrans %}
+      </p>
     </div>
   </div>
 </div>

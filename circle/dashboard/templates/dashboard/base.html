@@ -10,12 +10,6 @@
 {% endblock %}
 
 
-{% block navbar-brand %}
-  <a class="navbar-brand" href="{% url "dashboard.index" %}" style="padding: 10px 15px;">
-    {% include "branding.html" %}
-  </a>
-{% endblock %}
-
 {% block navbar %}
 {% if user.is_authenticated and user.pk and not request.token_user %}
   <ul class="nav navbar-nav navbar-right" id="dashboard-menu">
@@ -90,8 +84,13 @@
         {% endif %}
       </a>
       <ul class="dropdown-menu" id="notification-messages">
-          <li>{% trans "Loading..." %}</li>
+        <li>{% trans "Loading..." %}</li>
       </ul>
+    </li>
+    <li class="hidden-xs">
+      <a href="{% url "dashboard.views.profile-preferences" %}">
+        <img class="profile-avatar" src="{{ user.profile.get_avatar_url }}" />
+      </a>
     </li>
   </ul>
 

@@ -10,6 +10,21 @@ html {
   min-height: 100%;
 }
 
+.navbar-nav img {
+  width: 46px;
+  height: 46px;
+  margin-top: -4px;
+}
+
+.profile-avatar {
+  width: 24px;
+  height: 24px;
+}
+
+.navbar-fixed-top {
+  border: 0px;
+}
+
 /* Set widths on the navbar form inputs since otherwise they're 100% wide */
 .navbar-form input[type="text"],
 .navbar-form input[type="password"] {
@@ -32,7 +47,7 @@ html {
 
 
 #dashboard-menu {
-  margin-right: 15px;
+  margin-right: 0px;
 }
 
 /* we need this for mobile view */
@@ -56,6 +71,9 @@ html {
     padding-bottom: 12.5px;
   }
 
+  #dashboard-menu > li:last-child > a {
+    padding: 4px 0 0 0;
+  }
 }
 
 .no-margin {
@@ -108,6 +126,11 @@ html {
 
 .timeline .activity-active .timeline-icon {
   background-color: black!important;
+}
+
+.timeline img{
+  border-radius: 50%;
+  margin-bottom: 2px;
 }
 
 .timeline a {
@@ -1320,4 +1343,8 @@ textarea[name="new_members"] {
   margin-bottom: 5px;
   padding-top: 5px;
   padding-bottom: 5px;
+}
+
+.acl-table td:first-child {
+  text-align: center;
 }

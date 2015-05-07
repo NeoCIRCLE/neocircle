@@ -1,26 +1,47 @@
 {% load i18n %}
 {% load staticfiles %}
-<div class="btn-toolbar">
-{% if perms.vm.access_console %}
-  <button id="sendCtrlAltDelButton" class="btn btn-danger btn-sm">{% trans "Send Ctrl+Alt+Del" %}</button>
-  <button id="sendPasswordButton" class="btn btn-default btn-sm">{% trans "Type password" %}</button>
+
+{% if not perms.vm.vm_access_console %}
+  <div class="alert alert-warning">
+    {% trans "You are not authorized to access the VNC console." %}
+  </div>
 {% endif %}
-  <button id="getScreenshotButton" class="btn btn-info btn-sm pull-right" data-vm-pk="{{ instance.pk }}"><i class="fa fa-picture"></i> {% trans "Screenshot" %}</button>
+<div class="row">
+  <div class="col-xs-7">
+    <div class="btn-toolbar">
+    {% if perms.vm.access_console %}
+      <button id="sendCtrlAltDelButton" class="btn btn-danger btn-sm">
+        {% trans "Send Ctrl+Alt+Del" %}
+      </button>
+      <button id="sendPasswordButton" class="btn btn-default btn-sm">
+        {% trans "Type password" %}
+      </button>
+    {% endif %}
+    </div>
+  </div>
+  <div class="col-xs-5 text-right">
+    <button id="getScreenshotButton" class="btn btn-info btn-sm" data-vm-pk="{{ instance.pk }}">
+      <i class="fa fa-photo"></i> {% trans "Screenshot" %}
+    </button>
+  </div>
 </div>
+
+
 {% if perms.vm.access_console %}
-<div class="alert alert-info" id="noVNC_status">
-</div>
+  <div class="alert alert-info" id="noVNC_status"></div>
 {% endif %}
 
 <div id="vm-console-screenshot">
-  <button class="btn btn-danger btn-sm pull-right">{% trans "Close" %}</button>
-  <h3>{% trans "Screenshot" %}</h3>
-  <img />
+  <h3>
+    <button class="btn btn-danger btn-sm pull-right">{% trans "Close" %}</button>
+    {% trans "Screenshot" %}
+  </h3>
+  <img alt="{% trans "Screenshot" %}"/>
   <hr />
 </div>
 
 {% if perms.vm.access_console %}
-<canvas id="noVNC_canvas" width="640px" height="20px">Canvas not supported.
+<canvas id="noVNC_canvas" width="640" height="20">Canvas not supported.
 </canvas>
 
 <script>

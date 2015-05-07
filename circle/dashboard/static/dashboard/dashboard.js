@@ -10,10 +10,11 @@ $(function () {
   $(".not-tab-pane").removeClass("not-tab-pane").addClass("tab-pane");
 
   $('.vm-create').click(function(e) {
-    var template = $(this).data("template");
+    var url = $(this).data("href");
+    if(!url) url = $(this).prop("href");
     $.ajax({
       type: 'GET',
-      url: $(this).attr('href'),
+      url: url,
       success: function(data) {
         $('body').append(data);
         vmCreateLoaded();
@@ -140,7 +141,7 @@ $(function () {
         // success
       },
       error: function(xhr, textStatus, error) {
-        console.log("oh babám");
+        addMessage(gettext("An error occurred. (") + xhr.status + ")", 'danger');
       }
     });
     $(star).tooltip('destroy').tooltip({'placement': 'right'});
