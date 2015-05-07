@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load staticfiles %}
 
-{% if not perms.vm.vm_access_console %}
+{% if not perms.vm.access_console %}
   <div class="alert alert-warning">
     {% trans "You are not authorized to access the VNC console." %}
   </div>
