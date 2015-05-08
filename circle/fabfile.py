@@ -166,6 +166,7 @@ def update_portal(test=False, git=True):
             pull()
         cleanup()
         pip("circle", "~/circle/requirements.txt")
+        sudo("cp ~/circle/miscellaneous/*celery.conf /etc/init/")
         bower()
         migrate()
         compile_things()

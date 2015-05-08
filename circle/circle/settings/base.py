@@ -336,7 +336,6 @@ DJANGO_APPS = (
 THIRD_PARTY_APPS = (
     'django_tables2',
     'crispy_forms',
-    'djcelery',
     'sizefield',
     'taggit',
     'statici18n',
