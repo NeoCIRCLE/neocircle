@@ -14,9 +14,11 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
-import os# noqa
+import os
+
 from .base import *  # noqa
-# flake8: noqa
+
+
 os.environ['REUSE_DB'] = "1"
 os.environ['DJANGO_TEST_DB_NAME'] = "circle"
 DATABASES = {
@@ -34,22 +36,23 @@ DATABASES = {
 SOUTH_TESTS_MIGRATE = False
 
 INSTALLED_APPS += (
-        'acl.tests',
-        'django_nose',
-        'django_jenkins',
+    'acl.tests',
+    'django_nose',
+    'django_jenkins',
 )
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 
 path_to_selenium_test = os.path.join(SITE_ROOT, "dashboard/tests/selenium")
-NOSE_ARGS = ['--stop', '--with-doctest', '--with-selenium-driver', '--selenium-driver=firefox', '-w%s' % path_to_selenium_test]
+NOSE_ARGS = ['--stop', '--with-doctest', '--with-selenium-driver',
+             '--selenium-driver=firefox', '-w%s' % path_to_selenium_test]
 
 PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
 
 CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
-        }
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
+    }
 }
 
 LOGGING['loggers']['djangosaml2'] = {'handlers': ['console'],
