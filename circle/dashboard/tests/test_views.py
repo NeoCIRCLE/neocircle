@@ -1706,7 +1706,11 @@ class SshKeyTest(LoginMixin, TestCase):
         self.u2.set_password('password')
         self.u2.profile = Profile()
         self.u2.save()
-        self.k1 = UserKey(key='ssh-rsa AAAAB3NzaC1yc2EC asd', user=self.u1)
+        self.valid_key = (
+            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAYQDGqQy86fpVL3fAPE9ExTSvg4"
+            "Me7bpzH4azerTwWl8u9KKbhYe8XnC+cpvzbRxinFE9SqgQtKJzuxE0f/hHsNCQ"
+            "t3zDLHsqfFUdFQzkImXJ+duUKGyHKIsx6Os0j6nl+3c= asd")
+        self.k1 = UserKey(key=self.valid_key, user=self.u1)
         self.k1.save()
 
     def tearDown(self):
@@ -1719,7 +1723,7 @@ class SshKeyTest(LoginMixin, TestCase):
         self.login(c, self.u1)
 
         resp = c.post("/dashboard/sshkey/1/",
-                      {'key': 'ssh-rsa AAAAB3NzaC1yc2EC'})
+                      {'key': self.valid_key})
         self.assertEqual(UserKey.objects.get(id=1).user, self.u1)
         self.assertEqual(200, resp.status_code)
 
@@ -1728,7 +1732,7 @@ class SshKeyTest(LoginMixin, TestCase):
         self.login(c, self.u2)
 
         resp = c.post("/dashboard/sshkey/1/",
-                      {'key': 'ssh-rsa AAAAB3NzaC1yc2EC'})
+                      {'key': self.valid_key})
         self.assertEqual(UserKey.objects.get(id=1).user, self.u1)
         self.assertEqual(403, resp.status_code)
 
@@ -1737,7 +1741,7 @@ class SshKeyTest(LoginMixin, TestCase):
         self.login(c, self.u1)
 
         resp = c.post("/dashboard/sshkey/create/",
-                      {'name': 'asd', 'key': 'ssh-rsa AAAAB3NzaC1yc2EC'})
+                      {'name': 'asd', 'key': self.valid_key})
         self.assertEqual(UserKey.objects.get(id=2).user, self.u1)
         self.assertEqual(302, resp.status_code)
 
