@@ -1320,65 +1320,42 @@ textarea[name="new_members"] {
   }
 }
 
-.help-tabs li {
 
+/* help page */
+.help-tabs li {
   width: 50%;
   text-align: center;
 }
 
 // note: padding-margin hack to skip banner on anchor
-#help-tab-content h1 {
-  font-weight: bold;
-  padding-top: 55px; margin-top: -55px;
-}
+#help-tab-content {
+  h1, h2, h3, h4, h5 {
+    font-weight: bold;
+    padding-top: 55px; margin-top: -55px;
+  }
 
-#help-tab-content h2 {
-  font-weight: bold;
-  padding-top: 55px; margin-top: -55px;
+  blockquote {
+    background-color:#dfe4e4;
+  }
 }
-
-#help-tab-content h3 {
-  font-weight: bold;
-  padding-top: 55px; margin-top: -55px;
-}
-
-#help-tab-content h4 {
-  font-weight: bold;
-  padding-top: 55px; margin-top: -55px;
-}
-
-#help-tab-content h5 {
-  font-weight: bold;
-  padding-top: 55px; margin-top: -55px;
-}
-
-#help-tab-content blockquote {
-  background-color:#dfe4e4;
-}
-
-.row{
-    margin-left:0px;
-    margin-right:0px;
-}
-
 
 #wrapper {
-    position: fixed;
-    padding-left: 0px;
-    background: #252525;
-    left: 0px;
-    top: 46px;
-    height: 100%;
-    width: 210px;
-    transition: all .4s ease 0s;
-/* Firefox */
-height: -moz-calc(100% - 130px);
-/* WebKit */
-height: -webkit-calc(100% - 120px);
-/* Opera */
-height: -o-calc(100% - 110px);
-/* Standard */
-height: calc(100% - 130px);
+  position: fixed;
+  padding-left: 0px;
+  background: #252525;
+  left: 0px;
+  top: 46px;
+  height: 100%;
+  width: 210px;
+  transition: all .4s ease 0s;
+  /* Firefox */
+  height: -moz-calc(100% - 130px);
+  /* WebKit */
+  height: -webkit-calc(100% - 120px);
+  /* Opera */
+  height: -o-calc(100% - 110px);
+  /* Standard */
+  height: calc(100% - 130px);
 }
 
 #sidebar-wrapper {
@@ -1470,14 +1447,13 @@ height: calc(100% - 130px);
     transform: translateX(-250px);
   }
 
-
   #page-content {
-  margin-left: 0px;
-  -webkit-transition: background .5s;
-  -moz-transition: background .5s;
-  -o-transition: background .5s;
-  -ms-transition: background .5s;
-  transition: background .5s;
+    margin-left: 0px;
+    -webkit-transition: background .5s;
+    -moz-transition: background .5s;
+    -o-transition: background .5s;
+    -ms-transition: background .5s;
+    transition: background .5s;
   }
 }
 
@@ -1486,14 +1462,13 @@ height: calc(100% - 130px);
 }
 
 #request-buttons {
- form {
+  form {
     display: inline;
- }
-
- textarea {
+  }
+  textarea {
     resize: none;
     min-height: 80px;
- }
+  }
 }
 
 .nowrap {
