@@ -529,16 +529,6 @@ function safe_tags_replace(str) {
     return str.replace(/[&<>]/g, replaceTag);
 }
 
-
-$('.crosslink').click(function(e) {
-  // Don't follow the link
-  event.preventDefault();
-  var menu = $(this).attr("menu");
-  $(menu).click();
-  window.location = this.href;
-});
-
-
 $(function () {
   var closed = JSON.parse(getCookie('broadcast-messages'));
   $('.broadcast-message').each(function() {
