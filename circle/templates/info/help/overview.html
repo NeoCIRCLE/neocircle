@@ -71,7 +71,7 @@
 <h4 id="how-can-i-connect-to-the-virtual-machine">{% trans "How can I connect to the virtual machine?" %}</h4>
 
 <blockquote>
-  <p>{% blocktrans %}If the machine is already started, click on the ‘connect’ button, or simply copy the connection string to the terminal. <br>
+  <p>{% blocktrans %}If the machine is already started, click on the ‘connect’ button or simply copy the connection string to the terminal. <br>
   Another option is using the Console pane.{% endblocktrans %}</p>
 </blockquote>
 
@@ -96,15 +96,42 @@ The tool buttons are color coded by their effect, and enabled/disabled based on 
 <h4 id="what-kind-of-operations-are-allowed-to-do-with-my-vm">{% trans "What kind of operations are allowed to do with my VM?" %}</h4>
 
 <blockquote>
-  <p><span class="btn btn-xs btn-success disabled"><i class="fa fa-play"></i></span> : {% blocktrans %}Deploy. Deploy and start the virtual machine (including storage and network configuration){% endblocktrans %}</p>
-  <p><span class="btn btn-xs btn-info disabled"><i class="fa fa-moon-o">sleep</i></span> : {% blocktrans %}Sleep. Suspend virtual machine. This means the machine is stopped and its memory is saved{% endblocktrans %}</p>
-  <p><span class="btn btn-xs btn-success disabled"><i class="fa fa-sun-o">wake up</i></span> : {% blocktrans %}Wake up: Wake up sleeping (suspended) virtual machine. This will load the saved memory of the system{% endblocktrans %}</p>
-  <p><span class="btn btn-xs btn-info disabled"><i class="fa fa-save"></i></span> : {% blocktrans %}Save as Template. Save virtual machine as a template so they can be shared with users and groups{% endblocktrans %}</p>
-  <p><span class="btn btn-xs btn-warning disabled"><i class="fa fa-refresh"></i></span> : {% blocktrans %}Reboot. Warm reboot virtual machine by sending Ctrl+Alt+Del signal to its console{% endblocktrans %}</p>
-  <p><span class="btn btn-xs btn-warning disabled"><i class="fa fa-bolt"></i></span> : {% blocktrans %}Reset. Cold reboot virtual machine (power cycle){% endblocktrans %}</p>
-  <p><span class="btn btn-xs btn-warning disabled"><i class="fa fa-power-off"></i></span> : {% blocktrans %}Shutdown. Try to halt virtual machine by a standard ACPI signal, allowing the operating system{% endblocktrans %}</p>
-  <p><span class="btn btn-xs btn-warning disabled"><i class="fa fa-plug"></i></span> : {% blocktrans %}Shut off. Forcibly halt a virtual machine without notifying the operating system{% endblocktrans %}</p>
-  <p><span class="btn btn-xs btn-danger disabled"><i class="fa fa-times"></i></span> : {% blocktrans %}Destroy. Permanently destroy virtual machine, its network settings and disks{% endblocktrans %}</p>
+  <p>
+    <span class="btn btn-xs btn-success disabled"><i class="fa fa-play"></i> {% trans "deploy" %}</span>
+    {% blocktrans %}Deploy and start the virtual machine (including storage and network configuration).{% endblocktrans %}
+  </p>
+  <p>
+    <span class="btn btn-xs btn-info disabled"><i class="fa fa-moon-o"></i> {% trans "sleep" %}</span>
+    {% blocktrans %}Suspend virtual machine. This means the machine is stopped and its memory is saved.{% endblocktrans %}
+  </p>
+  <p>
+    <span class="btn btn-xs btn-success disabled"><i class="fa fa-sun-o"></i> {% trans "wake up" %}</span>
+  {% blocktrans %}Wake up sleeping (suspended) virtual machine. This will load the saved memory of the system.{% endblocktrans %}
+  </p>
+  <p>
+  <span class="btn btn-xs btn-info disabled"><i class="fa fa-save"></i> {% trans "save as template" %}</span>
+  {% blocktrans %}Save virtual machine as a template so they can be shared with users and groups.{% endblocktrans %}
+  </p>
+  <p>
+  <span class="btn btn-xs btn-warning disabled"><i class="fa fa-refresh"></i> {% trans "reboot" %}</span>
+  {% blocktrans %}Reboot. Warm reboot virtual machine by sending Ctrl+Alt+Del signal to its console.{% endblocktrans %}
+  </p>
+  <p>
+  <span class="btn btn-xs btn-warning disabled"><i class="fa fa-bolt"></i> {% trans "reset" %}</span>
+  {% blocktrans %}Reset. Cold reboot virtual machine (power cycle).{% endblocktrans %}
+  </p>
+  <p>
+  <span class="btn btn-xs btn-warning disabled"><i class="fa fa-power-off"></i> {% trans "shutdown" %}</span>
+  {% blocktrans %}Shutdown. Try to halt virtual machine by a standard ACPI signal, allowing the operating system.{% endblocktrans %}
+  </p>
+  <p>
+  <span class="btn btn-xs btn-warning disabled"><i class="fa fa-plug"></i> {% trans "shut off" %}</span>
+  {% blocktrans %}Forcibly halt a virtual machine without notifying the operating system.{% endblocktrans %}
+  </p>
+  <p>
+  <span class="btn btn-xs btn-danger disabled"><i class="fa fa-times"></i> {% trans "destroy" %}</span>
+  {% blocktrans %}Permanently destroy virtual machine, its network settings and disks{% endblocktrans %}
+  </p>
 </blockquote>
 
 
