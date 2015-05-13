@@ -10,6 +10,21 @@ html {
   min-height: 100%;
 }
 
+.navbar-nav img {
+  width: 46px;
+  height: 46px;
+  margin-top: -4px;
+}
+
+.profile-avatar {
+  width: 24px;
+  height: 24px;
+}
+
+.navbar-fixed-top {
+  border: 0px;
+}
+
 /* Set widths on the navbar form inputs since otherwise they're 100% wide */
 .navbar-form input[type="text"],
 .navbar-form input[type="password"] {
@@ -32,7 +47,7 @@ html {
 
 
 #dashboard-menu {
-  margin-right: 15px;
+  margin-right: 0px;
 }
 
 /* we need this for mobile view */
@@ -56,6 +71,9 @@ html {
     padding-bottom: 12.5px;
   }
 
+  #dashboard-menu > li:last-child > a {
+    padding: 4px 0 0 0;
+  }
 }
 
 .no-margin {
@@ -108,6 +126,11 @@ html {
 
 .timeline .activity-active .timeline-icon {
   background-color: black!important;
+}
+
+.timeline img{
+  border-radius: 50%;
+  margin-bottom: 2px;
 }
 
 .timeline a {
@@ -1272,6 +1295,25 @@ textarea[name="new_members"] {
   margin-top: 20px;
 }
 
+#vm-renew-request-lease, #vm-request-resource-form {
+  display: none;
+}
+
+.label-100 {
+  display: block;
+  width: 100%;
+}
+
+#modify-the-resources {
+  font-size: 18px;
+  display: none;
+}
+
+#vm-request-resource-form textarea {
+  max-width: 500px;
+  height: 150px;
+}
+
 #disk-list-table {
   td:last-child {
     text-align: center;
@@ -1441,4 +1483,33 @@ height: calc(100% - 130px);
 
 .overview_href {
   cursor: pointer;
+}
+
+#request-buttons {
+ form {
+    display: inline;
+ }
+
+ textarea {
+    resize: none;
+    min-height: 80px;
+ }
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.little-margin-bottom {
+  margin-bottom: 5px;
+}
+
+.broadcast-message {
+  margin-bottom: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.acl-table td:first-child {
+  text-align: center;
 }

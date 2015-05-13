@@ -79,9 +79,25 @@
     </div>
   </div>
   {% empty %}
-    {% trans "You can't start new virtual machines because no templates are shared with you." %}
+    {% if not template_access_types %}
+      {% trans "You can't start new virtual machines because no templates are shared with you." %}
+    {% else %}
+      {% trans "You can't start new virtual machines because no templates are shared with you however you can request them via the form below." %}
+      <hr />
+      {% include "request/_request-template-form.html" %}
+    {% endif %}
   {% endfor %}
 </div>
+
+  {% if templates and template_access_types %}
+    {% url "request.views.request-template" as request_url %}
+    <hr />
+    <p class="text-right">
+      {% blocktrans with url=request_url %}
+        Need other templates? Submit a new <a href="{{ url }}">request</a>.
+      {% endblocktrans %}
+    </p>
+  {% endif %}
 
 <style>
   .progress {

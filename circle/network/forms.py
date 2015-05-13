@@ -69,6 +69,8 @@ class BlacklistItemForm(ModelForm):
 
     class Meta:
         model = BlacklistItem
+        fields = ("ipv4", "host", "expires_at", "whitelisted", "reason",
+                  "snort_message", )
 
 
 class DomainForm(ModelForm):
@@ -90,6 +92,7 @@ class DomainForm(ModelForm):
 
     class Meta:
         model = Domain
+        fields = ("name", "ttl", "owner", )
 
 
 class FirewallForm(ModelForm):
@@ -105,6 +108,7 @@ class FirewallForm(ModelForm):
 
     class Meta:
         model = Firewall
+        fields = ("name", )
 
 
 class GroupForm(ModelForm):
@@ -126,6 +130,7 @@ class GroupForm(ModelForm):
 
     class Meta:
         model = Group
+        fields = ("name", "description", "owner", )
 
 
 class HostForm(ModelForm):
@@ -165,6 +170,9 @@ class HostForm(ModelForm):
 
     class Meta:
         model = Host
+        fields = ("hostname", "reverse", "mac", "vlan", "shared_ip", "ipv4",
+                  "ipv6", "external_ipv4", "description", "location",
+                  "comment", "owner", )
 
 
 class RecordForm(ModelForm):
@@ -191,6 +199,8 @@ class RecordForm(ModelForm):
 
     class Meta:
         model = Record
+        fields = ("type", "host", "name", "domain", "address", "ttl",
+                  "description", "owner", )
 
 
 class RuleForm(ModelForm):
@@ -230,6 +240,10 @@ class RuleForm(ModelForm):
 
     class Meta:
         model = Rule
+        fields = ("direction", "description", "foreign_network", "dport",
+                  "sport", "weight", "proto", "extra", "action", "owner",
+                  "nat", "nat_external_port", "nat_external_ipv4", "vlan",
+                  "vlangroup", "host", "hostgroup", "firewall", )
 
 
 class SwitchPortForm(ModelForm):
@@ -252,6 +266,7 @@ class SwitchPortForm(ModelForm):
 
     class Meta:
         model = SwitchPort
+        fields = ("untagged_vlan", "tagged_vlans", "description", )
 
 
 class VlanForm(ModelForm):
@@ -305,6 +320,10 @@ class VlanForm(ModelForm):
         widgets = {
             'ipv6_template': widgets.TextInput,
         }
+        fields = ("name", "vid", "network_type", "managed", "network4",
+                  "snat_to", "snat_ip", "dhcp_pool", "network6",
+                  "ipv6_template", "host_ipv6_prefixlen", "domain",
+                  "reverse_domain", "description", "comment", "owner", )
 
 
 class VlanGroupForm(ModelForm):
@@ -328,3 +347,4 @@ class VlanGroupForm(ModelForm):
 
     class Meta:
         model = VlanGroup
+        fields = ("name", "vlans", "description", "owner", )

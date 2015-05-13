@@ -1334,10 +1334,20 @@ class ResourcesOperation(InstanceOperation):
     description = _("Change resources of a stopped virtual machine.")
     acl_level = "owner"
     required_perms = ('vm.change_resources', )
-    accept_states = ('STOPPED', 'PENDING', )
+    accept_states = ('STOPPED', 'PENDING', 'RUNNING')
 
     def _operation(self, user, activity,
-                   num_cores, ram_size, max_ram_size, priority):
+                   num_cores, ram_size, max_ram_size, priority,
+                   with_shutdown=False, task=None):
+        if self.instance.status == 'RUNNING' and not with_shutdown:
+            raise Instance.WrongStateError(self.instance)
+
+        try:
+            self.instance.shutdown(parent_activity=activity, task=task)
+        except Instance.WrongStateError:
+            pass
+
+        self.instance._update_status()
 
         self.instance.num_cores = num_cores
         self.instance.ram_size = ram_size
@@ -1377,6 +1387,34 @@ class PasswordResetOperation(RemoteAgentOperation):
         super(PasswordResetOperation, self)._operation(password=password)
         self.instance.pw = password
         self.instance.save()
+
+
+@register_operation
+class InstallKeysOperation(RemoteAgentOperation):
+    id = 'install_keys'
+    name = _("install SSH keys")
+    acl_level = "user"
+    task = agent_tasks.add_keys
+    required_perms = ()
+
+    def _get_remote_args(self, user, keys=None, **kwargs):
+        if keys is None:
+            keys = list(user.userkey_set.values_list('key', flat=True))
+        return (super(InstallKeysOperation, self)._get_remote_args(**kwargs)
+                + [keys])
+
+
+@register_operation
+class RemoveKeysOperation(RemoteAgentOperation):
+    id = 'remove_keys'
+    name = _("remove SSH keys")
+    acl_level = "user"
+    task = agent_tasks.del_keys
+    required_perms = ()
+
+    def _get_remote_args(self, user, keys, **kwargs):
+        return (super(RemoveKeysOperation, self)._get_remote_args(**kwargs)
+                + [keys])
 
 
 @register_operation
@@ -1452,6 +1490,7 @@ class AgentStartedOperation(InstanceOperation):
             self.instance._cleanup(parent_activity=activity)
             self.instance.password_reset(
                 parent_activity=activity, password=self.instance.pw)
+            self.instance.install_keys(parent_activity=activity)
             self.instance._set_time(parent_activity=activity)
             self.instance._set_hostname(parent_activity=activity)
 

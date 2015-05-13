@@ -57,7 +57,7 @@ from vm.models import (
 from storage.models import DataStore, Disk
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.models import Permission
-from .models import Profile, GroupProfile
+from .models import Profile, GroupProfile, Message
 from circle.settings.base import LANGUAGES, MAX_NODE_RAM
 from django.utils.translation import string_concat
 
@@ -739,6 +739,7 @@ class LeaseForm(forms.ModelForm):
 
     class Meta:
         model = Lease
+        exclude = ()
 
 
 class VmRenewForm(OperationForm):
@@ -1604,6 +1605,7 @@ class DataStoreForm(ModelForm):
 
     class Meta:
         model = DataStore
+        fields = ("name", "path", "hostname", )
 
 
 class DiskForm(ModelForm):
@@ -1620,3 +1622,17 @@ class DiskForm(ModelForm):
 
     class Meta:
         model = Disk
+        fields = ("name", "filename", "datastore", "type", "bus", "size",
+                  "base", "dev_num", "destroyed", "is_ready", )
+
+
+class MessageForm(ModelForm):
+    class Meta:
+        model = Message
+        fields = ("message", "enabled", "effect", "start", "end")
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.add_input(Submit("submit", _("Save")))
+        return helper

@@ -17,6 +17,8 @@
 
 from django.conf import settings
 
+from .models import Message
+
 
 def notifications(request):
     count = (request.user.notification_set.filter(status="new").count()
@@ -31,3 +33,7 @@ def extract_settings(request):
         'COMPANY_NAME': getattr(settings, "COMPANY_NAME", None),
         'ADMIN_ENABLED': getattr(settings, "ADMIN_ENABLED", False),
     }
+
+
+def broadcast_messages(request):
+    return {'broadcast_messages': Message.timeframed.filter(enabled=True)}

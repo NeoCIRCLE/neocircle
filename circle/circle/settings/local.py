@@ -110,8 +110,8 @@ if DEBUG:
     from django.dispatch import Signal
     Signal.send_robust = Signal.send
 
-PIPELINE_DISABLED_COMPILERS = (
-    'pipeline.compilers.less.LessCompiler',
+PIPELINE_COMPILERS = (
+    'dashboard.compilers.DummyLessCompiler',
 )
 
 ADMIN_ENABLED = True

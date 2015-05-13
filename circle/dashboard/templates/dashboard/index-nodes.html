@@ -72,11 +72,15 @@
       value="{% widthratio node_num.running sum_node_num 100 %}">
     </p>
     <p>
+      {% blocktrans with running=node_num.running missing=node_num.missing disabled=node_num.disabled offline=node_num.offline %}
       <span class="big">
-        <big>{{ node_num.running }}</big> running
-      </span>
-      + <big>{{ node_num.missing }}</big>
-      missing + <br><big>{{ node_num.disabled }}</big> disabled + <big>{{ node_num.offline }}</big> offline
+        <span class="big-tag">{{ running }}</span> running
+      </span> +
+      <span class="big-tag">{{ missing }}</span> missing +
+      <br>
+      <span class="big-tag">{{ disabled }}</span> disabled +
+      <span class="big-tag">{{ offline }}</span> offline
+      {% endblocktrans %}
     </p>
     <ul class="list-inline" id="dashboard-node-taglist">
       {% for i in nodes %}

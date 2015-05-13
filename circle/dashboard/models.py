@@ -27,7 +27,7 @@ from django.contrib.auth.signals import user_logged_in
 from django.core.urlresolvers import reverse
 from django.db.models import (
     Model, ForeignKey, OneToOneField, CharField, IntegerField, TextField,
-    DateTimeField, permalink, BooleanField
+    DateTimeField, BooleanField
 )
 from django.db.models.signals import post_save, pre_delete, post_delete
 from django.templatetags.static import static
@@ -39,14 +39,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from sizefield.models import FileSizeField
 
 from jsonfield import JSONField
-from model_utils.models import TimeStampedModel
+from model_utils.models import TimeFramedModel, TimeStampedModel
 from model_utils.fields import StatusField
 from model_utils import Choices
 
 from acl.models import AclBase
 from common.models import HumanReadableObject, create_readable, Encoder
 
-from vm.tasks.agent_tasks import add_keys, del_keys
 from vm.models.instance import ACCESS_METHODS
 
 from .store_api import Store, NoStoreException, NotOkException, Timeout
@@ -57,6 +56,27 @@ logger = getLogger(__name__)
 
 def pwgen():
     return User.objects.make_random_password()
+
+
+class Message(TimeStampedModel, TimeFramedModel):
+    message = CharField(max_length=500, verbose_name=_('message'))
+    effect = CharField(
+        default='info', max_length=10, verbose_name=_('effect'),
+        choices=(('success', _('success')), ('info', _('info')),
+                 ('warning', _('warning')), ('danger', _('danger'))))
+    enabled = BooleanField(default=False, verbose_name=_('enabled'))
+
+    class Meta:
+        ordering = ["id"]
+        verbose_name = _('message')
+        verbose_name_plural = _('messages')
+
+    def __unicode__(self):
+        return self.message
+
+    def get_absolute_url(self):
+        return reverse('dashboard.views.message-detail',
+                       kwargs={'pk': self.pk})
 
 
 class Favourite(Model):
@@ -270,10 +290,9 @@ class GroupProfile(AclBase):
         except cls.DoesNotExist:
             return Group.objects.get(name=name)
 
-    @permalink
     def get_absolute_url(self):
-        return ('dashboard.views.group-detail', None,
-                {'pk': self.group.pk})
+        return reverse('dashboard.views.group-detail',
+                       kwargs={'pk': self.group.pk})
 
 
 def get_or_create_profile(self):
@@ -309,7 +328,7 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
         attributes = kwargs.pop('attributes')
         atr = settings.SAML_ORG_ID_ATTRIBUTE
         try:
-            value = attributes[atr][0]
+            value = attributes[atr][0].upper()
         except Exception as e:
             value = None
             logger.info("save_org_id couldn't find attribute. %s", unicode(e))
@@ -339,7 +358,7 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
                              group, unicode(g))
                 g.user_set.add(sender)
 
-        for i in FutureMember.objects.filter(org_id=value):
+        for i in FutureMember.objects.filter(org_id__iexact=value):
             i.group.user_set.add(sender)
             i.delete()
 
@@ -409,9 +428,7 @@ def add_ssh_keys(sender, **kwargs):
         'user', userkey.user).filter(status='RUNNING')
     for i in instances:
         logger.info('called add_keys(%s, %s)', i, userkey)
-        queue = i.get_remote_queue_name("agent")
-        add_keys.apply_async(args=(i.vm_name, [userkey.key]),
-                             queue=queue)
+        i.install_keys(user=userkey.user, keys=[userkey.key])
 
 
 def del_ssh_keys(sender, **kwargs):
@@ -422,9 +439,7 @@ def del_ssh_keys(sender, **kwargs):
         'user', userkey.user).filter(status='RUNNING')
     for i in instances:
         logger.info('called del_keys(%s, %s)', i, userkey)
-        queue = i.get_remote_queue_name("agent")
-        del_keys.apply_async(args=(i.vm_name, [userkey.key]),
-                             queue=queue)
+        i.remove_keys(user=userkey.user, keys=[userkey.key])
 
 
 post_save.connect(add_ssh_keys, sender=UserKey)

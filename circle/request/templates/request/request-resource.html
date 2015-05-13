@@ -1,0 +1,37 @@
+{% extends "dashboard/base.html" %}
+
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin">
+          <i class="fa fa-tasks"></i> {% trans "Request new resources" %}
+        </h3>
+      </div>
+      <div class="panel-body">
+        <form action="{% url "request.views.request-resource" vm_pk=vm.pk %}" method="POST">
+          {% csrf_token %}
+          <div class="form-group">
+            <label>{% trans "Virtual machine" %}</label>
+            <div class="controls">
+              <a href="{{ vm.get_absolute_url }}">{{ vm.name }}</a>
+            </div>
+          </div>
+          {% include "display-form-errors.html" %}
+          {% include "dashboard/_resources-sliders.html" with field_priority=form.priority field_num_cores=form.num_cores field_ram_size=form.ram_size %}
+          {{ form.message|as_crispy_field }}
+          <button type="submit" class="btn btn-success">
+            {% trans "Request new resources" %}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

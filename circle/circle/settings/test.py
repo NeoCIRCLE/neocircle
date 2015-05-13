@@ -56,6 +56,16 @@ LOGGING['handlers']['console'] = {'level': level,
                                   'formatter': 'simple'}
 for i in LOCAL_APPS:
     LOGGING['loggers'][i] = {'handlers': ['console'], 'level': level}
+
+# don't print SQL queries
+LOGGING['handlers']['null'] = {'level': "DEBUG",
+                               'class': "django.utils.log.NullHandler"}
+LOGGING['loggers']['django.db.backends'] = {
+    'handlers': ['null'],
+    'propagate': False,
+    'level': 'DEBUG',
+}
+
 # Forbid store usage
 STORE_URL = ""
 

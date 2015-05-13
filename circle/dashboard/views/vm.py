@@ -66,6 +66,8 @@ from ..forms import (
     VmPortRemoveForm, VmPortAddForm,
     VmRemoveInterfaceForm,
 )
+from request.models import TemplateAccessType, LeaseType
+from request.forms import LeaseRequestForm, TemplateRequestForm
 from ..models import Favourite
 from manager.scheduler import has_traits
 
@@ -170,6 +172,10 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         # is operator/owner
         context['is_operator'] = is_operator
         context['is_owner'] = is_owner
+
+        # operation also allows RUNNING (if with_shutdown is present)
+        context['save_resources_enabled'] = instance.status not in ("RUNNING",
+                                                                    "PENDING")
 
         return context
 
@@ -651,10 +657,12 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
 
     op = 'renew'
     icon = 'calendar'
-    effect = 'info'
+    effect = 'success'
     show_in_toolbar = False
     form_class = VmRenewForm
     wait_for_result = 0.5
+    template_name = 'dashboard/_vm-renew.html'
+    with_reload = True
 
     def get_form_kwargs(self):
         choices = Lease.get_objects_with_level("user", self.request.user)
@@ -673,6 +681,12 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
         extra["new_suspend_time"] = unicode(self.get_op().
                                             instance.time_of_suspend)
         return extra
+
+    def get_context_data(self, **kwargs):
+        context = super(VmRenewView, self).get_context_data(**kwargs)
+        context['lease_request_form'] = LeaseRequestForm(request=self.request)
+        context['lease_types'] = LeaseType.objects.exists()
+        return context
 
 
 class VmStateChangeView(FormOperationMixin, VmOperationView):
@@ -760,6 +774,10 @@ vm_ops = OrderedDict([
         show_in_toolbar=False, wait_for_result=0.5, with_reload=True)),
     ('mount_store', VmOperationView.factory(
         op='mount_store', icon='briefcase', effect='info',
+        show_in_toolbar=False,
+    )),
+    ('install_keys', VmOperationView.factory(
+        op='install_keys', icon='key', effect='info',
         show_in_toolbar=False,
     )),
 ])
@@ -1043,6 +1061,8 @@ class VmCreate(LoginRequiredMixin, TemplateView):
                 'box_title': _('Create a VM'),
                 'ajax_title': True,
                 'templates': templates.all(),
+                'template_access_types': TemplateAccessType.objects.exists(),
+                'form': TemplateRequestForm(request=request),
             })
         return self.render_to_response(context)
 
@@ -1297,7 +1317,7 @@ class TransferInstanceOwnershipView(TransferOwnershipView):
     confirm_view = TransferInstanceOwnershipConfirmView
     model = Instance
     notification_msg = ugettext_noop(
-        '%(user)s offered you to take the ownership of '
+        '%(owner)s offered you to take the ownership of '
         'his/her virtual machine called %(instance)s. '
         '<a href="%(token)s" '
         'class="btn btn-success btn-small">Accept</a>')

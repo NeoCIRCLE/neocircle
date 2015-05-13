@@ -39,7 +39,7 @@
       <dd>
         {% csrf_token %}
         <div class="vm-details-home-edit-description-click">
-          <small class="vm-details-home-edit-description">{{ instance.description|linebreaks }}</small>
+          <div class="vm-details-home-edit-description">{{ instance.description|linebreaks }}</div>
         </div>
         <div id="vm-details-home-description" class="js-hidden">
           <form method="POST">
@@ -59,10 +59,11 @@
         {% if instance.is_expiring %}<i class="fa fa-warning-sign text-danger"></i>{% endif %}
         <span id="vm-details-renew-op">
           {% with op=op.renew %}{% if op %}
-            <a href="{{op.get_url}}" class="btn btn-success btn-xs
+            <a href="{{op.get_url}}" class="btn btn-{{op.effect}} btn-xs
                     operation operation-{{op.op}}">
               <i class="fa fa-{{op.icon}}"></i>
-                    {{op.name}} </a>
+              {{op.name}}
+            </a>
           {% endif %}{% endwith %}
         </span>
       </h4>
@@ -156,6 +157,16 @@
         </a>
       </div>
     {% endif %}
+    {% if op.install_keys %}
+      <strong>{% trans "SSH keys" %}</strong>
+      <div class="operation-wrapper">
+        <a href="{{ op.install_keys.get_url }}" class="btn btn-info btn-xs operation"
+        {% if op.install_keys.disabled %}disabled{% endif %}>
+          <i class="fa fa-{{op.install_keys.icon}}"></i>
+          {{ op.install_keys.name }}
+        </a>
+      </div>
+    {% endif %}
   </div>
   <div class="col-md-8">
     {% if graphite_enabled %}
@@ -163,9 +174,12 @@
       {% include "dashboard/_graph-time-buttons.html" %}
     </div>
     <div class="graph-images text-center">
-      <img src="{% url "dashboard.views.vm-graph" instance.pk "cpu" graph_time %}"/>
-      <img src="{% url "dashboard.views.vm-graph" instance.pk "memory" graph_time %}"/>
-      <img src="{% url "dashboard.views.vm-graph" instance.pk "network" graph_time %}"/>
+      <img src="{% url "dashboard.views.vm-graph" instance.pk "cpu" graph_time %}"
+       alt="{% trans "CPU usage" %}"/>
+      <img src="{% url "dashboard.views.vm-graph" instance.pk "memory" graph_time %}"
+       alt="{% trans "Memory usage" %}"/>
+      <img src="{% url "dashboard.views.vm-graph" instance.pk "network" graph_time %}"
+       alt="{% trans "Network usage" %}"/>
     </div>
     {% endif %}
   </div>

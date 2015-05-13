@@ -10,10 +10,11 @@ $(function () {
   $(".not-tab-pane").removeClass("not-tab-pane").addClass("tab-pane");
 
   $('.vm-create').click(function(e) {
-    var template = $(this).data("template");
+    var url = $(this).data("href");
+    if(!url) url = $(this).prop("href");
     $.ajax({
       type: 'GET',
-      url: $(this).attr('href'),
+      url: url,
       success: function(data) {
         $('body').append(data);
         vmCreateLoaded();
@@ -140,7 +141,7 @@ $(function () {
         // success
       },
       error: function(xhr, textStatus, error) {
-        console.log("oh babám");
+        addMessage(gettext("An error occurred. (") + xhr.status + ")", 'danger');
       }
     });
     $(star).tooltip('destroy').tooltip({'placement': 'right'});
@@ -528,10 +529,41 @@ function safe_tags_replace(str) {
     return str.replace(/[&<>]/g, replaceTag);
 }
 
+
 $('.crosslink').click(function(e) {
   // Don't follow the link
   event.preventDefault();
   var menu = $(this).attr("menu");
   $(menu).click();
   window.location = this.href;
+});
+
+
+$(function () {
+  var closed = JSON.parse(getCookie('broadcast-messages'));
+  $('.broadcast-message').each(function() {
+    var id = $(this).data('id');
+    if (closed && closed.indexOf(id) != -1) {
+      $(this).remove();
+    }
+  });
+
+  $('.broadcast-message').on('closed.bs.alert', function () {
+    var closed = JSON.parse(getCookie('broadcast-messages'));
+    if (!closed) {
+      closed = [];
+    }
+    closed.push($(this).data('id'));
+    setCookie('broadcast-messages', JSON.stringify(closed), 7 * 24 * 60 * 60 * 1000, "/");
+  });
+
+  $("#id_message").on('input', function() {
+    $('.broadcast-message').html($(this).val());
+  });
+
+  $("#id_effect").on('input', function() {
+    $('.broadcast-message').removeClass(
+      'alert-info alert-warning alert-success alert-danger').addClass(
+      "alert-" + $(this).val());
+  });
 });

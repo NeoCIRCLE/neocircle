@@ -1,6 +1,7 @@
 {% load i18n %}
 {% load staticfiles %}
-{% load compressed %}
+{% load cache %}
+{% load pipeline %}
 <!DOCTYPE html>
 <html lang="{{lang}}">
   <head>
@@ -9,17 +10,17 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <link rel="icon" type="image/png" href="{% static "dashboard/img/favicon.png" %}"/>
+    {% block extra_link %}{% endblock %}
 
     <title>{% block title %}{% block title-page %}{% endblock %} | {% block title-site %}CIRCLE{% endblock %}{% endblock %}</title>
 
-    {% compressed_css 'all' %}
+    {% stylesheet 'all' %}
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
-    {% block extra_link %}{% endblock %}
 
     {% block extra_css %}{% endblock %}
   </head>
@@ -27,7 +28,12 @@
   <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-header">
-        {% block navbar-brand %}{% endblock %}
+        {% block navbar-brand %}
+          <a class="navbar-brand" href="{% url "dashboard.index" %}" style="padding: 10px 15px;">
+            {% include "branding.html" %}
+          </a>
+        {% endblock %}
+
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
@@ -40,6 +46,22 @@
     </div><!-- navbar navbar-inverse navbar-fixed-top -->
 
     <div class="container">
+      {% block broadcast_messages %}
+        {% cache 30 broadcast_messages %}
+          <div id="broadcast-messages">
+            {% for message in broadcast_messages %}
+              <div data-id={{ message.id }} class="alert alert-{{ message.effect }}
+                  text-center broadcast-message">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+                {{ message.message|safe }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endcache %}
+      {% endblock broadcast_messages %}
+
       {% block messages %}
         <div class="messagelist">
         {% if messages %}
@@ -50,7 +72,7 @@
             </div>
           {% endfor %}
         {% endif %}
-      </div>
+        </div>
       {% endblock messages %}
       {% block content %}
         <h1 class="alert alert-error">Please override "content" block.</h1>
@@ -67,7 +89,7 @@
 
   <script src="{% static "jquery/dist/jquery.min.js" %}"></script>
   <script src="{{ STATIC_URL }}jsi18n/{{ LANGUAGE_CODE }}/djangojs.js"></script>
-  {% compressed_js 'all' %}
+  {% javascript 'all' %}
 
   {% block extra_script %}
   {% endblock %}

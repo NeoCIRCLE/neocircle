@@ -10,28 +10,47 @@
 {% endblock %}
 
 
-{% block navbar-brand %}
-  <a class="navbar-brand" href="{% url "dashboard.index" %}" style="padding: 10px 15px;">
-    {% include "branding.html" %}
-  </a>
-{% endblock %}
-
 {% block navbar %}
 {% if user.is_authenticated and user.pk and not request.token_user %}
   <ul class="nav navbar-nav navbar-right" id="dashboard-menu">
     {% if user.is_superuser %}
     {% if ADMIN_ENABLED %}
     <li>
-      <a href="/admin/"><i class="fa fa-cogs"></i> {% trans "Admin" %}</a>
-    </li>
-    {% endif %}
-    <li>
-      <a href="{% url "dashboard.views.storage" %}"><i class="fa fa-database"></i>
-        {% trans "Storage" %}
+      <a href="/admin/">
+        <i class="fa fa-cogs"></i>
+        <span class="hidden-sm">{% trans "Admin" %}</span>
       </a>
     </li>
     <li>
-      <a href="/network/"><i class="fa fa-globe"></i> {% trans "Network" %}</a>
+      <a href="/rosetta/">
+        <i class="fa fa-space-shuttle"></i>
+        <span class="hidden-sm">{% trans "Translations" %}</span>
+      </a>
+    </li>
+    {% endif %}
+    <li>
+      <a href="{% url "dashboard.views.message-list" %}">
+        <i class="fa fa-bullhorn"></i>
+        <span class="hidden-sm">{% trans "Messages" %}</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url "dashboard.views.storage" %}">
+        <i class="fa fa-database"></i>
+        <span class="hidden-sm">{% trans "Storage" %}</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url "network.index" %}">
+        <i class="fa fa-globe"></i>
+        <span class="hidden-sm">{% trans "Network" %}</span>
+      </a>
+    </li>
+    <li>
+      <a href="{% url "request.views.request-list" %}">
+        <i class="fa fa-phone"></i>
+        <span class="hidden-sm">{% trans "Requests" %}</span>
+      </a>
     </li>
     {% endif %}
     <li>
@@ -65,8 +84,13 @@
         {% endif %}
       </a>
       <ul class="dropdown-menu" id="notification-messages">
-          <li>{% trans "Loading..." %}</li>
+        <li>{% trans "Loading..." %}</li>
       </ul>
+    </li>
+    <li class="hidden-xs">
+      <a href="{% url "dashboard.views.profile-preferences" %}">
+        <img class="profile-avatar" src="{{ user.profile.get_avatar_url }}" />
+      </a>
     </li>
   </ul>
 

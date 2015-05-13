@@ -17,27 +17,29 @@
 
 from __future__ import unicode_literals, absolute_import
 
+import logging
 from optparse import make_option
 
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
-from firewall.models import (Vlan, VlanGroup, Domain, Firewall, Rule,
-                             SwitchPort, EthernetDevice, Host)
+from firewall.models import Vlan, VlanGroup, Domain, Firewall, Rule
 from storage.models import DataStore
 from vm.models import Lease
+
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--force', action="store_true"),
-        make_option('--portal-ip'),
         make_option('--external-net'),
         make_option('--management-net'),
         make_option('--vm-net'),
         make_option('--external-if'),
         make_option('--management-if'),
-        make_option('--trunk-if'),
+        make_option('--vm-if'),
         make_option('--datastore-queue'),
         make_option('--firewall-queue'),
         make_option('--admin-user'),
@@ -49,18 +51,18 @@ class Command(BaseCommand):
         qs = model.objects.filter(**{field: value})[:1]
         if not qs.exists():
             obj = model.objects.create(**kwargs)
-            self.changed.append('New %s: %s' % (model, obj))
+            logger.info('New %s: %s', model, obj)
+            self.changed = True
             return obj
         else:
             return qs[0]
 
 # http://docs.saltstack.com/en/latest/ref/states/all/salt.states.cmd.html
     def print_state(self):
-        changed = "yes" if len(self.changed) else "no"
-        print "\nchanged=%s comment='%s'" % (changed, ", ".join(self.changed))
+        print "\nchanged=%s" % ("yes" if self.changed else "no")
 
     def handle(self, *args, **options):
-        self.changed = []
+        self.changed = False
 
         if (DataStore.objects.exists() and Vlan.objects.exists()
                 and not options['force']):
@@ -87,20 +89,28 @@ class Command(BaseCommand):
                     suspend_interval_seconds=3600 * 24 * 365,
                     delete_interval_seconds=3600 * 24 * 365 * 3)
 
-        domain = self.create(Domain, 'name', name='example.com', owner=admin)
+        net_domain = self.create(Domain, 'name', name='net.example.com',
+                                 owner=admin)
+        man_domain = self.create(Domain, 'name', name='man.example.com',
+                                 owner=admin)
+        vm_domain = self.create(Domain, 'name', name='vm.example.com',
+                                owner=admin)
 
         # vlans
-        net = self.create(Vlan, 'name', name='net', vid=4,
-                          network4=options['external_net'], domain=domain)
+        net = self.create(Vlan, 'vid', name=options['external_if'], vid=4,
+                          network4=options['external_net'], domain=net_domain)
 
-        man = self.create(Vlan, 'name', name='man', vid=3, dhcp_pool='manual',
-                          network4=options['management_net'], domain=domain,
+        man = self.create(Vlan, 'vid', name=options['management_if'], vid=3,
+                          dhcp_pool='manual',
+                          network4=options['management_net'],
+                          domain=man_domain,
                           snat_ip=options['external_net'].split('/')[0])
         man.snat_to.add(net)
         man.snat_to.add(man)
 
-        vm = self.create(Vlan, 'name', name='vm', vid=2, dhcp_pool='manual',
-                         network4=options['vm_net'], domain=domain,
+        vm = self.create(Vlan, 'vid', name=options['vm_if'], vid=2,
+                         dhcp_pool='manual',
+                         network4=options['vm_net'], domain=vm_domain,
                          snat_ip=options['external_net'].split('/')[0])
         vm.snat_to.add(net)
         vm.snat_to.add(vm)
@@ -115,14 +125,6 @@ class Command(BaseCommand):
         vg_net = self.create(VlanGroup, 'name', name='net')
         vg_net.vlans.add(net)
 
-        # portal host
-        portal = self.create(Host, 'hostname', hostname='portal', vlan=man,
-                             mac='11:22:33:44:55:66', owner=admin,
-                             shared_ip=True, external_ipv4=man.snat_ip,
-                             ipv4=options['portal_ip'])
-        portal.add_port(proto='tcp', public=443, private=443)
-        portal.add_port(proto='tcp', public=22, private=22)
-
         # firewall rules
         fw = self.create(Firewall, 'name', name=options['firewall_queue'])
 
@@ -130,8 +132,16 @@ class Command(BaseCommand):
                     direction='out', action='accept',
                     foreign_network=vg_all, firewall=fw)
 
-        self.create(Rule, 'description', description='default input rule',
-                    direction='in', action='accept',
+        self.create(Rule, 'description', description='portal https',
+                    direction='in', action='accept', proto='tcp', dport=443,
+                    foreign_network=vg_all, firewall=fw)
+
+        self.create(Rule, 'description', description='portal http',
+                    direction='in', action='accept', proto='tcp', dport=80,
+                    foreign_network=vg_all, firewall=fw)
+
+        self.create(Rule, 'description', description='ssh',
+                    direction='in', action='accept', proto='tcp', dport=22,
                     foreign_network=vg_all, firewall=fw)
 
         # vlan rules
@@ -142,24 +152,5 @@ class Command(BaseCommand):
         self.create(Rule, 'description', description='allow man->net',
                     direction='out', action='accept',
                     foreign_network=vg_net, vlan=man)
-
-        # switch
-        # uplink interface
-        sp_net = self.create(SwitchPort, 'untagged_vlan', untagged_vlan=net)
-        self.create(EthernetDevice, 'switch_port', switch_port=sp_net,
-                    name=options['external_if'])
-
-        # management interface
-        if options['management_if']:
-            sp_man = self.create(
-                SwitchPort, 'untagged_vlan', untagged_vlan=man)
-            self.create(EthernetDevice, 'switch_port', switch_port=sp_man,
-                        name=options['management_if'])
-
-        # vm interface
-        sp_trunk = self.create(
-            SwitchPort, 'tagged_vlans', untagged_vlan=man, tagged_vlans=vg_all)
-        self.create(EthernetDevice, 'switch_port', switch_port=sp_trunk,
-                    name=options['trunk_if'])
 
         return self.print_state()

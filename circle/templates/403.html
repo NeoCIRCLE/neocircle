@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}HTTP 403{% endblock %}
+
+{% block page_title %}{% trans ":(" %}{% endblock page_title %}
+
+{% block content %}
+<div class="alert alert-danger" style="font-size: 22px; margin-top: 2em;">
+  <div class="row">
+    <div class="col-md-2" style="text-align: center;">
+      HTTP 403
+    </div>
+    <div class="col-md-10" style="text-align: center;">
+      {% if error %}
+        {{ error }}
+      {% else %}
+       {% trans "Forbidden" %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock content %}

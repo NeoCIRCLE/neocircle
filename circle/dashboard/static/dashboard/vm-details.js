@@ -38,6 +38,13 @@ $(function() {
     e.preventDefault();
   });
 
+  /* save as (close vnc console) */
+  $('.operation-save_as_template').click(function(e) {
+    if ($('li.active > a[href$="console"]').length > 0) {
+      $('a[data-toggle$="pill"][href$="#activity"]').click();
+    }
+  });
+
   /* remove tag */
   $('.vm-details-remove-tag').click(function() {
     var to_remove =  $.trim($(this).parent('div').text());
@@ -178,12 +185,13 @@ $(function() {
     $("i", this).addClass("fa-spinner fa-spin");
     $(this).prop("disabled", true);
     ct.slideDown();
-    var img = $("img", ct).prop("src", '/dashboard/vm/' + vm + '/screenshot/');
+    var img = $("img", ct).prop("src", '/dashboard/vm/' + vm + '/screenshot/?rnd=' + Math.random());
   });
 
   // if the image is loaded remove the spinning stuff
   // note: this should not work if the image is cached, but it's not
   // see: http://stackoverflow.com/a/3877079/1112653
+  // note #2: it actually gets cached, so a random number is appended
   $("#vm-console-screenshot img").load(function(e) {
     $("#getScreenshotButton").prop("disabled", false)
     .find("i").removeClass("fa-spinner fa-spin");
@@ -193,7 +201,7 @@ $(function() {
 
   // screenshot close
   $("#vm-console-screenshot button").click(function() {
-    $(this).parent("div").slideUp();
+    $(this).closest("div").slideUp();
   });
 
   // select connection string
@@ -221,6 +229,27 @@ $(function() {
       });
     });
     return false;
+  });
+
+  $(document).on("click", "#vm-renew-request-lease-button", function(e) {
+    $("#vm-renew-request-lease").stop().slideToggle();
+    e.preventDefault();
+  });
+
+  $("#vm-request-resource").click(function(e) {
+    $(".cpu-priority-slider, .cpu-count-slider, .ram-slider").simpleSlider("setDisabled", false);
+    $(".ram-input, .cpu-count-input, .cpu-priority-input").prop("disabled", false);
+
+    $("#vm-details-resources-form").prop("action", $(this).prop("href"));
+    $("#vm-request-resource-form").show();
+    $("#modify-the-resources").show();
+    $(this).hide();
+
+    $("html, body").animate({
+      scrollTop: $("#modify-the-resources").offset().top - 60
+    });
+
+    return e.preventDefault();
   });
 
 });
