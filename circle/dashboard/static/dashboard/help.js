@@ -11,9 +11,9 @@ $(function() {
   if(hash) {
     var menu;
     if($(hash).closest(".tab-pane").prop("class").indexOf("overview") != -1) {
-      menu = "#overview_menu"
+      menu = "#overview_menu";
     } else {
-      menu = "#faq_menu"
+      menu = "#faq_menu";
     }
     $(menu).click();
     $("html, body").animate({scrollTop: $(hash).offset().top}, 500);
