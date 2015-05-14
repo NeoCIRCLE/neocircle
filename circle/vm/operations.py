@@ -28,6 +28,7 @@ import time
 from urlparse import urlsplit
 
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from django.conf import settings
@@ -794,7 +795,10 @@ class SaveAsTemplateOperation(InstanceOperation):
             tmpl.delete()
             raise
         else:
-            return tmpl
+            return create_readable(
+                ugettext_noop("New template: %(template)s"),
+                template=reverse('dashboard.views.template-detail',
+                                 kwargs={'pk': tmpl.pk}))
 
 
 @register_operation
@@ -986,7 +990,7 @@ class RenewOperation(InstanceOperation):
         if save:
             self.instance.lease = lease
         self.instance.save()
-        activity.result = create_readable(ugettext_noop(
+        return create_readable(ugettext_noop(
             "Renewed to suspend at %(suspend)s and destroy at %(delete)s."),
             suspend=suspend, delete=delete)
 
@@ -1357,7 +1361,7 @@ class ResourcesOperation(InstanceOperation):
         self.instance.full_clean()
         self.instance.save()
 
-        activity.result = create_readable(ugettext_noop(
+        return create_readable(ugettext_noop(
             "Priority: %(priority)s, Num cores: %(num_cores)s, "
             "Ram size: %(ram_size)s"), priority=priority, num_cores=num_cores,
             ram_size=ram_size
