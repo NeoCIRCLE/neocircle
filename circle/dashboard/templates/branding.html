@@ -1,2 +1,3 @@
-<img src="{{ STATIC_URL}}dashboard/img/logo.png" alt="circle logo" style="height: 25px;"/>
-<img src="{{ STATIC_URL}}local-logo.png" alt="local logo" style="padding-left: 2px; height: 25px;"/>
+{% load staticfiles %}
+<img src="{% static "dashboard/img/logo.png" %}" alt="circle logo" style="height: 25px;"/>
+<img src="{% static "local-logo.png" %}" alt="local logo" style="padding-left: 2px; height: 25px;"/>
