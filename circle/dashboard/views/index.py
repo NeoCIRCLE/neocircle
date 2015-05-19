@@ -28,6 +28,7 @@ from braces.views import LoginRequiredMixin
 
 from dashboard.models import GroupProfile
 from vm.models import Instance, Node, InstanceTemplate
+from dashboard.views.vm import vm_ops
 
 from ..store_api import Store
 
@@ -127,7 +128,10 @@ class HelpView(TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         ctx = super(HelpView, self).get_context_data(*args, **kwargs)
+        operations = [(o, Instance._ops[o.op])
+                      for o in vm_ops.values() if o.show_in_toolbar]
         ctx.update({"saml": hasattr(settings, "SAML_CONFIG"),
+                    "operations": operations,
                     "store": settings.STORE_URL})
         return ctx
 

@@ -9,12 +9,12 @@
   <ol>
     <li>{% trans "Start a virtual machine." %}</li>
     <li>{% trans "Customize this machine - install and remove softwares, etc." %}</li>
-    <li>{% trans "Click on ‘Save as Template’ icon on operations." %}</li>
-    <li>{% trans "On the dashboard, select this template to go to the ‘Edit template page’." %}</li>
+    <li>{% trans 'Click the “Save as Template” button.' %}</li>
+    <li>{% trans 'On the dashboard select this template to go to the "Edit template page".' %}</li>
     <li>
-      {% trans "On the ‘Manage access’ box, add the specified user or user group with ‘user’ access level." %}
+      {% trans 'Use the "Manage access" box to add a user or user group with "user" access level.' %}
       (<a class="crosslink" data-menu="#overview_menu" href="#how-can-i-create-groups">
-        {% trans "You can easily create groups if you need" %}</a>)
+        {% trans "You can easily create groups if you need to" %}</a>)
     </li>
   </ol>
 </blockquote>
@@ -24,35 +24,39 @@
 <blockquote>
   <ol>
     <li>{% trans "Start a virtual machine." %}</li>
-  <li>{% trans "Customize this machine - install and remove softwares, etc." %}</li>
-  <li>{% trans "On the machine’s Access pane, you can add users and groups to this VM." %}</li>
+    <li>{% trans "On the machine's Access panel you can grant access for users and groups to the VM." %}</li>
   </ol>
 </blockquote>
 
 
-
-<h3 id="how-can-i-portforward">{% trans "How can I portforward?" %}</h3>
+<h3 id="how-can-i-portforward">{% trans "How can I open ports?" %}</h3>
 
 <blockquote>
   <ol>
-    <li>{% trans "On the VM’s page, click on the Network pane." %}</li>
-    <li>{% trans "On the prefered interface, type the port number, select type and click ‘Add’." %}</li>
-    <li>{% trans "Of course the machines port must be opened. Opening port 80 examples: " %}<br>
-  <ul><li>Ubuntu, Debian: <code>sudo ufw allow 80</code></li>
-    <li>CentOS, RHEL:  {% trans "append to" %}<code>/etc/sysconfig/iptables</code>:<br/>
-  <code>
-  iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT <br>
-  </code><br>{% trans "and restart the service:" %}<code>sudo service iptables restart</code></li></ul></li>
-  <li>{% trans "Now you can connect to the machine, with the generated port number." %}</li>
+    <li>{% trans "On the VM’s detail page click on the Network panel." %}</li>
+    <li>{% trans "On the prefered interface type the port number, select type and click ‘Add’." %}</li>
+    <li>{% trans "You have to open this port in the firewall too. Opening port 80 examples: " %}<br>
+      <ul>
+        <li>Ubuntu, Debian: <code>sudo ufw allow 80</code></li>
+        <li>
+          CentOS, RHEL: {% trans "append to" %} <code>/etc/sysconfig/iptables</code>:<br/>
+          <code>iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT</code>
+          {% trans "and restart the service:" %} <code>sudo service iptables restart</code>
+        </li>
+      </ul>
+    </li>
+    <li>{% trans "Now you can connect to the machine with the generated port number." %}</li>
   </ol>
 </blockquote>
 
 
-
-<h3 id="my-machines-lease-is-short-how-can-i-extend-it">{% trans "My machine’s lease is short. How can I extend it?" %}</h3>
+<h3 id="my-machines-lease-is-short-how-can-i-extend-it">{% trans "My machine's lease is too short. How can I extend it?" %}</h3>
 
 <blockquote>
-  <p>{% blocktrans %}You can send a request to the administrators. On the VM’s page - home pane, click on the ‘renew’ button and ‘send request’. Please write down, why are you need this and choose how long extension do you want.{% endblocktrans %}</p>
+  <p>
+    {% blocktrans %}You can send a request to the administrators. On the VM's home panel click on the ‘renew’ button and ‘send request’.
+    Please explain why you need a longer lease and choose the most suitable one.{% endblocktrans %}
+  </p>
 </blockquote>
 
 
@@ -60,7 +64,12 @@
 <h3 id="how-can-i-have-more-cpumemory">{% trans "How can I have more CPU/memory?" %}</h3>
 
 <blockquote>
-  <p>{% blocktrans %}You can send a request to the administrators. On the VM’s page - resources, modify the counters, write down, why are you need this and ‘save’.{% endblocktrans %}</p>
+  <p>
+    {% blocktrans %}
+      You can send a request to the administrators.
+      On the VM's resources panel click <strong>Request&nbsp;more&nbsp;resources</strong>, modify the values, explain your request and finally hit save.
+    {% endblocktrans %}
+  </p>
 </blockquote>
 
 
@@ -68,5 +77,10 @@
 <h3 id="how-can-i-get-access-to-a-template">{% trans "How can I get access to a template?" %}</h3>
 
 <blockquote>
-  <p>{% blocktrans %}When you want to create a VM, below the template list, there is an option to send a request. Select wich template do you want, why you need this and set the access rights.{% endblocktrans %}</p>
+  <p>
+    {% blocktrans %}
+    When you want to create a VM below the template list there is an option to send a request.
+    Select which template you want, explain why you need it and then submit the form.
+    {% endblocktrans %}
+  </p>
 </blockquote>
