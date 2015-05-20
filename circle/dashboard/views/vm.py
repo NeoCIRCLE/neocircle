@@ -1002,7 +1002,8 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
                 in [i.name for i in Instance._meta.fields] + ["pk"]):
             queryset = queryset.order_by(sort)
 
-        return queryset.filter(**self.get_queryset_filters()).prefetch_related(
+        filters, excludes = self.get_queryset_filters()
+        return queryset.filter(**filters).exclude(**excludes).prefetch_related(
             "owner", "node", "owner__profile", "interface_set", "lease",
             "interface_set__host").distinct()
 
