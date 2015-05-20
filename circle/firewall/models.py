@@ -330,7 +330,7 @@ class Vlan(AclBase, models.Model):
                                                'selected below '
                                                '(typically to the internet).'))
     snat_to = models.ManyToManyField('self', symmetrical=False, blank=True,
-                                     null=True, verbose_name=_('NAT to'),
+                                     verbose_name=_('NAT to'),
                                      help_text=_(
                                          'Connections to these networks '
                                          'should be network address '
@@ -533,7 +533,7 @@ class VlanGroup(models.Model):
     name = models.CharField(max_length=20, unique=True, verbose_name=_('name'),
                             help_text=_('The name of the group.'))
     vlans = models.ManyToManyField('Vlan', symmetrical=False, blank=True,
-                                   null=True, verbose_name=_('vlans'),
+                                   verbose_name=_('vlans'),
                                    help_text=_('The vlans which are members '
                                                'of the group.'))
     description = models.TextField(blank=True, verbose_name=_('description'),
@@ -639,7 +639,7 @@ class Host(models.Model):
                               help_text=_(
                                   'The person responsible for this host.'))
     groups = models.ManyToManyField('Group', symmetrical=False, blank=True,
-                                    null=True, verbose_name=_('groups'),
+                                    verbose_name=_('groups'),
                                     help_text=_(
                                         'Host groups the machine is part of.'))
     created_at = models.DateTimeField(auto_now_add=True,
