@@ -4,7 +4,9 @@
 
 {% blocktrans count n=messages|length %}You have a new notification:{% plural %}You have {{n}} new notifications:{% endblocktrans %}
 
-{% for msg in messages %} * {{msg.subject}}
+{% for msg in messages %} * {{msg.subject}}{% if msg.has_valid_renew_url %}
+   {% trans "You can renew it without logging in:" %}
+   {{ msg.renew_url }}{% endif %}
 {% endfor %}
 
 {% blocktrans with url=url count n=messages|length %}See it in detail on <{{url}}>.{% plural %} See them in detail on <{{url}}>.{% endblocktrans %}

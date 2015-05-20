@@ -213,6 +213,7 @@ PIPELINE_JS = {
         "dashboard/vm-common.js",
         "dashboard/vm-create.js",
         "dashboard/vm-list.js",
+        "dashboard/help.js",
         "js/host.js",
         "js/network.js",
         "js/switch-port.js",

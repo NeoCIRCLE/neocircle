@@ -1,0 +1,501 @@
+{% load i18n %}
+<br/>
+<h2 id="overview" >{% trans "Overview" %}</h2>
+<br/>
+
+<h3 id="introduction">{% trans "Introduction" %}</h3>
+
+<p>
+  {% blocktrans %}
+    This is a deployment of <a href="http://circlecloud.org/">CIRCLE Cloud</a>,
+    which is a free and open source cloud manager.
+    Its most important function is starting and managing virtual machine instances based on templates.
+    These templates are also easy to create.
+  {% endblocktrans %}
+</p>
+
+<p>
+  {% blocktrans %}
+    Apart from this tutorial we recommend to try the system, it is quite intuitive,
+    and the web interface shows detailed instructions on advanced options.
+  {% endblocktrans %}
+</p>
+
+
+<h3 id="dashboard"><i class="fa fa-dashboard"></i> {% trans "Dashboard" %}</h3>
+
+<p>
+  {% blocktrans with host=request.get_host %}
+    You can reach this service at <a href="//{{ host }}">https://{{host}}</a>
+    where you can log in to the dashboard.
+    The dashboard is a summary about your virtual machines and other resources,
+    and the main starting point to access the functions of the system.
+  {% endblocktrans %}
+</p>
+
+
+<h4 id="virtual-machines-box">{% trans "Virtual Machines box" %}</h4>
+<p>
+  {% blocktrans %}
+    In the virtual machines box you will find your recent virtual machines.
+    A summary view is also available by clicking the dashboard button (<i class="fa fa-dashboard"></i>).
+    Click on the name of a virtual machine to see its connection details, preferences,
+    or to change its state.
+  {% endblocktrans %}
+</p>
+
+
+
+<h4 id="how-can-i-create-a-vm">{% trans "How can I create a VM?" %}</h4>
+<blockquote>
+  <p>
+    {% blocktrans %}
+      You can start a machine by clicking the
+      <span class="btn btn-success disabled btn-xs"><i class="fa fa-plus-circle"></i> new</span>
+      button and selecting a template. The machine starts automatically.
+    {% endblocktrans %}
+  </p>
+</blockquote>
+
+
+<h4 id="how-can-i-mark-frequently-used-vms">{% trans "How can I mark frequently used VMs?" %}</h4>
+<blockquote>
+  <p>
+    {% blocktrans %}
+      Important or frequently used machines can be pinned with the <i class="fa fa-star-o"></i> button.
+    {% endblocktrans %}
+  </p>
+</blockquote>
+
+
+<div id="vms" {% if not perms.vm %} class="text-muted" {% endif %}>
+  <h3 id="virtual-machines"><i class="fa fa-desktop"></i> {% trans "Virtual Machines" %}</h3>
+    {% if not perms.vm %}
+      <p class="text-warning">
+        {% trans "Sorry, you have no permission to launch virtual machines." %}
+      </p>
+    {% endif %}
+
+  <p>
+    {% blocktrans %}
+      After selecting a virtual machine, you will see the machine’s detailed page.
+      Here, you can see the <strong>details</strong>, usage <strong>statistics</strong>,
+      <strong>manage</strong> the virtual machine, change <strong>access rights</strong> and
+      <strong>network interfaces</strong>, modify <strong>resources</strong>
+      and show the <strong>activity log</strong>.
+    {% endblocktrans %}
+  </p>
+
+
+  <h4 id="details">{% trans "Details" %}</h4>
+  <p>
+    {% blocktrans %}
+      If you select a virtual machine, you get to a page with all the details and operations listed.
+      On the left, you will see the state of the machine and a summary about how you can connect to the machine.
+      In the middle there is a tabbed pane, which contains details about the machine in categories.
+    {% endblocktrans %}
+  </p>
+
+
+  <h4 id="how-can-i-connect-to-the-virtual-machine">{% trans "How can I connect to the virtual machine?" %}</h4>
+  <blockquote>
+    <p>
+      {% blocktrans %}
+        If the machine is already started click on the ‘connect’ button or simply copy the connection string to the terminal.
+        Another option is using the VNC console.
+      {% endblocktrans %}
+    </p>
+  </blockquote>
+
+
+  <h4 id="how-can-i-change-the-vms-password">{% trans "How can I change the VM’s password?" %}</h4>
+  <blockquote>
+    <p>
+      {% blocktrans %}
+        Click on the ‘Generate new password!’ link.
+      {% endblocktrans %}
+    </p>
+  </blockquote>
+
+
+  <h4 id="operations">{% trans "Operations" %}</h4>
+  <p>
+    {% blocktrans %}
+      The upper right corner is the operation toolbar with the most important actions that control the lifecycle of the machine.
+      The tool buttons are color coded by their effect, and enabled/disabled based on the current state of the machine.
+      The recommended operation is always the biggest tool button with the name displayed.
+      You can click on them as the confirmation dialog explains in detail what they do.
+    {% endblocktrans %}
+  </p>
+
+
+  <h4 id="what-kind-of-operations-are-allowed-to-do-with-my-vm">{% trans "What kind of operations are allowed to do with my VM?" %}</h4>
+  <blockquote>
+    {% for view, op in operations %}
+      <p>
+      <span class="btn btn-xs btn-{{ view.effect }} disabled"><i class="fa fa-{{ view.icon }}"></i> {{ op.name }}</span>
+      {{ op.description }}
+      </p>
+    {% endfor %}
+  </blockquote>
+
+
+  <h4 id="home"><i class="fa fa-compass"></i> {% trans "Home" %}</h4>
+  <p>
+    {% blocktrans %}
+      This shows statistics about the virtual machine, and this is where you can change the name, description and tags of the instance.
+      We strongly advise to add a description to make the work of the cloud administrators easier in case of maintenance.
+    {% endblocktrans %}
+  </p>
+
+
+  <h4 id="expiration">{% trans "Expiration" %}</h4>
+  <p>
+    {% blocktrans %}
+      Here is a summary about the expiration times as well.
+      Each virtual machine has a deadline for suspending and destroying based on predefined leases.
+    {% endblocktrans %}
+  </p>
+
+
+  <h4 id="how-can-i-extend-the-vms-expiration-date">{% trans "How can I extend the VM's expiration date?" %}</h4>
+  <blockquote>
+    <p>
+      {% blocktrans %}
+        With the renew button you can extend the suspend and remove time.
+        Before the virtual machine is suspended or removed you get a notification about it.
+      {% endblocktrans %}
+    </p>
+  </blockquote>
+
+
+  <h4 id="how-can-i-share-previously-uploaded-files-with-the-vm">{% trans "How can I share previously uploaded files with the VM?" %}</h4>
+  <blockquote>
+    <p>
+      {% blocktrans %}
+        With the ‘Mount Store’ option the virtual machine mounts your personal storage.
+      {% endblocktrans %}
+    </p>
+  </blockquote>
+
+
+  <h4 id="resources"><i class="fa fa-tasks"></i> {% trans "Resources" %}</h4>
+  <p>
+    {% blocktrans %}
+      Resources contains details about how much <strong>memory</strong> and
+      <strong>CPU</strong> the VM has, and how is it <strong>scheduled</strong>.
+      Users with specific permission can change these settings if the machine is stopped.
+    {% endblocktrans %}
+  </p>
+
+  <p{% if not perms.vm.change_resources %} class="text-muted"{% endif %}>
+    {% blocktrans %}
+      Users with specific permission can change these settings if the machine is stopped.
+    {% endblocktrans %}
+  </p>
+
+
+  <h4 id="console"><i class="fa fa-desktop"></i> {% trans "Console" %}</h4>
+  <p>
+    {% blocktrans %}
+      This panel allows to see the console of the virtual machine for troubleshooting and operating system installation.
+      You can also use the keyboard and mouse.
+      You should normally use the machine by connecting remotely over SSH or Remote Desktop.
+    {% endblocktrans %}
+  </p>
+
+
+  <h4 id="access"><i class="fa fa-group"></i> {% trans "Access" %}</h4>
+  <p>
+    {% blocktrans %}
+      Allows sharing the machine with others and transferring the ownership.
+      Users can see the details of the machine, operators can use most functions and owners can also destroy the machine.
+    {% endblocktrans %}
+  </p>
+
+
+  <h4 id="how-can-i-give-access-to-others">{% trans "How can I give access to others?" %}</h4>
+  <blockquote>
+    <p>
+      {% blocktrans %}
+        Type the user/group ID, set permissions and click
+        <span class="btn btn-success disabled">Save</span>.
+      {% endblocktrans %}
+    </p>
+  </blockquote>
+
+
+  <h4 id="what-kind-of-permissions-are-available">{% trans "What kind of permissions are available?" %}</h4>
+  <blockquote>
+    <p>
+      {% blocktrans %}
+      <strong>User</strong><br>
+      User level grants access to the virtual machine’s details page. Users are able to connect to this machine.
+      {% endblocktrans %}
+    </p>
+    <p>
+      {% blocktrans %}
+      <strong>Operator</strong><br>
+      Operator level permit the modification of the name and description fields. Allow the operator to open ports and grant/revoke User level access to the virtual machine.
+      {% endblocktrans %}
+    </p>
+    <p>
+      {% blocktrans %}
+      <strong>Owner</strong><br>
+      Owner level enables all operations on the virtual machine. Owners are able to grant/revoke Operator, User and Owner level access to others.
+      The accountable owner (the one who deployed the machine) can not be demoted.
+      The accountable ownership can be transferred to other User via the “Transfer onwership” button.
+      {% endblocktrans %}
+    </p>
+  </blockquote>
+
+
+  <h4 id="network"><i class="fa fa-globe"></i> {% trans "Network" %}</h4>
+  <p>
+    {% blocktrans %}
+      Shows how the virtual machine is connected to the network.
+      You can add or remove interfaces and allow remote access of different TCP/UDP ports.
+    {% endblocktrans %}
+  </p>
+
+
+  <h4 id="how-can-i-add-a-network-interface">{% trans "How can I add a network interface?" %}</h4>
+  <blockquote>
+    <p>
+      {% blocktrans %}
+        Click on the
+        <span class="btn btn-success disabled"><i class="fa fa-globe"></i> add interface</span>
+        on the Network pane and select from the list.
+      {% endblocktrans %}
+    </p>
+  </blockquote>
+
+
+
+  <h4 id="activity"><i class="fa fa-clock-o"></i> {% trans "Activity" %}</h4>
+  <p>
+    {% blocktrans %}
+      Shows the full life cycle of the virtual machine.
+      This is where you can see the causes of failed actions (just point the mouse to the name of the action) with the starting/finishing times.
+    {% endblocktrans %}
+  </p>
+
+
+  <h4 id="multiple-vm-operations">{% trans "Multiple VM operations" %}</h4>
+  <p>
+    {% blocktrans %}
+      On the dashboard, by clicking the
+      <span class="btn btn-primary btn-xs disabled"><i class="fa fa-chevron-circle-right"></i> list</span>
+      button, the virtual machine list page opens.
+      Here the owner can execute operations on multiple virtual machines simultaneously.
+    {% endblocktrans %}
+  </p>
+
+
+
+  <h4 id="how-can-i-show-shared-or-destroyed-vms">{% trans "How can I see shared or destroyed VMs?" %}</h4>
+  <blockquote>
+    <p>
+      {% blocktrans %}
+        Check the ‘Include deleted VMs’ checkbox to list already deleted machines.
+      {% endblocktrans %}
+    </p>
+  </blockquote>
+</div> <!-- vms -->
+
+<div id="templates" {% if not perms.vm.create_template %}class="text-muted"{% endif %}>
+  <h3 id="templates"><i class="fa fa-puzzle-piece"></i> {% trans "Templates" %}</h3>
+  {% if not perms.vm.create_template %}
+    <p class="text-warning">
+      {% trans "Sorry, you have no permission to create templates." %}
+    </p>
+  {% endif %}
+
+  <p>
+    {% blocktrans %}
+      Templates are the prototypes of virtual machine instances:
+      they contain <strong>configuration</strong> values for the different technical details
+      <strong>of a VM to create</strong>, and also the network interfaces and disks to attach.
+    {% endblocktrans %}
+  </p>
+
+  <p>
+    {% blocktrans %}
+      In the dashboard box you see your own templates and those, for which you have operator permission.
+      This means that you can share them with your groups or other users.
+    {% endblocktrans %}
+  </p>
+
+
+  <h4 id="how-can-i-create-templates">{% trans "How can I create templates?" %}</h4>
+  <blockquote>
+    <p>
+      {% blocktrans %}
+        You can create templates from any virtual machine with the save as template button.
+        Additionally, you can also click on the new button of the template box, and follow the template creation wizard.
+      {% endblocktrans %}
+    </p>
+  </blockquote>
+
+  <p>
+    {% blocktrans %}
+      On the template detail page you can modify the template's name and the given resources like CPU count and memory size.
+    {% endblocktrans %}
+  </p>
+
+  <h4 id="what-kind-of-options-are-customizable-in-the-template">{% trans "What kind of options are customizable in the template?" %}</h4>
+  <blockquote>
+    <p>
+      <h4>{% trans "Architecture" %}</h4>
+      The user can choose the template's architecture (x86 or x86-64).
+    </p>
+    <p>
+      <h4>{% trans "Access method" %}</h4>
+      The default access method is modifiable. Currently SSH, RDP and NX are supported.
+    </p>
+    <p>
+      <h4>{% trans "Boot menu" %} </h4>
+      Check it to turn on the boot menu.
+    </p>
+    <p>
+      <h4>{% trans "Traits" %}</h4>
+      By adding or removing traits we can guarantee specific features the host node will have (like <em>GPU</em>) for the virtual machine.
+    </p>
+    <p>
+      <h4>{% trans "Operating system" %}</h4>
+      The name of the operating system.
+    </p>
+    <p>
+      <h4>{% trans "Agent" %}</h4>
+      Check this if the machine has agent installed and the manager should wait for its start.
+    </p>
+    <p>
+      <h4>{% trans "Raw data" %}</h4>
+      The CIRCLE Cloud is using libvirt, so the owner can customize the running VM's options here by
+      <a href="https://libvirt.org/formatdomain.html">libvirt domain parameters</a>.
+    </p>
+  </blockquote>
+
+
+  <h4 id="how-can-i-give-the-template-to-other-user">{% trans "How can I transfer the template ownership to someone else?" %}</h4>
+  <blockquote>
+    <p>
+      {% blocktrans %}After clicking the ‘Transfer ownership’ you can select a user to give the template to.{% endblocktrans %}
+    </p>
+  </blockquote>
+
+
+
+  <h4 id="how-can-i-give-access-to-users-or-groups-to-the-template">{% trans "How can I grant access for users or groups to the template?" %}</h4>
+  <blockquote>
+    <p>
+      {% blocktrans %}
+        Same as the VM access rights handling.
+        You can type the user or group ID at the template detail page's Manage access box and select a suitable access level.
+      {% endblocktrans %}
+    </p>
+  </blockquote>
+</div>
+
+<div id="groups" {% if not perms.auth %}class="text-muted"{% endif %}>
+  <h3 id="groups"><i class="fa fa-group"></i> {% trans "Groups" %}</h3>
+  {% if not perms.auth %}
+    <p class="text-warning">
+      {% trans "Sorry, you have no permission to create groups." %}
+    </p>
+  {% endif %}
+
+  <p>
+    {% blocktrans %}
+      Groups are the main building blocks of permission management. On the dashboard you see a list of groups you have access to.
+    {% endblocktrans %}
+  </p>
+
+  <h4 id="how-can-i-create-groups">{% trans "How can I create groups?" %}</h4>
+  <blockquote>
+    <p>
+      {% blocktrans %}
+        You can create your own groups by clicking on the new button of the groups box.
+      {% endblocktrans %}
+    </p>
+  </blockquote>
+
+  <p{% if not saml %} class="text-muted"{% endif %}>
+    {% blocktrans %}
+      Users logged in with SSO authentication can automatically become members of groups based on its organizational identifier.
+      Those who are administrators of an organizational group (or a professor of a subject in academics)
+      can create groups with the specific organizational identifier set, so members will automatically added if they log in.
+      You can also add users based on their identifier, also if they have not logged in at the time.
+    {% endblocktrans %}
+  </p>
+
+
+  <h4 id="how-can-i-manage-the-users-in-a-group">{% trans "How can I manage the users in a group?" %}</h4>
+  <blockquote>
+    <p>
+      {% blocktrans %}
+        On the group page the owner can add or remove users or change the access rights over the group.
+      {% endblocktrans %}
+    </p>
+  </blockquote>
+
+
+  <h4 id="how-can-i-manage-privileges-with-the-group">{% trans "How can I manage privileges with the group?" %}</h4>
+  <blockquote>
+    <p>
+      {% blocktrans %}
+        The owner can add or remove privileges at the bottom of the group page like ‘can download disk’ or ‘can configure port forwards’.
+      {% endblocktrans %}
+    </p>
+  </blockquote>
+</div><!-- #groups -->
+
+<div id="store" {% if not store or not user.is_authenticated %}class="text-muted"{% endif %}>
+  <h3 id="files"><i class="fa fa-briefcase"></i> {% trans "Files" %}</h3>
+  {% if not store %}
+    <p class="text-warning">
+      {% trans "Sorry, this deployment of CIRCLE does not support file store." %}
+    </p>
+  {% endif %}
+
+  <p>
+    {% blocktrans %}
+      Each user has a simple personal file store, which is the easiest way to keep and retrieve your work done on virtual machines.
+    {% endblocktrans %}
+  </p>
+  <p>
+    {% blocktrans %}
+      You can get and upload files from both the web interface and from virtual machines.
+      The web interface works like any other graphical file browser.
+      Virtual machines normally don’t get the credentials for your personal store,
+      to prevent accidentally sharing them with other users of the same machine.
+    {% endblocktrans %}
+  </p>
+
+
+  <h4 id="how-can-i-share-my-files-with-a-vm">{% trans "How can I share my files with a VM?" %}</h4>
+  <blockquote>
+    <p>{% blocktrans %}To access the file store press the mount store button on the virtual machine's home panel.{% endblocktrans %}</p>
+  </blockquote>
+</div>
+
+
+<h3 id="profile"><i class="fa fa-user"></i> {% trans "Profile" %}</h3>
+
+
+<h4 id="how-can-i-change-my-password">{% trans "How can I change my password?" %}</h4>
+<blockquote>
+  <p>
+    {% blocktrans %}
+      On the profile page type the new password twice and the old password. Users can’t change passwords if the profile is using SSO.
+    {% endblocktrans %}
+  </p>
+</blockquote>
+
+
+<h4 id="how-can-i-store-public-keys-on-the-vms">{% trans "How can I store public keys on the VMs?" %}</h4>
+<blockquote>
+  <p>
+    {% blocktrans %}Go to your profile page, click on the ‘add SSH key’ and paste your public key's content to the textarea.{% endblocktrans %}
+  </p>
+</blockquote>

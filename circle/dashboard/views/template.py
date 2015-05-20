@@ -237,7 +237,8 @@ class TemplateList(LoginRequiredMixin, FilterMixin, SingleTableView):
         self.create_fake_get()
 
         try:
-            qs = qs.filter(**self.get_queryset_filters()).distinct()
+            filters, excludes = self.get_queryset_filters()
+            qs = qs.filter(**filters).exclude(**excludes).distinct()
         except ValueError:
             messages.error(self.request, _("Error during filtering."))
 

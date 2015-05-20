@@ -16,7 +16,7 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 from django.forms import (
     ModelForm, ModelChoiceField, ChoiceField, Form, CharField, RadioSelect,
-    Textarea,
+    Textarea, ValidationError
 )
 from django.utils.translation import ugettext_lazy as _
 from django.template import RequestContext
@@ -70,6 +70,14 @@ class InitialFromFileMixin(object):
             RequestContext(request, {}),
         )
 
+    def clean(self):
+        cleaned_data = super(InitialFromFileMixin, self).clean()
+        if cleaned_data['message'].strip() == self.initial['message'].strip():
+            raise ValidationError(
+                _("Fill in the message."),
+                code="invalid")
+        return cleaned_data
+
 
 class TemplateRequestForm(InitialFromFileMixin, Form):
     template = ModelChoiceField(TemplateAccessType.objects.all(),
@@ -92,3 +100,13 @@ class ResourceRequestForm(InitialFromFileMixin, VmResourcesForm):
     message = CharField(widget=Textarea)
 
     initial_template = "request/initials/resources.html"
+
+    def clean(self):
+        cleaned_data = super(ResourceRequestForm, self).clean()
+        inst = self.instance
+        if (cleaned_data['ram_size'] == inst.ram_size and
+                cleaned_data['num_cores'] == inst.num_cores and
+                int(cleaned_data['priority']) == inst.priority):
+            raise ValidationError(
+                _("You haven't changed any of the resources."),
+                code="invalid")

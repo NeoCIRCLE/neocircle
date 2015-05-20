@@ -17,6 +17,7 @@
 
 from __future__ import absolute_import
 
+from datetime import timedelta
 from itertools import chain
 from hashlib import md5
 from logging import getLogger
@@ -31,6 +32,7 @@ from django.db.models import (
 )
 from django.db.models.signals import post_save, pre_delete, post_delete
 from django.templatetags.static import static
+from django.utils import timezone
 from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 from django_sshkey.models import UserKey
@@ -131,6 +133,17 @@ class Notification(TimeStampedModel):
     @message.setter
     def message(self, value):
         self.message_data = None if value is None else value.to_dict()
+
+    @property
+    def has_valid_renew_url(self):
+        params = self.message_data['params']
+        return ('token' in params and 'suspend' in params and
+                self.modified > timezone.now() - timedelta(days=3))
+
+    @property
+    def renew_url(self):
+        return (settings.DJANGO_URL.rstrip("/") +
+                str(self.message_data['params'].get('token')))
 
 
 class ConnectCommand(Model):
