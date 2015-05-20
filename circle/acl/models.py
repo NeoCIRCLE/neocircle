@@ -43,6 +43,7 @@ class Level(Model):
         return "<%s/%s>" % (unicode(self.content_type), self.name)
 
     class Meta:
+        app_label = 'acl'
         unique_together = (('content_type', 'codename'),
                            # ('content_type', 'weight'),
                            # TODO find a way of temp. disabling this constr.
@@ -63,6 +64,7 @@ class ObjectLevel(Model):
         return "<%s: %s>" % (unicode(self.content_object), unicode(self.level))
 
     class Meta:
+        app_label = 'acl'
         unique_together = (('content_type', 'object_id', 'level'),)
 
 
