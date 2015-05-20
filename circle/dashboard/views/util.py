@@ -82,6 +82,8 @@ class FilterMixin(object):
         excludes = {}
 
         for key, value in self.request.GET.items():
+            if not key:
+                continue
             exclude = key.startswith('!')
             key = key.lstrip('!')
             if key not in self.allowed_filters:
