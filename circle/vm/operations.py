@@ -973,26 +973,48 @@ class RenewOperation(InstanceOperation):
     required_perms = ()
     concurrency_check = False
 
+    def set_time_of_suspend(self, activity, suspend, force):
+        with activity.sub_activity(
+            'renew_suspend', concurrency_check=False,
+                readable_name=ugettext_noop('set time of suspend')):
+            if (not force and suspend and self.instance.time_of_suspend and
+                    suspend < self.instance.time_of_suspend):
+                raise HumanReadableException.create(ugettext_noop(
+                    "Renewing the machine with the selected lease would "
+                    "result in its suspension time get earlier than before."))
+            self.instance.time_of_suspend = suspend
+
+    def set_time_of_delete(self, activity, delete, force):
+        with activity.sub_activity(
+            'renew_delete', concurrency_check=False,
+                readable_name=ugettext_noop('set time of delete')):
+            if (not force and delete and self.instance.time_of_delete and
+                    delete < self.instance.time_of_delete):
+                raise HumanReadableException.create(ugettext_noop(
+                    "Renewing the machine with the selected lease would "
+                    "result in its delete time get earlier than before."))
+            self.instance.time_of_delete = delete
+
     def _operation(self, activity, lease=None, force=False, save=False):
         suspend, delete = self.instance.get_renew_times(lease)
-        if (not force and suspend and self.instance.time_of_suspend and
-                suspend < self.instance.time_of_suspend):
-            raise HumanReadableException.create(ugettext_noop(
-                "Renewing the machine with the selected lease would result "
-                "in its suspension time get earlier than before."))
-        if (not force and delete and self.instance.time_of_delete and
-                delete < self.instance.time_of_delete):
-            raise HumanReadableException.create(ugettext_noop(
-                "Renewing the machine with the selected lease would result "
-                "in its delete time get earlier than before."))
-        self.instance.time_of_suspend = suspend
-        self.instance.time_of_delete = delete
+        try:
+            self.set_time_of_suspend(activity, suspend, force)
+        except HumanReadableException:
+            pass
+        try:
+            self.set_time_of_delete(activity, delete, force)
+        except HumanReadableException:
+            pass
+
         if save:
             self.instance.lease = lease
+
         self.instance.save()
+
         return create_readable(ugettext_noop(
             "Renewed to suspend at %(suspend)s and destroy at %(delete)s."),
-            suspend=suspend, delete=delete)
+            suspend=self.instance.time_of_suspend,
+            delete=self.instance.time_of_suspend)
 
 
 @register_operation
