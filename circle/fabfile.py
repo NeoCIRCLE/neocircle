@@ -75,7 +75,7 @@ def flake8():
 def migrate():
     "Run db migrations"
     with _workon("circle"), cd("~/circle/circle"):
-        run("./manage.py migrate")
+        run("./manage.py migrate --fake-initial")
 
 
 @roles('portal')
