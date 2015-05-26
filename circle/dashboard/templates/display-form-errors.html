@@ -5,5 +5,8 @@
       <div><strong>{{ field.label }}</strong>: {{ field.errors|striptags }}</div>
       {% endif %}
     {% endfor %}
+    {% for error in form.non_field_errors %}
+      <div>{{ error|striptags }}</div>
+    {% endfor %}
   </div>
 {% endif %}
