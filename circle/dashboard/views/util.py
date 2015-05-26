@@ -79,14 +79,26 @@ class FilterMixin(object):
 
     def get_queryset_filters(self):
         filters = {}
-        for item in self.allowed_filters:
-            if item in self.request.GET:
-                filters[self.allowed_filters[item]] = (
-                    self.request.GET[item].split(",")
-                    if self.allowed_filters[item].endswith("__in") else
-                    self.request.GET[item])
+        excludes = {}
 
-        return filters
+        for key, value in self.request.GET.items():
+            if not key:
+                continue
+            exclude = key.startswith('!')
+            key = key.lstrip('!')
+            if key not in self.allowed_filters:
+                continue
+
+            filter_field = self.allowed_filters[key]
+            value = (value.split(",")
+                     if filter_field.endswith("__in") else
+                     value)
+            if exclude:
+                excludes[filter_field] = value
+            else:
+                filters[filter_field] = value
+
+        return filters, excludes
 
     def get_queryset(self):
         return super(FilterMixin,
@@ -118,6 +130,9 @@ class FilterMixin(object):
         >>> o = f._parse_get({'s': "name:hello ws node:node 3 oh"}).items()
         >>> sorted(o) # doctest: +ELLIPSIS
         [(u'name', u'hello ws'), (u'node', u'node 3 oh'), (...)]
+        >>> o = f._parse_get({'s': "!hello:szia"}).items()
+        >>> sorted(o) # doctest: +ELLIPSIS
+        [(u'!hello', u'szia'), (...)]
         """
         s = GET_dict.get("s")
         fake = GET_dict.copy()
