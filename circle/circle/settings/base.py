@@ -337,7 +337,6 @@ DJANGO_APPS = (
 THIRD_PARTY_APPS = (
     'django_tables2',
     'crispy_forms',
-    'djcelery',
     'sizefield',
     'taggit',
     'statici18n',
@@ -564,3 +563,5 @@ ADMIN_ENABLED = False
 BLACKLIST_PASSWORD = get_env_variable("BLACKLIST_PASSWORD", "")
 BLACKLIST_HOOK_URL = get_env_variable("BLACKLIST_HOOK_URL", "")
 REQUEST_HOOK_URL = get_env_variable("REQUEST_HOOK_URL", "")
+
+SSHKEY_EMAIL_ADD_KEY = False

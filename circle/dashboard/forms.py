@@ -1326,16 +1326,16 @@ class UserEditForm(forms.ModelForm):
 class AclUserOrGroupAddForm(forms.Form):
     name = forms.CharField(widget=autocomplete_light.TextWidget(
         'AclUserGroupAutocomplete',
-        autocomplete_js_attributes={'placeholder': _("Name of group or user")},
-        attrs={'class': 'form-control'}))
+        attrs={'class': 'form-control',
+               'placeholder': _("Name of group or user")}))
 
 
 class TransferOwnershipForm(forms.Form):
     name = forms.CharField(
         widget=autocomplete_light.TextWidget(
             'AclUserAutocomplete',
-            autocomplete_js_attributes={"placeholder": _("Name of user")},
-            attrs={'class': 'form-control'}),
+            attrs={'class': 'form-control',
+                   'placeholder': _("Name of user")}),
         label=_("E-mail address or identifier of user"))
 
 
@@ -1343,8 +1343,8 @@ class AddGroupMemberForm(forms.Form):
     new_member = forms.CharField(
         widget=autocomplete_light.TextWidget(
             'AclUserAutocomplete',
-            autocomplete_js_attributes={"placeholder": _("Name of user")},
-            attrs={'class': 'form-control'}),
+            attrs={'class': 'form-control',
+                   'placeholder': _("Name of user")}),
         label=_("E-mail address or identifier of user"))
 
 

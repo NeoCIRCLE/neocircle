@@ -1109,8 +1109,10 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         return self.__deploy(request, instances)
 
     def __deploy(self, request, instances, *args, **kwargs):
+        # workaround EncodeError: dictionary changed size during iteration
+        user = User.objects.get(pk=request.user.pk)
         for i in instances:
-            i.deploy.async(user=request.user)
+            i.deploy.async(user=user)
 
         if len(instances) > 1:
             messages.success(request, ungettext_lazy(

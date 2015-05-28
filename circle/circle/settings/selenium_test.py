@@ -14,9 +14,31 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
-import os# noqa
+import os
+
 from .base import *  # noqa
-# flake8: noqa
+
+
+# fix https://github.com/django-nose/django-nose/issues/197
+# AttributeError: 'module' object has no attribute 'commit_unless_managed'
+# TypeError: _skip_create_test_db() got an unexpected keyword argument 'keepdb'
+
+from django.db import transaction
+from django_nose import runner
+
+
+def _skip_create_test_db(self, verbosity=1, autoclobber=False, serialize=True,
+                         keepdb=True):
+    return old_skip_create_test_db(
+        self, verbosity=verbosity, autoclobber=autoclobber,
+        serialize=serialize)
+
+
+setattr(transaction, "commit_unless_managed", lambda using: using)
+old_skip_create_test_db = runner._skip_create_test_db
+setattr(runner, "_skip_create_test_db", _skip_create_test_db)
+
+
 os.environ['REUSE_DB'] = "1"
 os.environ['DJANGO_TEST_DB_NAME'] = "circle"
 DATABASES = {
@@ -34,22 +56,23 @@ DATABASES = {
 SOUTH_TESTS_MIGRATE = False
 
 INSTALLED_APPS += (
-        'acl.tests',
-        'django_nose',
-        'django_jenkins',
+    'acl.tests',
+    'django_nose',
+    'django_jenkins',
 )
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 
 path_to_selenium_test = os.path.join(SITE_ROOT, "dashboard/tests/selenium")
-NOSE_ARGS = ['--stop', '--with-doctest', '--with-selenium-driver', '--selenium-driver=firefox', '-w%s' % path_to_selenium_test]
+NOSE_ARGS = ['--stop', '--with-doctest', '--with-selenium-driver',
+             '--selenium-driver=firefox', '-w%s' % path_to_selenium_test]
 
 PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
 
 CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
-        }
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
+    }
 }
 
 LOGGING['loggers']['djangosaml2'] = {'handlers': ['console'],

@@ -255,6 +255,7 @@ class Rule(models.Model):
         return qs
 
     class Meta:
+        app_label = 'firewall'
         verbose_name = _("rule")
         verbose_name_plural = _("rules")
         ordering = (
@@ -330,7 +331,7 @@ class Vlan(AclBase, models.Model):
                                                'selected below '
                                                '(typically to the internet).'))
     snat_to = models.ManyToManyField('self', symmetrical=False, blank=True,
-                                     null=True, verbose_name=_('NAT to'),
+                                     verbose_name=_('NAT to'),
                                      help_text=_(
                                          'Connections to these networks '
                                          'should be network address '
@@ -392,6 +393,7 @@ class Vlan(AclBase, models.Model):
                                        verbose_name=_('modified at'))
 
     class Meta:
+        app_label = 'firewall'
         verbose_name = _("vlan")
         verbose_name_plural = _("vlans")
         ordering = ('vid', )
@@ -533,7 +535,7 @@ class VlanGroup(models.Model):
     name = models.CharField(max_length=20, unique=True, verbose_name=_('name'),
                             help_text=_('The name of the group.'))
     vlans = models.ManyToManyField('Vlan', symmetrical=False, blank=True,
-                                   null=True, verbose_name=_('vlans'),
+                                   verbose_name=_('vlans'),
                                    help_text=_('The vlans which are members '
                                                'of the group.'))
     description = models.TextField(blank=True, verbose_name=_('description'),
@@ -546,6 +548,7 @@ class VlanGroup(models.Model):
                                        verbose_name=_('modified at'))
 
     class Meta:
+        app_label = 'firewall'
         verbose_name = _("vlan group")
         verbose_name_plural = _("vlan groups")
         ordering = ('id', )
@@ -573,6 +576,7 @@ class Group(models.Model):
                                        verbose_name=_('modified at'))
 
     class Meta:
+        app_label = 'firewall'
         verbose_name = _("host group")
         verbose_name_plural = _("host groups")
         ordering = ('id', )
@@ -639,7 +643,7 @@ class Host(models.Model):
                               help_text=_(
                                   'The person responsible for this host.'))
     groups = models.ManyToManyField('Group', symmetrical=False, blank=True,
-                                    null=True, verbose_name=_('groups'),
+                                    verbose_name=_('groups'),
                                     help_text=_(
                                         'Host groups the machine is part of.'))
     created_at = models.DateTimeField(auto_now_add=True,
@@ -648,6 +652,7 @@ class Host(models.Model):
                                        verbose_name=_('modified at'))
 
     class Meta(object):
+        app_label = 'firewall'
         unique_together = ('hostname', 'vlan')
         ordering = ('normalized_hostname', 'vlan')
 
@@ -951,6 +956,7 @@ class Firewall(models.Model):
                             verbose_name=_('name'))
 
     class Meta:
+        app_label = 'firewall'
         verbose_name = _("firewall")
         verbose_name_plural = _("firewalls")
         ordering = ('id', )
@@ -1002,6 +1008,7 @@ class Domain(models.Model):
     description = models.TextField(blank=True, verbose_name=_('description'))
 
     class Meta:
+        app_label = 'firewall'
         verbose_name = _("domain")
         verbose_name_plural = _("domains")
         ordering = ('id', )
@@ -1083,6 +1090,7 @@ class Record(models.Model):
         return reverse('network.record', kwargs={'pk': self.pk})
 
     class Meta:
+        app_label = 'firewall'
         verbose_name = _("record")
         verbose_name_plural = _("records")
         ordering = (
@@ -1105,6 +1113,7 @@ class SwitchPort(models.Model):
                                        verbose_name=_('modified_at'))
 
     class Meta:
+        app_label = 'firewall'
         verbose_name = _("switch port")
         verbose_name_plural = _("switch ports")
         ordering = ('id', )
@@ -1137,6 +1146,7 @@ class EthernetDevice(models.Model):
                                        verbose_name=_('modified_at'))
 
     class Meta:
+        app_label = 'firewall'
         verbose_name = _("ethernet device")
         verbose_name_plural = _("ethernet devices")
         ordering = ('id', )
@@ -1172,6 +1182,7 @@ class BlacklistItem(models.Model):
         return self.ipv4
 
     class Meta(object):
+        app_label = 'firewall'
         verbose_name = _('blacklist item')
         verbose_name_plural = _('blacklist items')
         ordering = ('id', )

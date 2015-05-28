@@ -356,8 +356,6 @@ class HumanSortField(CharField):
     Code is based on carljm's django-model-utils.
     """
     def __init__(self, *args, **kwargs):
-        logger.debug('Initing HumanSortField(%s %s)',
-                     unicode(args), unicode(kwargs))
         kwargs.setdefault('default', "")
         self.maximum_number_length = kwargs.pop('maximum_number_length', 4)
         monitor = kwargs.pop('monitor', None)
