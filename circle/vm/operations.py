@@ -133,6 +133,10 @@ class InstanceOperation(Operation):
 
         super(InstanceOperation, self).check_auth(user=user)
 
+        if (self.instance.node and not self.instance.node.online
+                and not user.is_superuser):
+            raise self.instance.WrongStateError(self.instance)
+
     def create_activity(self, parent, user, kwargs):
         name = self.get_activity_name(kwargs)
         if parent:

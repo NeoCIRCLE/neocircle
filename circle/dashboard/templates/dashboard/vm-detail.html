@@ -82,6 +82,17 @@
     </h1>
     <div style="clear: both;"></div>
   </div>
+  {% if instance.node and not instance.node.online %}
+    <div class="alert alert-warning">
+      {% if user.is_superuser %}
+        {% blocktrans with name=instance.node.name %}
+        The node <strong>{{ name }}</strong> is missing.
+        {% endblocktrans %}
+      {% else %}
+        {% trans "Currently you cannot execute any operations because the virtual machine's node is missing." %}
+      {% endif %}
+    </div>
+  {% endif %}
   <div class="row">
     <div class="col-md-4" id="vm-info-pane">
       <div class="big">
