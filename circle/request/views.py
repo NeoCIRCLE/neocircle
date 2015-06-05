@@ -94,6 +94,8 @@ class RequestDetail(LoginRequiredMixin, DetailView):
 
         context['action'] = request.action
         context['accept_states'] = ResourcesOperation.accept_states
+        # workaround for http://git.io/vIIYi
+        context['request'] = self.request
 
         return context
 
