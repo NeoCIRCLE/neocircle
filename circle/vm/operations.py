@@ -1423,6 +1423,8 @@ class PasswordResetOperation(RemoteAgentOperation):
 class InstallKeysOperation(RemoteAgentOperation):
     id = 'install_keys'
     name = _("install SSH keys")
+    description = _("Copy your public keys to the virtual machines. "
+                    "Only works on UNIX-like operating systems.")
     acl_level = "user"
     task = agent_tasks.add_keys
     required_perms = ()
