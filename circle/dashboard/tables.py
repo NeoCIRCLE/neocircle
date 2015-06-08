@@ -370,3 +370,4 @@ class MessageListTable(Table):
                  'id': "disk-list-table"}
         order_by = ("-pk", )
         fields = ('pk', 'message', 'enabled', 'effect')
+        empty_text = _("No messages.")
