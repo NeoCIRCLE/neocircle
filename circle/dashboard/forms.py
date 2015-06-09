@@ -1630,6 +1630,20 @@ class MessageForm(ModelForm):
     class Meta:
         model = Message
         fields = ("message", "enabled", "effect", "start", "end")
+        help_texts = {
+            'start': _("Start time of the message in "
+                       "YYYY.DD.MM. hh.mm.ss format."),
+            'end': _("End time of the message in "
+                     "YYYY.DD.MM. hh.mm.ss format."),
+            'effect': _('The color of the message box defined by the '
+                        'respective '
+                        '<a href="http://getbootstrap.com/components/#alerts">'
+                        'Bootstrap class</a>.')
+        }
+        labels = {
+            'start': _("Start time"),
+            'end': _("End time")
+        }
 
     @property
     def helper(self):
