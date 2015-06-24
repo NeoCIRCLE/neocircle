@@ -58,9 +58,9 @@ def bower(component=None):
     "Install bower component"
     with cd("~/circle/circle"):
         if component:
-            run("bower install %s" % component)
+            run("bower install %s --config.interactive=false" % component)
         else:
-            run("bower install")
+            run("bower install --config.interactive=false")
 
 
 @roles('portal')
