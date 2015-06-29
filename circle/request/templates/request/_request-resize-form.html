@@ -1,0 +1,26 @@
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load sizefieldtags %}
+
+
+<dl>
+  <dt>{% trans "Virtual machine" %}</dt>
+  <dd><a href="{{ vm.get_absolute_url }}">{{ vm.name }}</a></dd>
+  <dt>{% trans "Disk" %}</dt>
+  <dd>
+    {% if request.user.is_superuser %}
+      <a href="{{ disk.get_absolute_url }}">{{ disk.name }} (#{{ disk.id }})</a>
+    {% else %}
+      {{ disk.name }} (#{{ disk.id }})
+    {% endif %}
+    - {{ disk.size|filesize }}
+  </dd>
+</dl>
+
+<form action="{% url "request.views.request-resize" vm_pk=vm.pk disk_pk=disk.pk %}" method="POST">
+  {% include "display-form-errors.html" %}
+  {% csrf_token %}
+  {{ form.size|as_crispy_field }}
+  {{ form.message|as_crispy_field }}
+  <input type="submit" class="btn btn-primary" id="op-form-send"/>
+</form>

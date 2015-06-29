@@ -136,6 +136,10 @@ class HelpView(TemplateView):
         return ctx
 
 
+class ResizeHelpView(TemplateView):
+    template_name = "info/resize.html"
+
+
 class OpenSearchDescriptionView(TemplateView):
     template_name = "dashboard/vm-opensearch.xml"
     content_type = "application/opensearchdescription+xml"

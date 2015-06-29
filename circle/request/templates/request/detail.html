@@ -3,6 +3,7 @@
 {% load i18n %}
 {% load render_table from django_tables2 %}
 {% load arrowfilter %}
+{% load sizefieldtags %}
 
 {% block title-page %}{% trans "Request" %}{% endblock %}
 
@@ -85,8 +86,29 @@
             <dt>{% trans "Ram size" %}</dt>
             <dd>{{ action.ram_size }} ({{ action.instance.ram_size }}) MiB</dd>
           </dl>
+        {% elif object.type == "resize" %}
+          <dl>
+            <dt>{% trans "VM name" %}</dt>
+            <dd><a href="{{ action.instance.get_absolute_url }}">{{ action.instance.name }}</a></dd>
+            <dt>{% trans "VM description" %}</dt>
+            <dd>{{ action.instance.description|default:"-" }}</dd>
+            <dt>{% trans "Disk" %}</dt>
+            <dd>
+            {% if request.user.is_superuser %}
+              <a href="{{ action.disk.get_absolute_url }}">
+              {{ action.disk.name }} (#{{ action.disk.id}})
+              </a>
+            {% else %}
+              {{ action.disk.name }} (#{{ action.disk.id}})</dd>
+            {% endif %}
+            </dd>
+            <dt>{% trans "Current size" %}</dt>
+            <dd>{{ action.disk.size|filesize}} ({{ action.disk.size }} bytes)</dd>
+            <dt>{% trans "Requested size" %}</dt>
+            <dd>{{ action.size|filesize}} ({{ action.size }} bytes)</dd>
+          </dl>
         {% else %}
-          hacks!!!
+          Are you adding a new action type?
         {% endif %}
 
         {% if object.status == "PENDING" and request.user.is_superuser %}

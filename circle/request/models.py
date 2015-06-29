@@ -32,10 +32,12 @@ from django.utils.translation import (
 from django.core.urlresolvers import reverse
 
 import requests
+from sizefield.models import FileSizeField
 from model_utils.models import TimeStampedModel
 from model_utils import Choices
 
 from vm.models import Instance, InstanceTemplate, Lease
+from storage.models import Disk
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +79,7 @@ class Request(TimeStampedModel):
         ('resource', _('resource request')),
         ('lease', _("lease request")),
         ('template', _("template access request")),
+        ('resize', _("disk resize request")),
     )
     type = CharField(choices=TYPES, max_length=10)
     message = TextField(verbose_name=_("Message"))
@@ -99,7 +102,8 @@ class Request(TimeStampedModel):
         return {
             'resource': "tasks",
             'lease': "clock-o",
-            'template': "puzzle-piece"
+            'template': "puzzle-piece",
+            'resize': "arrows-alt",
         }.get(self.type)
 
     def get_effect(self):
@@ -236,6 +240,26 @@ class TemplateAccessAction(RequestAction):
     def accept(self, user):
         for t in self.template_type.templates.all():
             t.set_user_level(self.user, self.level)
+
+    @property
+    def accept_msg(self):
+        return ungettext(
+            "You got access to the following template: %s",
+            "You got access to the following templates: %s",
+            self.template_type.templates.count()
+        ) % ", ".join([x.name for x in self.template_type.templates.all()])
+
+
+class DiskResizeAction(RequestAction):
+    instance = ForeignKey(Instance)
+    disk = ForeignKey(Disk)
+    size = FileSizeField(null=True, default=None)
+
+    def get_readable_level(self):
+        return self.LEVELS[self.level]
+
+    def accept(self, user):
+        pass
 
     @property
     def accept_msg(self):

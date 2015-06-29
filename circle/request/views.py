@@ -30,8 +30,9 @@ from django_tables2 import SingleTableView
 
 from request.models import (
     Request, TemplateAccessType, LeaseType, TemplateAccessAction,
-    ExtendLeaseAction, ResourceChangeAction,
+    ExtendLeaseAction, ResourceChangeAction, DiskResizeAction
 )
+from storage.models import Disk
 from vm.models import Instance
 from vm.operations import ResourcesOperation
 from request.tables import (
@@ -39,7 +40,7 @@ from request.tables import (
 )
 from request.forms import (
     LeaseTypeForm, TemplateAccessTypeForm, TemplateRequestForm,
-    LeaseRequestForm, ResourceRequestForm,
+    LeaseRequestForm, ResourceRequestForm, ResizeRequestForm,
 )
 
 
@@ -284,6 +285,53 @@ class ResourceRequestView(VmRequestMixin, FormView):
             message=data['message'],
             type=Request.TYPES.resource,
             action=rc
+        )
+        req.save()
+
+        return redirect(vm.get_absolute_url())
+
+
+class ResizeRequestView(VmRequestMixin, FormView):
+    form_class = ResizeRequestForm
+    template_name = "request/_request-resize-form.html"
+    user_level = "owner"
+
+    def get_disk(self, *args, **kwargs):
+        return get_object_or_404(Disk, pk=self.kwargs['disk_pk'])
+
+    def get_form_kwargs(self):
+        kwargs = super(ResizeRequestView, self).get_form_kwargs()
+        kwargs['disk'] = self.get_disk()
+        return kwargs
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/_modal.html']
+        else:
+            return ['dashboard/_base.html']
+
+    def get_context_data(self, **kwargs):
+        context = super(ResizeRequestView, self).get_context_data(**kwargs)
+        context['disk'] = self.get_disk()
+        context['template'] = self.template_name
+        context['box_title'] = context['title'] = _("Disk resize request")
+        context['ajax_title'] = True
+        return context
+
+    def form_valid(self, form):
+        vm = self.get_vm()
+        disk = self.get_disk()
+        data = form.cleaned_data
+        user = self.request.user
+
+        dra = DiskResizeAction(instance=vm, disk=disk, size=data['size'])
+        dra.save()
+
+        req = Request(
+            user=user,
+            message=data['message'],
+            type=Request.TYPES.resize,
+            action=dra
         )
         req.save()
 
