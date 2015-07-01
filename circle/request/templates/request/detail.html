@@ -66,6 +66,15 @@
             <dd>{{ action.get_readable_level }}</dd>
           </dl>
         {% elif object.type == "resource" %}
+          {% if not is_acceptable %}
+            <div class="alert alert-warning">
+              {% blocktrans %}
+              To change the resources the virtual machine must be in one of the following states:
+              STOPPED, PENDING, RUNNING. If the virtual machine is running it will be
+              automatically stopped when accepting the request.
+              {% endblocktrans %}
+            </div>
+          {% endif %}
           <dl>
             <dt>{% trans "VM name" %}</dt>
             <dd><a href="{{ action.instance.get_absolute_url }}">{{ action.instance.name }}</a></dd>
@@ -75,7 +84,7 @@
               {{ action.instance.get_status_display|upper }}
             </dd>
             <dt>{% trans "VM description" %}</dt>
-            <dd>{{ action.instance.description }}</dd>
+            <dd>{{ action.instance.description|default:"-" }}</dd>
             <dt>
               {% trans "Priority" %}
               <span class="text-muted" style="font-weight: normal;">{% trans "(old values in parentheses)" %}</span>
@@ -87,9 +96,19 @@
             <dd>{{ action.ram_size }} ({{ action.instance.ram_size }}) MiB</dd>
           </dl>
         {% elif object.type == "resize" %}
+          {% if not is_acceptable %}
+            <div class="alert alert-warning">
+              {% trans "To resize the disk the virtual machine must be in RUNNING state." %}
+            </div>
+          {% endif %}
           <dl>
             <dt>{% trans "VM name" %}</dt>
             <dd><a href="{{ action.instance.get_absolute_url }}">{{ action.instance.name }}</a></dd>
+            <dt>{% trans "Status" %}</dt>
+            <dd>
+              <i class="fa {{ action.instance.get_status_icon }}"></i>
+              {{ action.instance.get_status_display|upper }}
+            </dd>
             <dt>{% trans "VM description" %}</dt>
             <dd>{{ action.instance.description|default:"-" }}</dd>
             <dt>{% trans "Disk" %}</dt>
@@ -125,7 +144,7 @@
                 {% trans "Decline" %}
               </button>
             </form>
-            {% if object.type == "resource" and action.instance.status not in accept_states %}
+            {% if not is_acceptable %}
               {% trans "You can't accept this request because of the VM's state." %}
             {% else %}
               <form method="POST">

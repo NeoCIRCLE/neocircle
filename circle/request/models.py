@@ -35,8 +35,10 @@ import requests
 from sizefield.models import FileSizeField
 from model_utils.models import TimeStampedModel
 from model_utils import Choices
+from sizefield.utils import filesizeformat
 
 from vm.models import Instance, InstanceTemplate, Lease
+from vm.operations import ResourcesOperation, ResizeDiskOperation
 from storage.models import Disk
 
 logger = logging.getLogger(__name__)
@@ -50,6 +52,9 @@ class RequestAction(Model):
     @property
     def accept_msg(self):
         raise NotImplementedError
+
+    def is_acceptable(self):
+        return True
 
     class Meta:
         abstract = True
@@ -147,6 +152,10 @@ class Request(TimeStampedModel):
             decline_msg, url=self.get_absolute_url(), reason=self.reason,
         )
 
+    @property
+    def is_acceptable(self):
+        return self.action.is_acceptable()
+
 
 class LeaseType(RequestType):
     lease = ForeignKey(Lease, verbose_name=_("Lease"))
@@ -204,6 +213,9 @@ class ResourceChangeAction(RequestAction):
             'priority': self.priority,
         }
 
+    def is_acceptable(self):
+        return self.instance.status in ResourcesOperation.accept_states
+
 
 class ExtendLeaseAction(RequestAction):
     instance = ForeignKey(Instance)
@@ -255,19 +267,23 @@ class DiskResizeAction(RequestAction):
     disk = ForeignKey(Disk)
     size = FileSizeField(null=True, default=None)
 
-    def get_readable_level(self):
-        return self.LEVELS[self.level]
-
     def accept(self, user):
-        pass
+        self.instance.resize_disk(disk=self.disk, size=self.size, user=user)
 
     @property
     def accept_msg(self):
-        return ungettext(
-            "You got access to the following template: %s",
-            "You got access to the following templates: %s",
-            self.template_type.templates.count()
-        ) % ", ".join([x.name for x in self.template_type.templates.all()])
+        return _(
+            'The disk <em class="text-muted">%(disk_name)s (#%(id)d)</em> of '
+            '<a href="%(url)s">%(vm_name)s</a> got resized. '
+            'The new size is: %(bytes)d bytes (%(size)s).'
+        ) % {'disk_name': self.disk.name, 'id': self.disk.id,
+             'url': self.instance.get_absolute_url(),
+             'vm_name': self.instance.name,
+             'bytes': self.size, 'size': filesizeformat(self.size),
+             }
+
+    def is_acceptable(self):
+        return self.instance.status in ResizeDiskOperation.accept_states
 
 
 def send_notifications(sender, instance, created, **kwargs):

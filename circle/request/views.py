@@ -19,11 +19,13 @@ from __future__ import unicode_literals, absolute_import
 from django.views.generic import (
     UpdateView, TemplateView, DetailView, CreateView, FormView, DeleteView,
 )
+from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import redirect, get_object_or_404
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
+from django.http import JsonResponse
 
 from braces.views import SuperuserRequiredMixin, LoginRequiredMixin
 from django_tables2 import SingleTableView
@@ -34,7 +36,6 @@ from request.models import (
 )
 from storage.models import Disk
 from vm.models import Instance
-from vm.operations import ResourcesOperation
 from request.tables import (
     RequestTable, TemplateAccessTypeTable, LeaseTypeTable,
 )
@@ -94,7 +95,7 @@ class RequestDetail(LoginRequiredMixin, DetailView):
         context = super(RequestDetail, self).get_context_data(**kwargs)
 
         context['action'] = request.action
-        context['accept_states'] = ResourcesOperation.accept_states
+        context['is_acceptable'] = request.is_acceptable
         # workaround for http://git.io/vIIYi
         context['request'] = self.request
 
@@ -168,6 +169,7 @@ class RequestTypeList(LoginRequiredMixin, SuperuserRequiredMixin,
 class TemplateRequestView(LoginRequiredMixin, FormView):
     form_class = TemplateRequestForm
     template_name = "request/request-template.html"
+    success_message = _("Request successfully sent.")
 
     def get_form_kwargs(self):
         kwargs = super(TemplateRequestView, self).get_form_kwargs()
@@ -193,7 +195,8 @@ class TemplateRequestView(LoginRequiredMixin, FormView):
         )
         req.save()
 
-        return redirect("/")
+        messages.success(self.request, self.success_message)
+        return redirect(reverse("dashboard.index"))
 
 
 class VmRequestMixin(LoginRequiredMixin, object):
@@ -225,6 +228,7 @@ class LeaseRequestView(VmRequestMixin, FormView):
     form_class = LeaseRequestForm
     template_name = "request/request-lease.html"
     user_level = "operator"
+    success_message = _("Request successfully sent.")
 
     def form_valid(self, form):
         data = form.cleaned_data
@@ -245,6 +249,7 @@ class LeaseRequestView(VmRequestMixin, FormView):
         )
         req.save()
 
+        messages.success(self.request, self.success_message)
         return redirect(vm.get_absolute_url())
 
 
@@ -252,6 +257,7 @@ class ResourceRequestView(VmRequestMixin, FormView):
     form_class = ResourceRequestForm
     template_name = "request/request-resource.html"
     user_level = "user"
+    success_message = _("Request successfully sent.")
 
     def get_form_kwargs(self):
         kwargs = super(ResourceRequestView, self).get_form_kwargs()
@@ -288,6 +294,7 @@ class ResourceRequestView(VmRequestMixin, FormView):
         )
         req.save()
 
+        messages.success(self.request, self.success_message)
         return redirect(vm.get_absolute_url())
 
 
@@ -295,6 +302,7 @@ class ResizeRequestView(VmRequestMixin, FormView):
     form_class = ResizeRequestForm
     template_name = "request/_request-resize-form.html"
     user_level = "owner"
+    success_message = _("Request successfully sent.")
 
     def get_disk(self, *args, **kwargs):
         return get_object_or_404(Disk, pk=self.kwargs['disk_pk'])
@@ -327,12 +335,13 @@ class ResizeRequestView(VmRequestMixin, FormView):
         dra = DiskResizeAction(instance=vm, disk=disk, size=data['size'])
         dra.save()
 
-        req = Request(
-            user=user,
-            message=data['message'],
-            type=Request.TYPES.resize,
-            action=dra
-        )
+        req = Request(user=user, message=data['message'], action=dra,
+                      type=Request.TYPES.resize)
         req.save()
 
-        return redirect(vm.get_absolute_url())
+        if self.request.is_ajax():
+            return JsonResponse({'success': True,
+                                 'messages': [self.success_message]})
+        else:
+            messages.success(self.request, self.success_message)
+            return redirect(vm.get_absolute_url())

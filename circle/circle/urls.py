@@ -65,7 +65,8 @@ urlpatterns = patterns(
     url(r'^info/support/$',
         TemplateView.as_view(template_name="info/support.html"),
         name="info.support"),
-    url(r'^info/resize-how-to/$', ResizeHelpView.as_view(), name="info.resize"),
+    url(r'^info/resize-how-to/$', ResizeHelpView.as_view(),
+        name="info.resize"),
 )
 
 
