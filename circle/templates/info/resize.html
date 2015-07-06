@@ -7,27 +7,6 @@
 {% block content %}
 <div class="row" id="resize-help">
   <div class="col-lg-12">
-    <style>
-      #resize-help table {
-        background-color: #f5f5f5;
-      }
-      #resize-help .panel {
-        padding: 2px 20px;
-        background-color: #f5f5f5;
-        margin: 20px 0px;
-      }
-      #resize-help ol li {
-        margin-top: 15px;
-      }
-      #resize-help img {
-        display: block;
-        margin: 15px 0 5px 0;
-      }
-      #resize-help pre {
-        margin-top: 5px;
-      }
-    </style>
-
     <div class="page-header">
       <h1 id="disk-linux">
         <i class="fa fa-linux"></i>
@@ -59,7 +38,7 @@
         <strong>/dev/mapper/cloud–x–vg-root</strong>.
         {% endblocktrans %}
 
-        <div class="panel panel-default">
+        <div class="panel panel-default table-responsive">
           <table class="table">
             <thead>
             <tr>
@@ -196,7 +175,7 @@
         This will show something similar:
         {% endblocktrans %}
 
-        <div class="panel panel-default">
+        <div class="panel panel-default table-responsive">
           <table class="table">
             <thead>
             <tr>
@@ -295,7 +274,7 @@
         <p>{% trans "Save and exit: Press <strong>w</strong>." %}</p>
         <p>{% trans "If you list the partitions again, you will see the difference:" %}</p>
 
-        <div class="panel panel-default">
+        <div class="panel panel-default table-responsive">
           <table class="table">
             <thead>
               <tr>
@@ -407,7 +386,7 @@
       {% endblocktrans %}
     </p>
 
-    <div class="panel panel-default">
+    <div class="panel panel-default table-responsive">
       <table class="table">
         <thead>
           <tr>
@@ -514,25 +493,25 @@
         Click on the Start menu, and type: <code>disk management</code>.
         Click the <code>Create and format hard disk partitions</code>
         {% endblocktrans %}
-        <img src="{% static "dashboard/img/resize/2.png" %}" alt="alt " title="">
+        <img src="{% static "dashboard/img/resize/2.png" %}" alt="{% trans "Start menu" %}" class="img-responsive">
       </li>
       <li>
         {% trans "Currently you can’t see the extended size." %}
-        <img src="{% static "dashboard/img/resize/3.png" %}" alt="alt " title="">
+        <img src="{% static "dashboard/img/resize/3.png" %}" alt="{% trans "Disk Management" %}" class="img-responsive">
       </li>
       <li>
         {% blocktrans %}
         To update the disk information, click <code>Rescan Disks</code> on the <code>Action</code> menu.
         {% endblocktrans %}
-        <img src="{% static "dashboard/img/resize/4.png" %}" alt="alt " title="">
+        <img src="{% static "dashboard/img/resize/4.png" %}" alt="{% trans "Rescan Disks" %}" class="img-responsive">
       </li>
       <li>
         {% trans "After scanning Unallocated space appeared." %}
-        <img src="{% static "dashboard/img/resize/5.png" %}" alt="alt " title="">
+        <img src="{% static "dashboard/img/resize/5.png" %}" alt="{% trans "New unallocated space" %}" class="img-responsive">
       </li>
       <li>
         {% trans "To extend the C drive, right click on it, and select <code>Extend Volume</code>." %}
-        <img src="{% static "dashboard/img/resize/6.png" %}" alt="alt " title="">
+        <img src="{% static "dashboard/img/resize/6.png" %}" alt="{% trans "Extend Volume..." %}" class="img-responsive">
         <pre>{% trans "You can also create a new partition from the unallocated space." %}</pre>
       </li>
       <li>
@@ -540,14 +519,14 @@
         In the wizard you can change, how much space will you using from the unallocated space.
         The default is to use all, so press <kbd>Next</kbd>,<kbd>Next</kbd>,<kbd>Finish</kbd>.
         {% endblocktrans %}
-        <img src="{% static "dashboard/img/resize/7_1.png" %}" alt="" title="">
-        <img src="{% static "dashboard/img/resize/7_2.png" %}" alt="" title="">
-        <img src="{% static "dashboard/img/resize/7_3.png" %}" alt="" title="">
+        <img src="{% static "dashboard/img/resize/7_1.png" %}" alt="{% trans "Extend Volume Wizard" %}" class="img-responsive">
+        <img src="{% static "dashboard/img/resize/7_2.png" %}" alt="{% trans "Next" %}" class="img-responsive">
+        <img src="{% static "dashboard/img/resize/7_3.png" %}" alt="{% trans "Finish" %}" class="img-responsive">
       </li>
       <li>
         {% trans "Your partition is now bigger." %}
-        <img src="{% static "dashboard/img/resize/8_1.png" %}" alt="alt " title="">
-        <img src="{% static "dashboard/img/resize/8_2.png" %}" alt="alt " title="">
+        <img src="{% static "dashboard/img/resize/8_1.png" %}" alt="{% trans "Bigger partition" %}" class="img-responsive">
+        <img src="{% static "dashboard/img/resize/8_2.png" %}" alt="{% trans "More free space" %}" class="img-responsive">
       </li>
     </ol>
   </div><!-- .col-lg-12 -->
