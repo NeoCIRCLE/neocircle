@@ -539,3 +539,7 @@ class Disk(TimeStampedModel):
 
     def get_absolute_url(self):
         return reverse('dashboard.views.disk-detail', kwargs={'pk': self.pk})
+
+    @property
+    def is_resizable(self):
+        return self.type in ('qcow2-norm', 'raw-rw')

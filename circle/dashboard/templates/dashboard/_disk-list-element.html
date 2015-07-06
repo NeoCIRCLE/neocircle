@@ -12,10 +12,12 @@
       {% if op.resize_disk.disabled %}disabled{% endif %}">
       <i class="fa fa-{{ op.resize_disk.icon }} fa-fw-12"></i> {% trans "Resize" %}
     </a>
-  {% else %}
+  {% elif d.is_resizable %}
     <a href="{% url "request.views.request-resize" vm_pk=instance.pk disk_pk=d.pk %}" class="btn btn-xs btn-primary operation">
       <i class="fa fa-arrows-alt fa-fw-12"></i> {% trans "Request resize" %}
     </a>
+  {% else %}
+    <small class="text-muted">{% trans "Cannot be resized" %}</small>
   {% endif %}
   {% if op.remove_disk %}
     <a href="{{ op.remove_disk.get_url }}?disk={{d.pk}}"

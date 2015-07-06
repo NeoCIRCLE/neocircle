@@ -327,8 +327,11 @@ class ResizeRequestView(VmRequestMixin, FormView):
         return context
 
     def form_valid(self, form):
-        vm = self.get_vm()
         disk = self.get_disk()
+        if not disk.is_resizable:
+            raise SuspiciousOperation
+
+        vm = self.get_vm()
         data = form.cleaned_data
         user = self.request.user
 
