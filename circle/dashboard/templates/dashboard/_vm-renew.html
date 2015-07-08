@@ -8,7 +8,7 @@
   <a class="btn btn-default" href="{{object.get_absolute_url}}" data-dismiss="modal">
     {% trans "Cancel" %}
   </a>
-  {% if lease_types %}
+  {% if lease_types and not request.token_user %}
   <a class="btn btn-primary" id="vm-renew-request-lease-button"
    href="{% url "request.views.request-lease" vm_pk=object.pk %}">
     <i class="fa fa-forward"></i>
