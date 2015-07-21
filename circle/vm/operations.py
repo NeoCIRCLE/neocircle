@@ -191,7 +191,8 @@ class EnsureAgentMixin(object):
         try:
             InstanceActivity.objects.filter(
                 activity_code="vm.Instance.agent.starting",
-                started__gt=last_boot_time).latest("started")
+                started__gt=last_boot_time, instance=self.instance
+            ).latest("started")
         except InstanceActivity.DoesNotExist:  # no agent since last boot
             raise self.instance.NoAgentError(self.instance)
 

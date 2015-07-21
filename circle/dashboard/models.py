@@ -438,10 +438,14 @@ def add_ssh_keys(sender, **kwargs):
 
     userkey = kwargs.get('instance')
     instances = Instance.get_objects_with_level(
-        'user', userkey.user).filter(status='RUNNING')
+        'user', userkey.user, disregard_superuser=True
+    ).filter(status='RUNNING')
     for i in instances:
         logger.info('called add_keys(%s, %s)', i, userkey)
-        i.install_keys(user=userkey.user, keys=[userkey.key])
+        try:
+            i.install_keys(user=userkey.user, keys=[userkey.key])
+        except Instance.NoAgentError:
+            logger.info("%s has no agent running", i)
 
 
 def del_ssh_keys(sender, **kwargs):
@@ -449,10 +453,14 @@ def del_ssh_keys(sender, **kwargs):
 
     userkey = kwargs.get('instance')
     instances = Instance.get_objects_with_level(
-        'user', userkey.user).filter(status='RUNNING')
+        'user', userkey.user, disregard_superuser=True
+    ).filter(status='RUNNING')
     for i in instances:
         logger.info('called del_keys(%s, %s)', i, userkey)
-        i.remove_keys(user=userkey.user, keys=[userkey.key])
+        try:
+            i.remove_keys(user=userkey.user, keys=[userkey.key])
+        except Instance.NoAgentError:
+            logger.info("%s has no agent running", i)
 
 
 post_save.connect(add_ssh_keys, sender=UserKey)
