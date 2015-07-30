@@ -31,7 +31,7 @@ class Command(BaseCommand):
                             dest='sync',
                             const=True,
                             default=False,
-                            help='Delete poll instead of closing it')
+                            help='synchronous reload')
 
     def handle(self, *args, **options):
 
