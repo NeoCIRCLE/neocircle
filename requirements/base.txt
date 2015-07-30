@@ -31,7 +31,7 @@ python-dateutil==2.4.2
 pyinotify==0.9.5
 pytz==2015.4
 requests==2.7.0
-salt==2015.5.1
+salt==2014.7.1
 shutilwhich==1.1.0
 simplejson==3.7.2
 six==1.9.0
