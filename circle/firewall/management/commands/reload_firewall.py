@@ -23,5 +23,16 @@ from firewall.tasks.local_tasks import reloadtask
 
 
 class Command(BaseCommand):
+
+    def add_arguments(self, parser):
+
+        parser.add_argument('--sync',
+                            action='store_const',
+                            dest='sync',
+                            const=True,
+                            default=False,
+                            help='synchronous reload')
+
     def handle(self, *args, **options):
-        reloadtask('Vlan')
+
+        reloadtask('Vlan', sync=options["sync"])
