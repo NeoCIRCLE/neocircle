@@ -157,6 +157,10 @@ class Rule(models.Model):
         selected_fields = [field for field in fields if field]
         if len(selected_fields) > 1:
             raise ValidationError(_('Only one field can be selected.'))
+        elif len(selected_fields) < 1:
+            raise ValidationError(
+                _('One of the following fields must be selected: '
+                  'vlan, vlan group, host, host group, firewall.'))
 
     def get_external_ipv4(self):
         return (self.nat_external_ipv4
