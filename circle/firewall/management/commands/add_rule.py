@@ -107,16 +107,16 @@ class Command(BaseCommand):
 
         rule = Rule(direction=dir, dport=port, proto=proto, action=action,
                     vlan=vlan, foreign_network=fnet, owner=owner)
-
+        rule.full_clean()
         rule.save()
 
     def is_exist(self, port, proto, action, dir, owner, vlan, fnet):
 
-        try:
-            Rule.objects.get(direction=dir, dport=port, proto=proto,
-                             action=action, vlan=vlan,
-                             foreign_network=fnet, owner=owner)
-        except Rule.DoesNotExist:
-            return False
-        else:
-            return True
+        rules = Rule.objects.filter(direction=dir,
+                                    dport=port,
+                                    proto=proto,
+                                    action=action,
+                                    vlan=vlan,
+                                    foreign_network=fnet,
+                                    owner=owner)
+        return rules.exists()
