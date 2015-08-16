@@ -24,17 +24,26 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
 
-        parser.add_argument('--port',
-                            action='store',
-                            dest='port',
-                            type=int,
-                            required=True,
-                            help='port which will open (0-65535)')
+        group = parser.add_mutually_exclusive_group(required=True)
+
+        group.add_argument('--port',
+                           action='store',
+                           dest='port',
+                           type=int,
+                           help='port which will open (0-65535)')
+
+        group.add_argument('--port-range',
+                           action='store',
+                           dest='range',
+                           type=int,
+                           nargs=2,
+                           help='closed port range which will open (0-65535)',
+                           metavar=('LOWER', 'HIGHER'))
 
         parser.add_argument('--protocol',
                             action='store',
                             dest='proto',
-                            default=False,
+                            required=True,
                             choices=('tcp', 'udp', 'icmp'),
                             help='protocol name')
 
@@ -73,15 +82,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         port = options['port']
+        range = options['range']
         proto = options['proto']
         action = options['action']
         dir = options['dir']
         owner = options['owner']
         vlan = options['vlan']
         fnet = options['vlan_group']
-
-        if port < 0 or port > 65535:
-            raise CommandError("Port '%i' not in range [0-65535]" % port)
 
         try:
             owner = User.objects.get(username=owner)
@@ -94,21 +101,36 @@ class Command(BaseCommand):
         except VlanGroup.DoesNotExist:
             raise CommandError("VlanGroup '%s' does not exist" % fnet)
 
-        if proto:
-            self.add_rule(port, proto, action, dir, owner, vlan, fnet)
+        if port:
+            self.validate_port(port)
+            rule = self.make_rule(port, proto, action, dir, owner, vlan, fnet)
+            rule.save()
         else:
-            self.add_rule(port, 'tcp', action, dir, owner, vlan, fnet)
-            self.add_rule(port, 'udp', action, dir, owner, vlan, fnet)
+            lower = min(range)
+            higher = max(range)
+            self.validate_port(lower)
+            self.validate_port(higher)
 
-    def add_rule(self, port, proto, action, dir, owner, vlan, fnet):
+            rules = []
 
-        if self.is_exist(port, proto, action, dir, owner, vlan, fnet):
-            raise CommandError('Rule does exist, yet')
+            for port in xrange(lower, higher+1):
+                rule = self.make_rule(port, proto, action, dir,
+                                      owner, vlan, fnet)
+                rules.append(rule)
+
+            Rule.objects.bulk_create(rules)
+
+    def make_rule(self, port, proto, action, dir, owner, vlan, fnet):
 
         rule = Rule(direction=dir, dport=port, proto=proto, action=action,
                     vlan=vlan, foreign_network=fnet, owner=owner)
+
+        if self.is_exist(port, proto, action, dir, owner, vlan, fnet):
+            raise CommandError('Rule does exist, yet: %s' % unicode(rule))
+
         rule.full_clean()
-        rule.save()
+
+        return rule
 
     def is_exist(self, port, proto, action, dir, owner, vlan, fnet):
 
@@ -120,3 +142,7 @@ class Command(BaseCommand):
                                     foreign_network=fnet,
                                     owner=owner)
         return rules.exists()
+
+    def validate_port(self, port):
+        if port < 0 or port > 65535:
+            raise CommandError("Port '%i' not in range [0-65535]" % port)
