@@ -17,7 +17,7 @@ from __future__ import unicode_literals, absolute_import
 from django.core.management.base import BaseCommand, CommandError
 import logging
 
-from firewall.models import Vlan, VlanGroup, Rule
+from firewall.models import Firewall, VlanGroup, Rule
 from django.contrib.auth.models import User
 
 logger = logging.getLogger(__name__)
@@ -64,11 +64,11 @@ class Command(BaseCommand):
                             choices=('in', 'out'),
                             help='direction of the rule')
 
-        parser.add_argument('--vlan',
+        parser.add_argument('--firewall',
                             action='store',
-                            dest='vlan',
+                            dest='firewall',
                             required=True,
-                            help='vlan name where the port will open')
+                            help='firewall name which open the given port')
 
         parser.add_argument('--vlan-group',
                             action='store',
@@ -90,17 +90,17 @@ class Command(BaseCommand):
         action = options['action']
         dir = options['dir']
         owner = options['owner']
-        vlan = options['vlan']
+        firewall = options['firewall']
         fnet = options['vlan_group']
 
         try:
             owner = User.objects.get(username=owner)
-            vlan = Vlan.objects.get(name=vlan)
+            firewall = Firewall.objects.get(name=firewall)
             fnet = VlanGroup.objects.get(name=fnet)
         except User.DoesNotExist:
             raise CommandError("User '%s' does not exist" % owner)
-        except Vlan.DoesNotExist:
-            raise CommandError("Vlan '%s' does not exist" % vlan)
+        except Firewall.DoesNotExist:
+            raise CommandError("Firewall '%s' does not exist" % firewall)
         except VlanGroup.DoesNotExist:
             raise CommandError("VlanGroup '%s' does not exist" % fnet)
 
@@ -108,7 +108,7 @@ class Command(BaseCommand):
             self.validate_port(port)
             try:
                 rule = self.make_rule(port, proto, action,
-                                      dir, owner, vlan, fnet)
+                                      dir, owner, firewall, fnet)
                 rule.save()
             except Warning as e:
                 logger.warning(e)
@@ -123,19 +123,19 @@ class Command(BaseCommand):
             for port in xrange(lower, higher+1):
                 try:
                     rule = self.make_rule(port, proto, action, dir,
-                                          owner, vlan, fnet)
+                                          owner, firewall, fnet)
                     rules.append(rule)
                 except Warning as e:
                     logger.warning(e)
 
             Rule.objects.bulk_create(rules)
 
-    def make_rule(self, port, proto, action, dir, owner, vlan, fnet):
+    def make_rule(self, port, proto, action, dir, owner, firewall, fnet):
 
         rule = Rule(direction=dir, dport=port, proto=proto, action=action,
-                    vlan=vlan, foreign_network=fnet, owner=owner)
+                    firewall=firewall, foreign_network=fnet, owner=owner)
 
-        if self.is_exist(port, proto, action, dir, owner, vlan, fnet):
+        if self.is_exist(port, proto, action, dir, owner, firewall, fnet):
             raise Warning(('Rule does exist: %s' %
                           unicode(rule)).encode('utf-8'))
 
@@ -143,13 +143,13 @@ class Command(BaseCommand):
 
         return rule
 
-    def is_exist(self, port, proto, action, dir, owner, vlan, fnet):
+    def is_exist(self, port, proto, action, dir, owner, firewall, fnet):
 
         rules = Rule.objects.filter(direction=dir,
                                     dport=port,
                                     proto=proto,
                                     action=action,
-                                    vlan=vlan,
+                                    firewall=firewall,
                                     foreign_network=fnet,
                                     owner=owner)
         return rules.exists()
