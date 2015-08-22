@@ -15,9 +15,12 @@
 from __future__ import unicode_literals, absolute_import
 
 from django.core.management.base import BaseCommand, CommandError
+import logging
 
 from firewall.models import Vlan, VlanGroup, Rule
 from django.contrib.auth.models import User
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -103,8 +106,12 @@ class Command(BaseCommand):
 
         if port:
             self.validate_port(port)
-            rule = self.make_rule(port, proto, action, dir, owner, vlan, fnet)
-            rule.save()
+            try:
+                rule = self.make_rule(port, proto, action,
+                                      dir, owner, vlan, fnet)
+                rule.save()
+            except Warning as e:
+                logger.warning(e)
         else:
             lower = min(range)
             higher = max(range)
@@ -114,9 +121,12 @@ class Command(BaseCommand):
             rules = []
 
             for port in xrange(lower, higher+1):
-                rule = self.make_rule(port, proto, action, dir,
-                                      owner, vlan, fnet)
-                rules.append(rule)
+                try:
+                    rule = self.make_rule(port, proto, action, dir,
+                                          owner, vlan, fnet)
+                    rules.append(rule)
+                except Warning as e:
+                    logger.warning(e)
 
             Rule.objects.bulk_create(rules)
 
@@ -126,7 +136,8 @@ class Command(BaseCommand):
                     vlan=vlan, foreign_network=fnet, owner=owner)
 
         if self.is_exist(port, proto, action, dir, owner, vlan, fnet):
-            raise CommandError('Rule does exist, yet: %s' % unicode(rule))
+            raise Warning(('Rule does exist: %s' %
+                          unicode(rule)).encode('utf-8'))
 
         rule.full_clean()
 
