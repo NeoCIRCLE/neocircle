@@ -21,6 +21,8 @@ from django.core.management.base import BaseCommand
 
 from firewall.tasks.local_tasks import reloadtask
 
+from argparse import ArgumentTypeError
+
 
 class Command(BaseCommand):
 
@@ -33,6 +35,20 @@ class Command(BaseCommand):
                             default=False,
                             help='synchronous reload')
 
+        parser.add_argument('--timeout',
+                            action='store',
+                            dest='timeout',
+                            default=15,
+                            type=self.positive_int,
+                            help='timeout for synchronous reload')
+
     def handle(self, *args, **options):
 
-        reloadtask('Vlan', sync=options["sync"])
+        reloadtask('Vlan', sync=options["sync"], timeout=options["timeout"])
+
+    def positive_int(self, val):
+
+        if not val.isdigit():
+            raise ArgumentTypeError("'%s' is not a valid positive int" % val)
+
+        return int(val)
