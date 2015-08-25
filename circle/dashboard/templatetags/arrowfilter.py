@@ -18,9 +18,6 @@
 from django.template import Library
 
 import arrow
-from dashboard.arrow_local import HungarianLocale
-for name in HungarianLocale.names:
-    arrow.locales._locales[name] = HungarianLocale
 
 
 register = Library()
