@@ -200,6 +200,10 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
     def get_running_instances(self):
         return Instance.active.filter(template=self, status="RUNNING")
 
+    @property
+    def metric_prefix(self):
+        return 'template.%d' % self.pk
+
 
 class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                TimeStampedModel):
