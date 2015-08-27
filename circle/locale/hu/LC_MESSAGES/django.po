@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-06-08 13:38+0200\n"
-"PO-Revision-Date: 2015-06-08 13:46+0116\n"
+"PO-Revision-Date: 2015-08-27 13:45+0116\n"
 "Last-Translator:   <>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "MIME-Version: 1.0\n"
@@ -5047,7 +5047,7 @@ msgstr "Most már csatlakozhat a virtuális géphez a generált porton keresztü
 
 #: templates/info/help/faq.html:53
 msgid "My machine's lease is too short. How can I extend it?"
-msgstr "A gépen bérleti ideje túl rövid. Hogyan hosszabbíthatom meg?"
+msgstr "A gépem bérleti ideje túl rövid. Hogyan hosszabbíthatom meg?"
 
 #: templates/info/help/faq.html:57
 msgid ""
@@ -5088,7 +5088,7 @@ msgstr "Hogyan tudok porttovábbítást beállítani?"
 
 #: templates/info/help/faq_toc.html:8
 msgid "My machine’s lease is short. How can I extend it?"
-msgstr "A gépen bérleti ideje rövid. Hogyan hosszabbíthatom meg?"
+msgstr "A gépem bérleti ideje rövid. Hogyan hosszabbíthatom meg?"
 
 #: templates/info/help/overview.html:6 templates/info/help/overview_toc.html:5
 msgid "Introduction"
