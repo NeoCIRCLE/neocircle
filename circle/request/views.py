@@ -305,7 +305,10 @@ class ResizeRequestView(VmRequestMixin, FormView):
     success_message = _("Request successfully sent.")
 
     def get_disk(self, *args, **kwargs):
-        return get_object_or_404(Disk, pk=self.kwargs['disk_pk'])
+        disk = get_object_or_404(Disk, pk=self.kwargs['disk_pk'])
+        if disk not in self.get_vm().disks.all():
+            raise SuspiciousOperation
+        return disk
 
     def get_form_kwargs(self):
         kwargs = super(ResizeRequestView, self).get_form_kwargs()
