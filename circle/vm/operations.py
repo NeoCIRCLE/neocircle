@@ -305,6 +305,9 @@ class ResizeDiskOperation(RemoteInstanceOperation):
             size=filesizeformat(kwargs['size']), name=kwargs['disk'].name)
 
     def _operation(self, disk, size):
+        if not disk.is_resizable:
+            raise HumanReadableException.create(ugettext_noop(
+                'Disk type "%(type)s" is not resizable.'), type=disk.type)
         super(ResizeDiskOperation, self)._operation(disk=disk, size=size)
         disk.size = size
         disk.save()
