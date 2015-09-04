@@ -170,13 +170,21 @@
     {% if show_graph %}
       <div class="panel panel-default">
         <div class="panel-heading">
-          <div class="pull-right graph-buttons">
-            {% include "dashboard/_graph-time-buttons.html" %}
-          </div>
           <h3 class="no-margin"><i class="fa fa-area-chart"></i> {% trans "Graphs" %}</h3>
         </div>
-        <div class="text-center graph-images">
-          <img src="{% url "dashboard.views.template-graph" object.pk "instances" graph_time %}"/>
+        <div class="text-center panel-body">
+          <div class="graph-buttons">
+            {% include "dashboard/_graph-time-buttons.html" %}
+          </div>
+          <div class="text-center graph-images">
+            <img src="{% url "dashboard.views.template-graph" object.pk "instances" graph_time %}"/>
+          </div>
+
+          {% if request.user.is_superuser %}
+            <a  href="{% url "dashboard.views.vm-list" %}?s=template:{{object.pk}}&stype=all">
+              {% trans "List all template instances" %}
+            </a>
+          {% endif %}
         </div>
       </div>
     {% endif %}
