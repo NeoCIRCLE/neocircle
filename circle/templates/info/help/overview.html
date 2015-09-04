@@ -348,32 +348,34 @@
   <blockquote>
     <p>
       <h4>{% trans "Architecture" %}</h4>
-      The user can choose the template's architecture (x86 or x86-64).
+      {% trans "The user can choose the template's architecture (x86 or x86-64)." %}
     </p>
     <p>
       <h4>{% trans "Access method" %}</h4>
-      The default access method is modifiable. Currently SSH, RDP and NX are supported.
+      {% trans "The default access method is modifiable. Currently SSH, RDP and NX are supported." %}
     </p>
     <p>
       <h4>{% trans "Boot menu" %} </h4>
-      Check it to turn on the boot menu.
+      {% trans "Check it to turn on the boot menu." %}
     </p>
     <p>
       <h4>{% trans "Traits" %}</h4>
-      By adding or removing traits we can guarantee specific features the host node will have (like <em>GPU</em>) for the virtual machine.
+      {% trans "By adding or removing traits we can guarantee specific features the host node will have (like <em>GPU</em>) for the virtual machine." %}
     </p>
     <p>
       <h4>{% trans "Operating system" %}</h4>
-      The name of the operating system.
+      {% trans "The name of the operating system." %}
     </p>
     <p>
       <h4>{% trans "Agent" %}</h4>
-      Check this if the machine has agent installed and the manager should wait for its start.
+      {% trans "Check this if the machine has agent installed and the manager should wait for its start." %}
     </p>
     <p>
       <h4>{% trans "Raw data" %}</h4>
-      The CIRCLE Cloud is using libvirt, so the owner can customize the running VM's options here by
-      <a href="https://libvirt.org/formatdomain.html">libvirt domain parameters</a>.
+      {% blocktrans %}
+        The CIRCLE Cloud is using libvirt, so the owner can customize the running VM's options here by
+        <a href="https://libvirt.org/formatdomain.html">libvirt domain parameters</a>.
+      {% endblocktrans %}
     </p>
   </blockquote>
 
