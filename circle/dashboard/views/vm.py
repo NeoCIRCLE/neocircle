@@ -174,8 +174,10 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         context['is_owner'] = is_owner
 
         # operation also allows RUNNING (if with_shutdown is present)
-        context['save_resources_enabled'] = instance.status not in ("RUNNING",
-                                                                    "PENDING")
+        context['save_resources_enabled'] = instance.status in (
+            "STOPPED",
+            "PENDING",
+        )
 
         return context
 
