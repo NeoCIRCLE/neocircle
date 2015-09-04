@@ -28,7 +28,7 @@ from django.views.generic import View
 
 from braces.views import LoginRequiredMixin
 
-from vm.models import Instance, Node
+from vm.models import Instance, Node, InstanceTemplate
 
 
 logger = logging.getLogger(__name__)
@@ -150,6 +150,28 @@ class NodeGraphView(GraphViewBase):
         if not self.request.user.has_perm('vm.view_statistics'):
             raise PermissionDenied()
         return self.model.objects.get(id=pk)
+
+
+class TemplateGraphView(GraphViewBase):
+    model = InstanceTemplate
+    base = Metric
+
+    def get_object(self, request, pk):
+        instance = super(TemplateGraphView, self).get_object(request, pk)
+        if not instance.has_level(request.user, 'operator'):
+            raise PermissionDenied()
+        return instance
+
+
+class TemplateVms(object):
+    metric_name = "instances.running"
+    title = _("Instance count")
+    label = _("instance count")
+
+    def get_minmax(self):
+        return (0, None)
+
+register_graph(TemplateVms, 'instances', TemplateGraphView)
 
 
 class NodeListGraphView(GraphViewBase):
