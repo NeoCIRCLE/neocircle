@@ -5288,7 +5288,7 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"Itt található továbbá egy összefoglalás a virtuális gép lejáratáról is. \n"
+"Itt található továbbá egy összefoglalás a virtuális gép lejárati idejeiről is. \n"
 "Minden gépnek van egy lejárati ideje külön felfüggesztésre és megsemmisítésre. "
 
 #: templates/info/help/overview.html:161
@@ -5330,7 +5330,7 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"Az erőforrások fülön látható, hogy mennyi <strong>memória</strong>, <strong>CPU</strong> áll a virtuális gép rendelkezésére és milyen <strong>prioritással</strong> rendelkezik."
+"Az erőforrások fülön látható, hogy mennyi <strong>memória</strong>, <strong>CPU</strong> áll a virtuális gép rendelkezésére, és milyen <strong>prioritással</strong> rendelkezik."
 
 #: templates/info/help/overview.html:192
 msgid ""
@@ -5352,7 +5352,7 @@ msgstr ""
 "\n"
 "Ez a fül lehetővé teszi a virtuális gép konzolon keresztüli használatát, főként hibakeresési és operációs rendszer telepítési célokra.\n"
 "Használható a billentyűzet és az egér is.\n"
-"Alapvető esetben a virtuális géphez SSH-val, vagy távoli asztali kapcsolattal célszerű kapcsolódni."
+"Alapesetben a virtuális géphez SSH-val, vagy távoli asztali kapcsolattal célszerű kapcsolódni."
 
 #: templates/info/help/overview.html:210
 msgid ""
@@ -5607,11 +5607,11 @@ msgid ""
 "      "
 msgstr ""
 "\n"
-"A CIRCLE Cloud libvirt modult használ. Emiatt a virtuális gép ehhez tartozó beállításai módosíthatóak a <a href=\"https://libvirt.org/formatdomain.html\">libvirt domain paraméterek</a> alapján."
+"A CIRCLE Cloud a libvirt API-t használja, így a virtuális gép beállításai személyre szabhatóak <a href=\"https://libvirt.org/formatdomain.html\">libvirt domén paraméterekkel</a>."
 
 #: templates/info/help/overview.html:383
 msgid "How can I transfer the template ownership to someone else?"
-msgstr "Hogyan tudom a sablont átruházni másnak?"
+msgstr "Hogyan tudom a sablont átruházni másra?"
 
 #: templates/info/help/overview.html:386
 msgid ""
@@ -5625,7 +5625,7 @@ msgstr ""
 #: templates/info/help/overview_toc.html:68
 msgid "How can I grant access for users or groups to the template?"
 msgstr ""
-"Hogyan tudok hozzáférést adni a sablonhoz a felhasználóknak vagy "
+"Hogyan tudok hozzáférést adni a sablonhoz felhasználóknak vagy "
 "csoportoknak?"
 
 #: templates/info/help/overview.html:395
