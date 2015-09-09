@@ -18,6 +18,7 @@
 
 import re
 import logging
+import sha
 
 from django.conf import settings
 from djangosaml2.backends import Saml2Backend as Saml2BackendBase
@@ -48,14 +49,15 @@ class Saml2Backend(Saml2BackendBase):
         attr = re.sub(r'[^\w.@-]', replace, main_attribute)
         max_length = settings.SAML_MAIN_ATTRIBUTE_MAX_LENGTH
         if max_length > 0 and len(attr) > max_length:
-            logger.info("Trimming main attribute: %s" % attr)
+            logger.info("Main attribute '%s' is too long." % attr)
+            hashed = sha.new(attr).hexdigest()
             if "@" in attr:
-                parts = attr.split("@")
-                attr = "%s@%s" % (parts[0][:max_length-1-len(parts[1])],
-                                  parts[1])
+                domain = attr.rsplit("@", 1)[1]
+                attr = "%s@%s" % (hashed[:max_length-1-len(domain)],
+                                  domain)
             else:
-                attr = attr[:max_length]
-            logger.info("Trimmed main attribute: %s" % attr)
+                attr = hashed[:max_length]
+            logger.info("New main attribute: %s" % attr)
         return attr
 
     def _set_attribute(self, obj, attr, value):
