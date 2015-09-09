@@ -51,12 +51,7 @@ class Saml2Backend(Saml2BackendBase):
         if max_length > 0 and len(attr) > max_length:
             logger.info("Main attribute '%s' is too long." % attr)
             hashed = sha.new(attr).hexdigest()
-            if "@" in attr:
-                domain = attr.rsplit("@", 1)[1]
-                attr = "%s@%s" % (hashed[:max_length-1-len(domain)],
-                                  domain)
-            else:
-                attr = hashed[:max_length]
+            attr = hashed[:max_length]
             logger.info("New main attribute: %s" % attr)
         return attr
 
