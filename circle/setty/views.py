@@ -21,7 +21,7 @@ class IndexView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         if self.request.user.is_authenticated():
-            return TemplateView.get(self, request, *args, **kwargs)  # To be checked!
+            return TemplateView.get(self, request, *args, **kwargs)
         else:
             return redirect(auth.views.login)
 
@@ -113,7 +113,8 @@ class DetailView(IndexView):
         try:
             serviceObject = Service.objects.get(id=kwargs['pk'])
             if serviceObject.user != self.request.user:
-                return HttpResponseForbidden("You don't have permission to open the service.")
+                return HttpResponseForbidden(
+                    "You don't have permission to open the service.")
         except:
             raise Http404
         else:
