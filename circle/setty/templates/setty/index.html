@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+{% extends "dashboard/base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+
+{% block title-page %}{% trans 'Setty' %}{% endblock %}
+
+{% block content %}
+
+<link type="text/css" rel="stylesheet" href="{% static 'setty/style.css' %}">
+
+<div class="row" id="workspace">
+    <div class="col-xs-2" id="dragPanel">
+        <div class="panel panel-default text-center">
+            <div class="panel-heading">
+                <div class="row">
+                   <h3 class="no-margin">{% trans 'Elements' %}</h3>
+                </div>
+            </div>
+            <div class="panel-heading">
+                <div class="row" id="searchElementTemplate">
+                    <div class="col-md-12">
+                        <input type="text" class="form-control" id="searchElementTemplateInput" placeholder="{% trans 'Search' %}"/>
+                    </div>
+                    &nbsp;
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <button class="btn btn-primary btn-xs btn-block" id="dragContainerScrollUp"><i class="fa fa-chevron-up"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body" id="dragContainer">
+            {% for element in elementTemplateList %}
+                <div class="row" id="elementTemplatePanel">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <label class="no-margin">{{ element.name }}</label>
+                        </div>
+                        <div class="panel-body">
+                            <img class="elementTemplate" type="{% for target in element.compatibles.all %}{{ target.id }},{% endfor %}"
+                                 id="{{ element.id }}" data-container="body" data-placement="right" title="{{ element.description }}"
+                                 src="{% static element.logo %}" alt="{{ element.name }}"
+                                 ondragstart="return false;"/>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+            <div class="panel-footer">
+                <div class="row">
+                    <div class="col-md-12">
+                        <button class="btn btn-primary btn-xs btn-block" id="dragContainerScrollDown"><i class="fa fa-chevron-down"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-8">
+        <div class="panel panel-default">
+            <div class="panel-heading text-center">
+                <div class="row">
+                    <div class="col-xs-4">
+                    </div>
+                    <div class="col-xs-4">
+                        <h3 class="no-margin" id="serviceName" contenteditable="true">Service</h3>
+                    </div>
+                    <div class="col-xs-2 text-right">
+                        <button class="btn btn-info btn-xs" id="clearService">{% trans 'Clear' %}</button>
+                    </div>
+                    <div class="col-xs-2 text-right">
+                        <button class="btn btn-success btn-xs" id="saveService">{% trans 'Save' %}</button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body" id="dropContainer" oncontextmenu="return false;"></div>
+            <div class="panel-footer"></div>
+        </div>
+    </div>
+
+     <div class="col-xs-2 col-md-2">
+        <div class="panel panel-default">
+            <div class="panel-heading text-center">
+                <div class="row">
+                    <h3 class="no-margin">{% trans 'Information' %}</h3>
+                </div>
+            </div>
+            <div class="panel-body" id="informationContainer"></div>
+            <div class="panel-footer"></div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal dialogs -->
+
+<div class="modal fade" id="connectionInfoDialog" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">{% trans 'Connection info' %}</h4>
+            </div>
+            <div class="modal-body">
+                <textarea id="connectionInfoParameters" class="form-control" rows="3" placeholder="Parameters" style="resize: none;"></textarea>
+            </div>
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="col-md-2 col-md-push-8">
+                        <button id="connectionInfoSave" type="button" class="btn btn-success" data-dismiss="modal">{% trans 'Save' %}</button>
+                    </div>
+                    <div class="col-md-2 col-md-push-8">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">{% trans 'Close' %}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
