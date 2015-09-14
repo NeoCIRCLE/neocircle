@@ -700,8 +700,8 @@ class Host(models.Model):
         return self.vlan.network_type != 'public'
 
     def clean(self):
-        if (self.external_ipv4 and not self.shared_ip and self.behind_nat
-                and Host.objects.exclude(id=self.id).filter(
+        if (self.external_ipv4 and not self.shared_ip and self.behind_nat and
+                Host.objects.exclude(id=self.id).filter(
                     external_ipv4=self.external_ipv4)):
             raise ValidationError(_("If shared_ip has been checked, "
                                     "external_ipv4 has to be unique."))
