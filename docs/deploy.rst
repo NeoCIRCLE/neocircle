@@ -89,7 +89,7 @@ Set up nginx to serve the CIRCLE portal. ::
 
     server {
       listen 80 default;
-      rewrite ^ https://$host/;  # permanent;
+      rewrite ^ https://\$host/;  # permanent;
     }
   END
   sudo /etc/init.d/nginx restart
