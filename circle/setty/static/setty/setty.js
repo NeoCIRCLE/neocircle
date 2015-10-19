@@ -64,11 +64,7 @@ jsPlumb.ready(function(){
         div = '<div class="row"><div class="col-xs-12 text-center"><h3>' + title + '</h3></div></div>&nbsp;<div class="row"><div class="col-xs-12">' + '<textarea class="form-control" rows="30" id="infoInput"' + 'placeholder="Config data"' + (type=="info"?'readonly':'') + '>' + '</textarea></div></div>';
 
         if(type=="element")
-            div += '&nbsp;<div class="row text-center"><label>Endpoints</label></div><div class="row">'
-                 + '<div class="col-xs-6 text-center">'
-                 + '<button id="addEndpoint" class="btn btn-success">+</button></div>'
-                 + '<div class="col-xs-6 text-center">'
-                 + '<button id="removeEndpoint" class="btn btn-danger">-</button></div></div>';
+            div += '&nbsp;<div class="row text-center"><label>Endpoints</label></div><div class="row">' + '<div class="col-xs-6 text-center">' + '<button id="addEndpoint" class="btn btn-success">+</button></div>' + '<div class="col-xs-6 text-center">' + '<button id="removeEndpoint" class="btn btn-danger">-</button></div></div>';
 
         $("#informationContainer").empty().append(div);
         
