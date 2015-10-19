@@ -1,4 +1,4 @@
-jsPlumb.ready(function() {
+jsPlumb.ready(function(){
     /**
      * Global variables.
      */
@@ -54,7 +54,7 @@ jsPlumb.ready(function() {
         if(status == "saved"){
             $("#unsavedDiv").remove();
         }
-    }
+    };
 
 
     /**
@@ -92,13 +92,13 @@ jsPlumb.ready(function() {
         $("#removeEndpoint").click(function(){
             removeEndoint(element);
         });
-    }
+    };
 
 
     /**
      * Function for updating connection array whether an event was fired.
      */
-    updateConnections = function(connection, remove) {
+    updateConnections = function(connection, remove){
         setServiceStatus("unsaved");
         if (!remove)
             elementConnections.push(connection);
@@ -119,7 +119,7 @@ jsPlumb.ready(function() {
     /**
      * Function for checking and ignoring duplicate connections.
      */
-    checkDuplicateConnection = function(connection) {
+    checkDuplicateConnection = function(connection){
         for (var i = 0; i < elementConnections.length; i++) {
             if ((elementConnections[i].targetId == connection.targetId && elementConnections[i].sourceId == connection.sourceId) ||
                 (elementConnections[i].targetId == connection.sourceId && elementConnections[i].sourceId == connection.targetId)) {
@@ -134,7 +134,7 @@ jsPlumb.ready(function() {
     /**
      * Function for checking element compatibility.
      */
-    checkCompatibility = function(sourceId, targetId) {
+    checkCompatibility = function(sourceId, targetId){
         validTargets = $("#" + sourceId).attr("type").split(',');
 
         if (jQuery.inArray(targetId.split('_')[1], validTargets) == -1) {
@@ -148,7 +148,7 @@ jsPlumb.ready(function() {
     /**
      * Function for checking source and target equality.
      */
-    checkSourceTargetEquality = function(connection) {
+    checkSourceTargetEquality = function(connection){
         if (connection.targetId == connection.sourceId) {
             addMessage("Source element is the same as target element.", "danger");
             return false;
@@ -160,7 +160,7 @@ jsPlumb.ready(function() {
     /**
      * Function for determining anchor positions for an element.
      */
-    getAnchorCoordinate = function(rate) {
+    getAnchorCoordinate = function(rate){
         x = Math.cos(2.0 * Math.PI * rate) / 2;
         y = Math.sin(2.0 * Math.PI * rate) / 2;
         dx = 0;
@@ -204,7 +204,7 @@ jsPlumb.ready(function() {
             }
         });
         return returnValue;
-    }
+    };
     
     /**
      * Get connection parameters and other connected anchor concerning an anchor coming from parameters.
@@ -229,13 +229,13 @@ jsPlumb.ready(function() {
             }
         });
         return [parameters, otherAnchor];
-    }
+    };
     
     
     /**
      * Function to add new element to service.
      */
-    addEndpoint = function(element) {
+    addEndpoint = function(element){
         anchors = element.attr("anchors");
 
         if(anchors==8) return;
@@ -253,7 +253,7 @@ jsPlumb.ready(function() {
         element.attr("anchors", anchors);
         
         jsPlumbInstance.repaintEverything();
-    }
+    };
 
     /**
      * Function for removing an endpoint of an element.
@@ -296,13 +296,13 @@ jsPlumb.ready(function() {
         element.attr("anchors", anchors);
 
         jsPlumbInstance.repaintEverything();
-    }
+    };
     
 
     /**
      * Function for managing instantiation of new elements based on their templates.
      */
-    addElement = function(templateId, newId, newPositionY, endpoints, parameters, newPositionX) {
+    addElement = function(templateId, newId, newPositionY, endpoints, parameters, newPositionX){
         newInstance = $('#' + templateId)
             .clone()
             .prop("id", newId)
@@ -324,8 +324,8 @@ jsPlumb.ready(function() {
             containment: $("#dropContainer")
         });
 
-        newInstance.mousedown(function(e) {
-            if(e.button == 0){
+        newInstance.mousedown(function(e){
+            if(e.button === 0){
                 element = $(this);
                 addInfo(element.attr("alt"), element.attr("parameters"), "element", element);
                 return false;
@@ -348,26 +348,26 @@ jsPlumb.ready(function() {
     /**
      * Handling events on workspace.
      */
-    jsPlumbInstance.bind("connection", function(info) {
+    jsPlumbInstance.bind("connection", function(info){
         updateConnections(info.connection);
         info.connection.parameters = "";
     });
-    jsPlumbInstance.bind("beforeDrop", function(info) {
+    jsPlumbInstance.bind("beforeDrop", function(info){
         return checkDuplicateConnection(info.connection) &&
             checkSourceTargetEquality(info.connection) &&
             checkCompatibility(info.connection.sourceId, info.connection.targetId);
     });
-    jsPlumbInstance.bind("connectionDetached", function(info) {
+    jsPlumbInstance.bind("connectionDetached", function(info){
         updateConnections(info.connection, true);
     });
-    jsPlumbInstance.bind("connectionMoved", function(info) {
+    jsPlumbInstance.bind("connectionMoved", function(info){
         updateConnections(info.connection, true);
     });
-    jsPlumbInstance.bind("contextmenu", function(info) {
+    jsPlumbInstance.bind("contextmenu", function(info){
         jsPlumbInstance.detach(info);
         $("#informationContainer").empty();
     });
-    jsPlumbInstance.bind("click", function(info) {
+    jsPlumbInstance.bind("click", function(info){
         addInfo($("#"+info.sourceId.split('_')[1]).attr("alt") + ' - '
                 + $("#"+info.targetId.split('_')[1]).attr("alt"),
                 info.parameters,
@@ -382,7 +382,7 @@ jsPlumb.ready(function() {
     /**
      * Handling click event on elements.
      */
-    $(".elementTemplate").click(function() {
+    $(".elementTemplate").click(function(){
         addElement($(this).prop("id"),
             (++elementIndex) + "_" + $(this).prop("id"),
             $(this).position().top,
@@ -402,7 +402,7 @@ jsPlumb.ready(function() {
     /**
      * Handling click event on clear button.
      */
-    $("#clearService").click(function(e) {
+    $("#clearService").click(function(e){
         jsPlumbInstance.detachEveryConnection()
                        .deleteEveryEndpoint();
         $(".element").remove();
@@ -424,12 +424,12 @@ jsPlumb.ready(function() {
     /**
      * Handling click event on save button.
      */
-    $("#saveService").click(function() {
+    $("#saveService").click(function(){
         serviceName = $("#serviceName").text();
         connectionSet = [];
         instanceSet = [];
 
-        $.each(elementConnections, function(index) {
+        $.each(elementConnections, function(index){
             connectionSet.push({
                 "sourceId": elementConnections[index].sourceId,
                 "sourceEndpoint": elementConnections[index].endpoints[0].getUuid(),
@@ -439,7 +439,7 @@ jsPlumb.ready(function() {
             });
         });
 
-        $.each($(".element"), function(index) {
+        $.each($(".element"), function(index){
             instanceSet.push({
                 "displayId": $(this).prop("id"),
                 "posX": Math.floor($(this).position().left),
@@ -470,8 +470,8 @@ jsPlumb.ready(function() {
     /**
      * Handling window resize event for preventing elements against overflow.
      */
-    $(window).resize(function() {
-        $(".element").each(function() {
+    $(window).resize(function(){
+        $(".element").each(function(){
             if ($(this).position().left + $(this).width() > $("#dropContainer").position().left + $("#dropContainer").width()) {
                 $(this).css("left", $("#dropContainer").position().left + $("#dropContainer").width() - $(this).width() + 4);
             }
@@ -483,12 +483,12 @@ jsPlumb.ready(function() {
     /**
      * Handling click events on scroll buttons.
      */
-    $("#dragContainerScrollUp").click(function() {
+    $("#dragContainerScrollUp").click(function(){
         if (dragContainerScroll > 0) dragContainerScroll -= 1;
         $("#dragContainer").scrollTop(dragContainerScroll * $("#elementTemplatePanel").height());
     });
 
-    $("#dragContainerScrollDown").click(function() {
+    $("#dragContainerScrollDown").click(function(){
         if (dragContainerScroll < $(".elementTemplate").length - 3) dragContainerScroll += 1;
         $("#dragContainer").scrollTop(dragContainerScroll * $("#elementTemplatePanel").height());
     });
@@ -497,8 +497,8 @@ jsPlumb.ready(function() {
     /**
      * Handling search feature.
      */
-    $("#searchElementTemplate").keyup(function() {
-        $(".elementTemplate").each(function() {
+    $("#searchElementTemplate").keyup(function(){
+        $(".elementTemplate").each(function(){
             $(this).parent().parent().hide();
             if ($(this).attr("alt").toLowerCase()
                 .indexOf($("#searchElementTemplateInput")
@@ -512,11 +512,11 @@ jsPlumb.ready(function() {
     /**
      * Handling page load event.
      */
-    $(document).ready(function() {
+    $(document).ready(function(){
         $.post("", {
             event: "loadService"
         }, function(resultValue) {
-            if(resultValue=="") return;
+            if(resultValue === "") return;
 
             result = jQuery.parseJSON(resultValue);
             $("#serviceName").text(result.serviceName);
