@@ -38,6 +38,7 @@ urlpatterns = patterns(
     url(r'^network/', include('network.urls')),
     url(r'^blacklist-add/', add_blacklist_item),
     url(r'^dashboard/', include('dashboard.urls')),
+    url(r'^setty/', include('setty.urls')),
     url(r'^request/', include('request.urls')),
 
     # django/contrib/auth/urls.py (care when new version)

@@ -34,6 +34,9 @@ class IndexView(TemplateView):
 
     @csrf_exempt
     def post(self, request, *args, **kwargs):
+        if not self.request.user.is_authenticated():
+            return redirect(auth.views.login)
+
         if self.request.POST.get('event') == "saveService":
             jsonData = json.loads(self.request.POST.get('data'))
 
@@ -56,7 +59,7 @@ class IndexView(TemplateView):
             for element in jsonData['elements']:
                 elementObject = Element(
                     service=serviceObject,
-                    parameters="none",  # further plan
+                    parameters=element['parameters'],
                     display_id=element['displayId'],
                     pos_x=element['posX'],
                     pos_y=element['posY'],
@@ -122,6 +125,9 @@ class DetailView(IndexView):
 
     @csrf_exempt
     def post(self, request, *args, **kwargs):
+        if not self.request.user.is_authenticated():
+            return redirect(auth.views.login)
+
         if self.request.POST.get('event') == "loadService":
             serviceObject = Service.objects.get(id=kwargs['pk'])
             elementList = Element.objects.filter(service=serviceObject)

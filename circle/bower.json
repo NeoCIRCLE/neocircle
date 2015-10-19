@@ -20,6 +20,7 @@
     "bootbox": "~4.3.0",
     "intro.js": "0.9.0",
     "favico.js": "~0.3.5",
-    "datatables": "~1.10.4"
+    "datatables": "~1.10.4",
+    "jsPlumb": "~1.7.5"
   }
 }

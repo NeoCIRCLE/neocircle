@@ -199,6 +199,7 @@ PIPELINE_JS = {
         "jquery-simple-slider/js/simple-slider.js",
         "favico.js/favico.js",
         "datatables/media/js/jquery.dataTables.js",
+        "jsPlumb/dist/js/dom.jsPlumb-1.7.5-min.js",
         "dashboard/dashboard.js",
         "dashboard/activity.js",
         "dashboard/group-details.js",
@@ -214,6 +215,7 @@ PIPELINE_JS = {
         "dashboard/vm-create.js",
         "dashboard/vm-list.js",
         "dashboard/help.js",
+        "setty/setty.js",
         "js/host.js",
         "js/network.js",
         "js/switch-port.js",
@@ -358,6 +360,7 @@ LOCAL_APPS = (
     'acl',
     'monitor',
     'request',
+	'setty',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
