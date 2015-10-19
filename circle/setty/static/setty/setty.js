@@ -61,12 +61,7 @@ jsPlumb.ready(function(){
      * Function for displaying information panel content.
      */
     addInfo = function(title, info, type, element){
-        div = '<div class="row"><div class="col-xs-12 text-center"><h3>'
-               + title
-               + '</h3></div></div>&nbsp;<div class="row"><div class="col-xs-12">'
-               + '<textarea class="form-control" rows="30" id="infoInput"'
-               + 'placeholder="Config data"' + (type=="info"?'readonly':'') + '>'
-               + '</textarea></div></div>';
+        div = '<div class="row"><div class="col-xs-12 text-center"><h3>' + title + '</h3></div></div>&nbsp;<div class="row"><div class="col-xs-12">' + '<textarea class="form-control" rows="30" id="infoInput"' + 'placeholder="Config data"' + (type=="info"?'readonly':'') + '>' + '</textarea></div></div>';
 
         if(type=="element")
             div += '&nbsp;<div class="row text-center"><label>Endpoints</label></div><div class="row">'
@@ -368,8 +363,7 @@ jsPlumb.ready(function(){
         $("#informationContainer").empty();
     });
     jsPlumbInstance.bind("click", function(info){
-        addInfo($("#"+info.sourceId.split('_')[1]).attr("alt") + ' - '
-                + $("#"+info.targetId.split('_')[1]).attr("alt"),
+        addInfo($("#"+info.sourceId.split('_')[1]).attr("alt") + ' - ' + $("#"+info.targetId.split('_')[1]).attr("alt"),
                 info.parameters,
                 "connection",
                 info);
