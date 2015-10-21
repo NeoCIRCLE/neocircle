@@ -545,8 +545,8 @@ class UserList(LoginRequiredMixin, PermissionRequiredMixin, SingleTableView):
 
         q = self.search_form.cleaned_data.get('s')
         if q:
-            filters = (Q(username__icontains=q) | Q(email__icontains=q)
-                       | Q(profile__org_id__icontains=q))
+            filters = (Q(username__icontains=q) | Q(email__icontains=q) |
+                       Q(profile__org_id__icontains=q))
             for w in q.split()[:3]:
                 filters |= (
                     Q(first_name__icontains=w) | Q(last_name__icontains=w))

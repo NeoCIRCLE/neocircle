@@ -38,10 +38,10 @@ def highlight(field, q, none_wo_match=True):
         match = None
     if q and match is not None:
         match_end = match + len(q)
-        return (escape(field[:match])
-                + '<span class="autocomplete-hl">'
-                + escape(field[match:match_end])
-                + '</span>' + escape(field[match_end:]))
+        return (escape(field[:match]) +
+                '<span class="autocomplete-hl">' +
+                escape(field[match:match_end]) +
+                '</span>' + escape(field[match_end:]))
     elif none_wo_match:
         return None
     else:

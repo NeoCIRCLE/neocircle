@@ -246,8 +246,8 @@ class AclBase(Model):
 
     def save(self, *args, **kwargs):
         super(AclBase, self).save(*args, **kwargs)
-        if 'owner' in dict(self.ACL_LEVELS) and (hasattr(self, 'owner')
-                                                 and self.owner):
+        if 'owner' in dict(self.ACL_LEVELS) and (hasattr(self, 'owner') and
+                                                 self.owner):
             self.set_user_level(self.owner, 'owner')
 
     class Meta:

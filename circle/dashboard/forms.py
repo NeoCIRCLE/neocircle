@@ -506,8 +506,8 @@ class TemplateForm(forms.ModelForm):
             self.allowed_fields = (
                 'name', 'access_method', 'description', 'system', 'tags',
                 'arch', 'lease', 'has_agent')
-        if (self.user.has_perm('vm.change_template_resources')
-                or not self.instance.pk):
+        if (self.user.has_perm('vm.change_template_resources') or
+                not self.instance.pk):
             self.allowed_fields += tuple(set(self.fields.keys()) -
                                          set(['raw_data']))
         if self.user.is_superuser:
@@ -523,8 +523,8 @@ class TemplateForm(forms.ModelForm):
             self.initial['max_ram_size'] = 512
 
         lease_queryset = (
-            Lease.get_objects_with_level("operator", self.user).distinct()
-            | Lease.objects.filter(pk=self.instance.lease_id).distinct())
+            Lease.get_objects_with_level("operator", self.user).distinct() |
+            Lease.objects.filter(pk=self.instance.lease_id).distinct())
 
         self.fields["lease"].queryset = lease_queryset
 

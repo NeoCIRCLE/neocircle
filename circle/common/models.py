@@ -97,7 +97,7 @@ def has_prefix(activity_code, *prefixes):
     >>> assert has_prefix('foo.bar.buz', 'foo', 'bar', 'buz')
     >>> assert not has_prefix('foo.bar.buz', 'foo', 'buz')
     """
-    equal = lambda a, b: a == b
+    def equal(a, b): return a == b
     act_code_parts = split_activity_code(activity_code)
     prefixes = chain(*imap(split_activity_code, prefixes))
     return all(imap(equal, act_code_parts, prefixes))
@@ -112,7 +112,7 @@ def has_suffix(activity_code, *suffixes):
     >>> assert has_suffix('foo.bar.buz', 'foo', 'bar', 'buz')
     >>> assert not has_suffix('foo.bar.buz', 'foo', 'buz')
     """
-    equal = lambda a, b: a == b
+    def equal(a, b): return a == b
     act_code_parts = split_activity_code(activity_code)
     suffixes = list(chain(*imap(split_activity_code, suffixes)))
     return all(imap(equal, reversed(act_code_parts), reversed(suffixes)))
@@ -441,8 +441,8 @@ class HumanReadableObject(object):
     @classmethod
     def create(cls, user_text_template, admin_text_template=None, **params):
         return cls(user_text_template=user_text_template,
-                   admin_text_template=(admin_text_template
-                                        or user_text_template), params=params)
+                   admin_text_template=(admin_text_template or
+                                        user_text_template), params=params)
 
     def set(self, user_text_template, admin_text_template=None, **params):
         self._set_values(user_text_template,

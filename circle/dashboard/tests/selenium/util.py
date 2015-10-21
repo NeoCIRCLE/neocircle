@@ -601,8 +601,8 @@ class CircleSeleniumMixin(SeleniumMixin):
             choices = self.driver.find_elements_by_css_selector(
                 "input[type='radio']")
             choice_list = [item for item in choices if (
-                'test' not in item.get_attribute('value')
-                and item.get_attribute('value') != 'base_vm')]
+                'test' not in item.get_attribute('value') and
+                item.get_attribute('value') != 'base_vm')]
             chosen = random.randint(0, len(choice_list) - 1)
             choice_list[chosen].click()
             self.driver.find_element_by_id(
