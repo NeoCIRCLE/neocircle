@@ -22,6 +22,7 @@ from optparse import make_option
 
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
+from django.conf import settings
 
 from firewall.models import Vlan, VlanGroup, Domain, Firewall, Rule
 from storage.models import DataStore
@@ -73,7 +74,8 @@ class Command(BaseCommand):
         admin.set_password(options['admin_pass'])
         admin.save()
 
-        self.create(DataStore, 'path', path='/datastore', name='default',
+        self.create(DataStore, 'path', path='/datastore',
+                    name=settings.DEFAULT_DATASTORE,
                     hostname=options['datastore_queue'])
 
         # leases

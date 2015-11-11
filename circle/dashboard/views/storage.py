@@ -37,13 +37,13 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
     template_name = "dashboard/storage/detail.html"
 
     def get_object(self):
-        return DataStore.objects.get()
+        return DataStore.get_default_datastore()
 
     def get_context_data(self, **kwargs):
         context = super(StorageDetail, self).get_context_data(**kwargs)
 
-        ds = self.get_object()
         try:
+            ds = self.get_object()
             context['stats'] = self._get_stats()
             context['missing_disks'] = ds.get_missing_disks()
             context['orphan_disks'] = ds.get_orphan_disks()

@@ -24,6 +24,7 @@ from os.path import join
 import uuid
 import re
 
+from django.conf import settings
 from celery.contrib.abortable import AbortableAsyncResult
 from django.db.models import (Model, BooleanField, CharField, DateTimeField,
                               ForeignKey)
@@ -108,6 +109,16 @@ class DataStore(Model):
             args=[self.path], queue=queue_name).get(timeout=timeout))
         disks = Disk.objects.filter(destroyed__isnull=True, is_ready=True)
         return disks.exclude(filename__in=files)
+
+    @classmethod
+    def get_default_datastore(cls):
+        try:
+            datastore_name = settings.DEFAULT_DATASTORE
+            if datastore_name:
+                return cls.objects.get(name=datastore_name)
+        except cls.DoesNotExist:
+            pass
+        return cls.objects.all()[0]  # TODO
 
 
 class Disk(TimeStampedModel):
@@ -413,7 +424,7 @@ class Disk(TimeStampedModel):
 
     @classmethod
     def __create(cls, user, params):
-        datastore = params.pop('datastore', DataStore.objects.get())
+        datastore = params.pop('datastore', DataStore.get_default_datastore())
         filename = params.pop('filename', str(uuid.uuid4()))
         disk = cls(filename=filename, datastore=datastore, **params)
         return disk

@@ -84,6 +84,8 @@ ADMINS = (
 
 EMAIL_SUBJECT_PREFIX = get_env_variable('DJANGO_SUBJECT_PREFIX', '[CIRCLE] ')
 
+DEFAULT_DATASTORE = get_env_variable('DEFAULT_DATASTORE', 'default')
+
 ########## END MANAGER CONFIGURATION
 
 
