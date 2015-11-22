@@ -27,7 +27,7 @@ import re
 from django.conf import settings
 from celery.contrib.abortable import AbortableAsyncResult
 from django.db.models import (Model, BooleanField, CharField, DateTimeField,
-                              ForeignKey)
+                              ForeignKey, IntegerField, ManyToManyField)
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
@@ -43,14 +43,30 @@ from common.models import (
 logger = logging.getLogger(__name__)
 
 
+class DataStoreHost(Model):
+
+    """ Address and port of a data store.
+    """
+    address = CharField(max_length=1024, verbose_name=_('address'))
+    port = IntegerField(null=True, verbose_name=_('port'))
+
+
 class DataStore(Model):
 
     """Collection of virtual disks.
     """
+    TYPES = [('file', 'filesystem'), ('ceph_block', 'Ceph block device')]
+
+    type = CharField(max_length=10, verbose_name=_('type'),
+                     default='file', choices=TYPES)
     name = CharField(max_length=100, unique=True, verbose_name=_('name'))
     path = CharField(max_length=200, unique=True, verbose_name=_('path'))
-    hostname = CharField(max_length=40, unique=True,
-                         verbose_name=_('hostname'))
+    hostname = CharField(max_length=40, verbose_name=_('hostname'))
+    hosts = ManyToManyField('DataStoreHost', verbose_name=_('hosts'))
+    ceph_user = CharField(max_length=255, null=True,
+                          verbose_name=_('Ceph username'))
+    secret_uuid = CharField(max_length=255, null=True,
+                            verbose_name=_('uuid of secret'))
 
     class Meta:
         ordering = ['name']
@@ -78,6 +94,24 @@ class DataStore(Model):
         return [disk.filename for disk in
                 self.disk_set.filter(
                     destroyed__isnull=False) if disk.is_deletable]
+
+    def get_disk_desc(self, disk):
+
+        if self.type == "ceph_block":
+            return disk.get_disk_desc_for_ceph_block_device()
+
+        return disk.get_disk_desc_for_filesystem()
+
+    def get_vmdisk_desc(self, disk):
+
+        if self.type == "ceph_block":
+            return disk.get_vmdisk_desc_for_ceph_block_device()
+
+        return disk.get_vmdisk_desc_for_filesystem()
+
+    def get_hosts(self):
+
+        return [(host.address, host.port) for host in self.hosts.all()]
 
     @method_cache(30)
     def get_statistics(self, timeout=15):
@@ -126,8 +160,11 @@ class Disk(TimeStampedModel):
     """A virtual disk.
     """
     TYPES = [('qcow2-norm', 'qcow2 normal'), ('qcow2-snap', 'qcow2 snapshot'),
+             ('ceph-norm', 'Ceph block normal'),
+             ('ceph-snap', 'Ceph block snapshot'),
              ('iso', 'iso'), ('raw-ro', 'raw read-only'), ('raw-rw', 'raw')]
     BUS_TYPES = (('virtio', 'virtio'), ('ide', 'ide'), ('scsi', 'scsi'))
+
     name = CharField(blank=True, max_length=100, verbose_name=_("name"))
     filename = CharField(max_length=256, unique=True,
                          verbose_name=_("filename"))
@@ -230,24 +267,28 @@ class Disk(TimeStampedModel):
         return join(self.datastore.path, self.filename)
 
     @property
-    def vm_format(self):
+    def format_for_vmdriver(self):
         """Returns the proper file format for different type of images.
         """
         return {
             'qcow2-norm': 'qcow2',
             'qcow2-snap': 'qcow2',
+            'ceph-norm': 'raw',
+            'ceph-snap': 'raw',
             'iso': 'raw',
             'raw-ro': 'raw',
             'raw-rw': 'raw',
         }[self.type]
 
     @property
-    def format(self):
+    def format_for_storagedriver(self):
         """Returns the proper file format for different types of images.
         """
         return {
             'qcow2-norm': 'qcow2',
             'qcow2-snap': 'qcow2',
+            'ceph-norm': 'rbd',
+            'ceph-snap': 'rbd',
             'iso': 'iso',
             'raw-ro': 'raw',
             'raw-rw': 'raw',
@@ -260,6 +301,8 @@ class Disk(TimeStampedModel):
         return {
             'qcow2-norm': 'vd',
             'qcow2-snap': 'vd',
+            'ceph-norm': 'vd',
+            'ceph-snap': 'vd',
             'iso': 'sd',
             'raw-ro': 'vd',
             'raw-rw': 'vd',
@@ -274,6 +317,8 @@ class Disk(TimeStampedModel):
         return {
             'qcow2-norm': 'virtio',
             'qcow2-snap': 'virtio',
+            'ceph-norm': 'virtio',
+            'ceph-snap': 'virtio',
             'iso': 'ide',
             'raw-ro': 'virtio',
             'raw-rw': 'virtio',
@@ -334,26 +379,53 @@ class Disk(TimeStampedModel):
     def get_vmdisk_desc(self):
         """Serialize disk object to the vmdriver.
         """
+        return self.datastore.get_vmdisk_desc(self)
+
+    def get_disk_desc(self):
+        """Serialize disk object to the storage driver.
+        """
+        return self.datastore.get_disk_desc(self)
+
+    def get_disk_desc_for_filesystem(self):
+
         return {
+            'name': self.filename,
+            'dir': self.datastore.path,
+            'format': self.format_for_storagedriver,
+            'size': self.size,
+            'base_name': self.base.filename if self.base else None,
+            'type': 'snapshot' if self.base else 'normal'
+        }
+
+    def get_disk_desc_for_ceph_block_device(self):
+
+        desc = self.get_disk_desc_for_filesystem()
+        desc["hosts"] = self.datastore.get_hosts()
+        desc["ceph_user"] = self.datastore.ceph_user
+        desc["secret_uuid"] = self.datastore.secret_uuid
+
+        return desc
+
+    def get_vmdisk_desc_for_filesystem(self):
+
+        return {
+            'data_store_type': self.datastore.type,
             'source': self.path,
-            'driver_type': self.vm_format,
+            'driver_type': self.format_for_vmdriver,
             'driver_cache': 'none',
             'target_device': self.device_type + self.dev_num,
             'target_bus': self.device_bus,
             'disk_device': 'cdrom' if self.type == 'iso' else 'disk'
         }
 
-    def get_disk_desc(self):
-        """Serialize disk object to the storage driver.
-        """
-        return {
-            'name': self.filename,
-            'dir': self.datastore.path,
-            'format': self.format,
-            'size': self.size,
-            'base_name': self.base.filename if self.base else None,
-            'type': 'snapshot' if self.base else 'normal'
-        }
+    def get_vmdisk_desc_for_ceph_block_device(self):
+
+        desc = self.get_vmdisk_desc_for_filesystem()
+        desc["hosts"] = self.datastore.get_hosts()
+        desc["ceph_user"] = self.datastore.ceph_user
+        desc["secret_uuid"] = self.datastore.secret_uuid
+
+        return desc
 
     def get_remote_queue_name(self, queue_id='storage', priority=None,
                               check_worker=True):
