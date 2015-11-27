@@ -20,6 +20,10 @@
   "pk": 1, 
   "model": "storage.datastore", 
   "fields": {
+    "hosts": [],
+    "type": "file",
+    "ceph_user": null,
+    "secret_uuid": null,
     "path": "/disks", 
     "hostname": "wut", 
     "name": "diszkek"
@@ -36,6 +40,7 @@
     "destroyed": null, 
     "base": null, 
     "datastore": 1, 
+    "bus": null,
     "dev_num": "a", 
     "type": "qcow2-norm", 
     "size": 8589934592,

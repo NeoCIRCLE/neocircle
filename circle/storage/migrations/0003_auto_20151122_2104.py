@@ -16,18 +16,18 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('address', models.CharField(max_length=1024, verbose_name='address')),
-                ('port', models.IntegerField(null=True, verbose_name='port')),
+                ('port', models.IntegerField(null=True, verbose_name='port', blank=True)),
             ],
         ),
         migrations.AddField(
             model_name='datastore',
             name='ceph_user',
-            field=models.CharField(max_length=255, null=True, verbose_name='Ceph username'),
+            field=models.CharField(max_length=255, null=True, verbose_name='Ceph username', blank=True),
         ),
         migrations.AddField(
             model_name='datastore',
             name='secret_uuid',
-            field=models.CharField(max_length=255, null=True, verbose_name='uuid of secret'),
+            field=models.CharField(max_length=255, null=True, verbose_name='uuid of secret', blank=True),
         ),
         migrations.AddField(
             model_name='datastore',
@@ -47,6 +47,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='datastore',
             name='hosts',
-            field=models.ManyToManyField(to='storage.DataStoreHost', verbose_name='hosts'),
+            field=models.ManyToManyField(to='storage.DataStoreHost', verbose_name='hosts', blank=True),
         ),
     ]

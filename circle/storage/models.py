@@ -48,24 +48,25 @@ class DataStoreHost(Model):
     """ Address and port of a data store.
     """
     address = CharField(max_length=1024, verbose_name=_('address'))
-    port = IntegerField(null=True, verbose_name=_('port'))
+    port = IntegerField(null=True, blank=True, verbose_name=_('port'))
 
 
 class DataStore(Model):
 
     """Collection of virtual disks.
     """
-    TYPES = [('file', 'filesystem'), ('ceph_block', 'Ceph block device')]
+    TYPES = (('file', 'filesystem'), ('ceph_block', 'Ceph block device'))
 
     type = CharField(max_length=10, verbose_name=_('type'),
                      default='file', choices=TYPES)
     name = CharField(max_length=100, unique=True, verbose_name=_('name'))
     path = CharField(max_length=200, unique=True, verbose_name=_('path'))
     hostname = CharField(max_length=40, verbose_name=_('hostname'))
-    hosts = ManyToManyField('DataStoreHost', verbose_name=_('hosts'))
-    ceph_user = CharField(max_length=255, null=True,
+    hosts = ManyToManyField('DataStoreHost', blank=True,
+                            verbose_name=_('hosts'))
+    ceph_user = CharField(max_length=255, null=True, blank=True,
                           verbose_name=_('Ceph username'))
-    secret_uuid = CharField(max_length=255, null=True,
+    secret_uuid = CharField(max_length=255, null=True, blank=True,
                             verbose_name=_('uuid of secret'))
 
     class Meta:
@@ -94,20 +95,6 @@ class DataStore(Model):
         return [disk.filename for disk in
                 self.disk_set.filter(
                     destroyed__isnull=False) if disk.is_deletable]
-
-    def get_disk_desc(self, disk):
-
-        if self.type == "ceph_block":
-            return disk.get_disk_desc_for_ceph_block_device()
-
-        return disk.get_disk_desc_for_filesystem()
-
-    def get_vmdisk_desc(self, disk):
-
-        if self.type == "ceph_block":
-            return disk.get_vmdisk_desc_for_ceph_block_device()
-
-        return disk.get_vmdisk_desc_for_filesystem()
 
     def get_hosts(self):
 
@@ -159,10 +146,10 @@ class Disk(TimeStampedModel):
 
     """A virtual disk.
     """
-    TYPES = [('qcow2-norm', 'qcow2 normal'), ('qcow2-snap', 'qcow2 snapshot'),
+    TYPES = (('qcow2-norm', 'qcow2 normal'), ('qcow2-snap', 'qcow2 snapshot'),
              ('ceph-norm', 'Ceph block normal'),
              ('ceph-snap', 'Ceph block snapshot'),
-             ('iso', 'iso'), ('raw-ro', 'raw read-only'), ('raw-rw', 'raw')]
+             ('iso', 'iso'), ('raw-ro', 'raw read-only'), ('raw-rw', 'raw'))
     BUS_TYPES = (('virtio', 'virtio'), ('ide', 'ide'), ('scsi', 'scsi'))
 
     name = CharField(blank=True, max_length=100, verbose_name=_("name"))
@@ -379,12 +366,18 @@ class Disk(TimeStampedModel):
     def get_vmdisk_desc(self):
         """Serialize disk object to the vmdriver.
         """
-        return self.datastore.get_vmdisk_desc(self)
+        if self.datastore.type == "ceph_block":
+            return self.get_vmdisk_desc_for_ceph_block_device()
+
+        return self.get_vmdisk_desc_for_filesystem()
 
     def get_disk_desc(self):
         """Serialize disk object to the storage driver.
         """
-        return self.datastore.get_disk_desc(self)
+        if self.datastore.type == "ceph_block":
+            return self.get_disk_desc_for_ceph_block_device()
+
+        return self.get_disk_desc_for_filesystem()
 
     def get_disk_desc_for_filesystem(self):
 
