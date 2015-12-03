@@ -28,7 +28,7 @@ from django.conf import settings
 from celery.contrib.abortable import AbortableAsyncResult
 from django.db.models import (Model, BooleanField, CharField, DateTimeField,
                               ForeignKey, IntegerField, ManyToManyField)
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from model_utils.models import TimeStampedModel
@@ -41,6 +41,14 @@ from common.models import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def validate_ascii(value):
+
+    try:
+        str(value)
+    except UnicodeEncodeError:
+        raise ValidationError("%s is not 'ascii' string" % value)
 
 
 class DataStoreHost(Model):
@@ -60,7 +68,9 @@ class DataStore(Model):
     type = CharField(max_length=10, verbose_name=_('type'),
                      default='file', choices=TYPES)
     name = CharField(max_length=100, unique=True, verbose_name=_('name'))
-    path = CharField(max_length=200, unique=True, verbose_name=_('path'))
+    path = CharField(max_length=200, unique=True, verbose_name=_('path'),
+                     validators=[validate_ascii])
+    # path or pool name when use ceph block device storage
     hostname = CharField(max_length=40, verbose_name=_('hostname'))
     hosts = ManyToManyField('DataStoreHost', blank=True,
                             verbose_name=_('hosts'))
@@ -154,7 +164,8 @@ class Disk(TimeStampedModel):
 
     name = CharField(blank=True, max_length=100, verbose_name=_("name"))
     filename = CharField(max_length=256, unique=True,
-                         verbose_name=_("filename"))
+                         verbose_name=_("filename"),
+                         validators=[validate_ascii])
     datastore = ForeignKey(DataStore, verbose_name=_("datastore"),
                            help_text=_("The datastore that holds the disk."))
     type = CharField(max_length=10, choices=TYPES)
@@ -350,6 +361,7 @@ class Disk(TimeStampedModel):
         """
         type_mapping = {
             'qcow2-norm': 'qcow2-snap',
+            'ceph-norm': 'ceph-snap',
             'iso': 'iso',
             'raw-ro': 'raw-rw',
         }
@@ -363,14 +375,6 @@ class Disk(TimeStampedModel):
                            name=self.name, size=self.size,
                            type=new_type, dev_num=self.dev_num)
 
-    def get_vmdisk_desc(self):
-        """Serialize disk object to the vmdriver.
-        """
-        if self.datastore.type == "ceph_block":
-            return self.get_vmdisk_desc_for_ceph_block_device()
-
-        return self.get_vmdisk_desc_for_filesystem()
-
     def get_disk_desc(self):
         """Serialize disk object to the storage driver.
         """
@@ -379,23 +383,33 @@ class Disk(TimeStampedModel):
 
         return self.get_disk_desc_for_filesystem()
 
+    def get_vmdisk_desc(self):
+        """Serialize disk object to the vmdriver.
+        """
+        if self.datastore.type == "ceph_block":
+            return self.get_vmdisk_desc_for_ceph_block_device()
+
+        return self.get_vmdisk_desc_for_filesystem()
+
     def get_disk_desc_for_filesystem(self):
 
         return {
-            'name': self.filename,
-            'dir': self.datastore.path,
+            'data_store_type': self.datastore.type,
+            'name': str(self.filename),
+            'dir': str(self.datastore.path),
             'format': self.format_for_storagedriver,
             'size': self.size,
-            'base_name': self.base.filename if self.base else None,
+            'base_name': str(self.base.filename) if self.base else None,
             'type': 'snapshot' if self.base else 'normal'
         }
 
     def get_disk_desc_for_ceph_block_device(self):
 
         desc = self.get_disk_desc_for_filesystem()
-        desc["hosts"] = self.datastore.get_hosts()
-        desc["ceph_user"] = self.datastore.ceph_user
-        desc["secret_uuid"] = self.datastore.secret_uuid
+        # TODO: remove or use them
+        # desc["hosts"] = self.datastore.get_hosts()
+        # desc["ceph_user"] = self.datastore.ceph_user
+        # desc["secret_uuid"] = self.datastore.secret_uuid
 
         return desc
 
@@ -560,6 +574,7 @@ class Disk(TimeStampedModel):
         Based on disk type:
         qcow2-norm, qcow2-snap --> qcow2-norm
         iso                    --> iso (with base)
+        ceph-norm, ceph-snap   --> ceph-norm
 
         VM must be in STOPPED state to perform this action.
         The timeout parameter is not used now.
@@ -567,6 +582,8 @@ class Disk(TimeStampedModel):
         mapping = {
             'qcow2-snap': ('qcow2-norm', None),
             'qcow2-norm': ('qcow2-norm', None),
+            'ceph-snap': ('ceph-norm', None),
+            'ceph-norm': ('ceph-norm', None),
             'iso': ("iso", self),
         }
         if self.type not in mapping.keys():
