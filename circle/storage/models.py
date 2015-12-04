@@ -110,11 +110,22 @@ class DataStore(Model):
 
         return [(host.address, host.port) for host in self.hosts.all()]
 
+    @property
+    def used_percent(self):
+        stats = self.get_statistics()
+        free_percent = float(stats['free_percent'])
+
+        return int(100 - free_percent)
+
     @method_cache(30)
     def get_statistics(self, timeout=15):
         q = self.get_remote_queue_name("storage", priority="fast")
-        return storage_tasks.get_storage_stat.apply_async(
-            args=[self.path], queue=q).get(timeout=timeout)
+        try:
+            return storage_tasks.get_storage_stat.apply_async(
+                args=[self.type, self.path], queue=q).get(timeout=timeout)
+        except TimeoutError:
+            return {'free_space': -1,
+                    'free_percent': -1}
 
     @method_cache(30)
     def get_orphan_disks(self, timeout=15):

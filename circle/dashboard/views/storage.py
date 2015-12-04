@@ -16,19 +16,67 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals, absolute_import
 
+import logging
+
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import UpdateView
+from django_tables2 import SingleTableView
 
-from braces.views import SuperuserRequiredMixin
+from braces.views import SuperuserRequiredMixin, LoginRequiredMixin
 from sizefield.utils import filesizeformat
 
 from common.models import WorkerNotFound
 from storage.models import DataStore, Disk
-from ..tables import DiskListTable
-from ..forms import DataStoreForm, DiskForm
+from ..tables import DiskListTable, StorageListTable
+from ..forms import DataStoreForm, DiskForm, StorageListSearchForm
+from .util import FilterMixin
+
+
+logger = logging.getLogger(__name__)
+
+
+class StorageList(LoginRequiredMixin, FilterMixin, SingleTableView):
+    template_name = "dashboard/storage-list.html"
+    model = DataStore
+    table_class = StorageListTable
+    table_pagination = False
+
+    allowed_filters = {
+        'name': "name__icontains",
+        'type': "type__icontains",
+        'path': "path__icontains",
+        'poolname': "path__icontains",
+        'hostname': "hostname__iexact",
+        'address': "hosts__address__in"
+    }
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(StorageList, self).get_context_data(*args, **kwargs)
+        context['search_form'] = self.search_form
+        return context
+
+    def get(self, *args, **kwargs):
+        self.search_form = StorageListSearchForm(self.request.GET)
+        self.search_form.full_clean()
+
+        return super(StorageList, self).get(*args, **kwargs)
+
+    def get_queryset(self):
+        logger.debug('StorageList.get_queryset() called. User: %s',
+                     unicode(self.request.user))
+        qs = DataStore.get_all()
+        self.create_fake_get()
+
+        try:
+            filters, excludes = self.get_queryset_filters()
+            qs = qs.filter(**filters).exclude(**excludes).distinct()
+        except ValueError:
+            messages.error(self.request, _("Error during filtering."))
+
+        return qs
 
 
 class StorageDetail(SuperuserRequiredMixin, UpdateView):

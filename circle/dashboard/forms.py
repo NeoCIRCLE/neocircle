@@ -1617,6 +1617,16 @@ class DataStoreForm(ModelForm):
         fields = ("name", "path", "hostname", )
 
 
+class StorageListSearchForm(forms.Form):
+    s = forms.CharField(widget=forms.TextInput(attrs={
+        'class': "form-control input-tags",
+        'placeholder': _("Search...")
+    }))
+
+    def __init__(self, *args, **kwargs):
+        super(StorageListSearchForm, self).__init__(*args, **kwargs)
+
+
 class DiskForm(ModelForm):
     created = forms.DateTimeField()
     modified = forms.DateTimeField()

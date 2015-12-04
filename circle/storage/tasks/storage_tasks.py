@@ -79,5 +79,5 @@ def recover_from_trash(datastore, disk_path):
 
 
 @celery.task(name='storagedriver.get_storage_stat')
-def get_storage_stat(path):
+def get_storage_stat(data_store_type, path):
     pass

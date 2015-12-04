@@ -53,7 +53,7 @@ from .views import (
     OpenSearchDescriptionView,
     NodeActivityView,
     UserList,
-    StorageDetail, DiskDetail,
+    StorageDetail, StorageList, DiskDetail,
     MessageList, MessageDetail, MessageCreate, MessageDelete,
 )
 from .views.vm import vm_ops, vm_mass_ops
@@ -233,8 +233,14 @@ urlpatterns = patterns(
     url(r'^vm/opensearch.xml$', OpenSearchDescriptionView.as_view(),
         name="dashboard.views.vm-opensearch"),
 
-    url(r'^storage/$', StorageDetail.as_view(),
-        name="dashboard.views.storage"),
+    url(r'^storage/(?P<pk>\d+)/$', StorageDetail.as_view(),
+        name='dashboard.views.storage-detail'),
+    url(r'^storage/list/$', StorageList.as_view(),
+        name="dashboard.views.storage-list"),
+    url(r'^storage/choose/$', StorageDetail.as_view(),
+        name="dashboard.views.storage-choose"),
+
+
     url(r'^disk/(?P<pk>\d+)/$', DiskDetail.as_view(),
         name="dashboard.views.disk-detail"),
 
