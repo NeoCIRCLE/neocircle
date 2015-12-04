@@ -816,9 +816,18 @@ class VmCreateDiskForm(OperationForm):
 
     def __init__(self, *args, **kwargs):
         default = kwargs.pop('default', None)
+        datastore_choices = kwargs.pop('datastore_choices')
         super(VmCreateDiskForm, self).__init__(*args, **kwargs)
         if default:
             self.fields['name'].initial = default
+
+        datastore_field = forms.ModelChoiceField(
+            queryset=datastore_choices, required=False, initial=None,
+            label=_('Data store'))
+        if not datastore_choices:
+            datastore_field.widget.attrs['disabled'] = 'disabled'
+            datastore_field.empty_label = _('No more data stores.')
+        self.fields['datastore'] = datastore_field
 
     def clean_size(self):
         size_in_bytes = self.cleaned_data.get("size")

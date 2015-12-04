@@ -47,7 +47,7 @@ from common.models import (
 )
 from firewall.models import Vlan, Host, Rule
 from manager.scheduler import SchedulerError
-from storage.models import Disk
+from storage.models import Disk, DataStore
 from vm.models import (
     Instance, InstanceActivity, Node, Lease,
     InstanceTemplate, InterfaceTemplate, Interface,
@@ -416,6 +416,7 @@ class VmCreateDiskView(FormOperationMixin, VmOperationView):
         val = super(VmCreateDiskView, self).get_form_kwargs()
         num = op.instance.disks.count() + 1
         val['default'] = "%s %d" % (op.instance.name, num)
+        val['datastore_choices'] = DataStore.get_all()
         return val
 
 

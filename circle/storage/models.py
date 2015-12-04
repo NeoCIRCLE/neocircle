@@ -151,6 +151,11 @@ class DataStore(Model):
             pass
         return cls.objects.all()[0]  # TODO
 
+    @classmethod
+    def get_all(cls):
+
+        return cls.objects.all()
+
 
 class Disk(TimeStampedModel):
 
@@ -491,6 +496,14 @@ class Disk(TimeStampedModel):
         self.is_ready = True
         self.save()
         return True
+
+    @staticmethod
+    def get_type_for_datastore(datastore):
+
+        if datastore.type == "ceph_block":
+            return "ceph-norm"
+
+        return "qcow2-norm"
 
     @classmethod
     def create(cls, user=None, **params):

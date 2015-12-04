@@ -255,12 +255,20 @@ class CreateDiskOperation(InstanceOperation):
     required_perms = ('storage.create_empty_disk', )
     accept_states = ('STOPPED', 'PENDING', 'RUNNING')
 
-    def _operation(self, user, size, activity, name=None):
-        from storage.models import Disk
+    def _operation(self, user, size, datastore, activity, name=None):
+        from storage.models import Disk, DataStore
+
+        if not datastore:
+            datastore = self.instance.get_most_used_datastore()
+            if not datastore:
+                datastore = DataStore.get_default_datastore()
+
+        type = Disk.get_type_for_datastore(datastore)
 
         if not name:
             name = "new disk"
-        disk = Disk.create(size=size, name=name, type="qcow2-norm")
+        disk = Disk.create(size=size, name=name,
+                           datastore=datastore, type=type)
         disk.full_clean()
         devnums = list(ascii_lowercase)
         for d in self.instance.disks.all():

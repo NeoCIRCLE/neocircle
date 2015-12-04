@@ -872,3 +872,18 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             user=user, concurrency_check=concurrency_check,
             readable_name=readable_name, resultant_state=resultant_state)
         return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
+
+    def get_most_used_datastore(self):
+
+        disks = self.disks.all()
+        if not disks:
+            return None
+
+        freqs = dict()
+        for disk in disks:
+            datastore = disk.datastore
+            freqs[datastore] = freqs.get(datastore, 0) + 1
+
+        datastore = max(freqs.items(), key=lambda x: x[1])
+
+        return datastore[0]
