@@ -19,12 +19,12 @@ from manager.mancelery import celery
 
 
 @celery.task(name='storagedriver.list')
-def list(dir):
+def list(data_store_type, dir):
     pass
 
 
 @celery.task(name='storagedriver.list_files')
-def list_files(dir):
+def list_files(data_store_type, dir):
     pass
 
 
@@ -54,7 +54,7 @@ def snapshot(disk_desc):
 
 
 @celery.task(name='storagedriver.get')
-def get(path):
+def get(json_data):
     pass
 
 

@@ -64,7 +64,7 @@ def list_orphan_disks(timeout=15):
     for ds in DataStore.objects.all():
         queue_name = ds.get_remote_queue_name('storage', "slow")
         files = set(storage_tasks.list_files.apply_async(
-            args=[ds.path], queue=queue_name).get(timeout=timeout))
+            args=[ds.type, ds.path], queue=queue_name).get(timeout=timeout))
         disks = set([disk.filename for disk in ds.disk_set.all()])
         for i in files - disks:
             if not re.match('cloud-[0-9]*\.dump', i):
@@ -81,7 +81,7 @@ def list_missing_disks(timeout=15):
     for ds in DataStore.objects.all():
         queue_name = ds.get_remote_queue_name('storage', "slow")
         files = set(storage_tasks.list_files.apply_async(
-            args=[ds.path], queue=queue_name).get(timeout=timeout))
+            args=[ds.type, ds.path], queue=queue_name).get(timeout=timeout))
         disks = set([disk.filename for disk in
                      ds.disk_set.filter(destroyed__isnull=True)])
         for i in disks - files:

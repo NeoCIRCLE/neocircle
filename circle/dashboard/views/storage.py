@@ -84,9 +84,6 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
     form_class = DataStoreForm
     template_name = "dashboard/storage/detail.html"
 
-    def get_object(self):
-        return DataStore.get_default_datastore()
-
     def get_context_data(self, **kwargs):
         context = super(StorageDetail, self).get_context_data(**kwargs)
 
