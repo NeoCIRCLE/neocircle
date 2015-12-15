@@ -1,0 +1,36 @@
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+
+<form id="data_store_host_form" action="{% url "dashboard.views.storage-host-create" %}" method="POST">
+<div class="alert alert-danger" style="display: none;"  id="data_store_host-create-alert">
+</div>
+{% with form=form %}
+  {% include "display-form-errors.html" %}
+{% endwith %}
+
+{% csrf_token %}
+
+<div class="row">
+  <div class="col-xs-12">{{ form.name|as_crispy_field }}</div>
+</div>
+<div class="row">
+  <div class="col-xs-9">
+    {{ form.address|as_crispy_field }}
+  </div>
+  <div class="col-xs-3">
+    {{ form.port|as_crispy_field }}
+  </div>
+</div>
+<input type="submit" value="{% trans "Create new host" %}" class="btn btn-success" id="data_store_host_host-create-btn">
+</form>
+
+
+<style>
+  fieldset {
+    margin-top: 40px;
+  }
+  fieldset legend {
+    font-weight: bold;
+  }
+</style>

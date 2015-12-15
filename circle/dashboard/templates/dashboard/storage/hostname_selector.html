@@ -1,0 +1,44 @@
+<div class="row">
+  <div class="col-xs-5">
+    <div class="controls">
+      <select multiple="multiple" class="selectmultiple form-control" id="id_hostnames" name="hostnames">
+        {% for hostname in hostnames %}
+          <option value="{{ hostname.id }}">{{ hostname }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="col-xs-1">
+    <div class="row text-center">
+      <div class="btn" onclick="move('#id_hostnames', '#id_other_hostnames')">
+        <i class="fa fa-arrow-left fa-2x"></i>
+      </div>
+    </div>
+    <div class="row text-center">
+      <div class="btn" onclick="move('#id_other_hostnames', '#id_hostnames')">
+        <i class="fa fa-arrow-right fa-2x"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-xs-5">
+    <div class="controls">
+      <select multiple="multiple" class="selectmultiple form-control" id="id_other_hostnames" name="other_hostnames">
+        {% for hostname in other_hostnames %}
+          <option value="{{ hostname.id }}">{{ hostname }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="col-xs-1 text-left">
+    <a href="{% url "dashboard.views.storage-host-create" %}" class="btn btn-success btn-xs data_store_host-create">
+      <i class="fa fa-plus fa-2x"></i>
+    </a>
+  </div>
+</div>
+
+<script type="text/javascript">
+  function move(to, from){
+    var selected_items = $(from).find(":selected");
+      $(to).append(selected_items);
+  }
+</script>

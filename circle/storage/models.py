@@ -55,8 +55,12 @@ class DataStoreHost(Model):
 
     """ Address and port of a data store.
     """
+    name = CharField(max_length=255, unique=True, verbose_name=_('name'))
     address = CharField(max_length=1024, verbose_name=_('address'))
     port = IntegerField(null=True, blank=True, verbose_name=_('port'))
+
+    def __unicode__(self):
+        return u"%s | %s:%d" % (self.name, self.address, self.port)
 
 
 class DataStore(Model):
@@ -133,7 +137,8 @@ class DataStore(Model):
         """
         queue_name = self.get_remote_queue_name('storage', "slow")
         files = set(storage_tasks.list_files.apply_async(
-            args=[self.type, self.path], queue=queue_name).get(timeout=timeout))
+            args=[self.type, self.path], queue=queue_name).get(
+                timeout=timeout))
         disks = set([disk.filename for disk in self.disk_set.all()])
 
         orphans = []
@@ -148,7 +153,8 @@ class DataStore(Model):
         """
         queue_name = self.get_remote_queue_name('storage', "slow")
         files = set(storage_tasks.list_files.apply_async(
-            args=[self.type, self.path], queue=queue_name).get(timeout=timeout))
+            args=[self.type, self.path], queue=queue_name).get(
+                timeout=timeout))
         disks = Disk.objects.filter(destroyed__isnull=True, is_ready=True,
                                     datastore=self)
         return disks.exclude(filename__in=files)

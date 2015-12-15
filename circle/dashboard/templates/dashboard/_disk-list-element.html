@@ -26,5 +26,6 @@
 
 {% if request.user.is_superuser %}
   <small>{% trans "File name" %}: {{ d.filename }}</small><br/>
-  <small>{% trans "Bus" %}: {{ d.device_bus }}</small>
+  <small>{% trans "Bus" %}: {{ d.device_bus }}</small><br/>
+  <small>{% trans "Data store" %}: {{ d.datastore }}</small>
 {% endif %}

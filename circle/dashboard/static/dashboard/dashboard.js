@@ -52,7 +52,7 @@ $(function () {
     return false;
   });
 
-  $('.template-choose').click(function(e) {
+  $('.template-choose, .storage-choose').click(function(e) {
     $.ajax({
       type: 'GET',
       url: $(this).prop('href'),
@@ -73,9 +73,64 @@ $(function () {
           }
           return true;
         });
+        $("#storage-choose-next-button").click(function() {
+          var radio = $('input[type="radio"]:checked', "#storage-choose-form").val();
+          if(!radio) {
+            $("#storage-choose-alert").addClass("alert-warning")
+            .text(gettext("Select an option to proceed!"));
+            return false;
+          }
+          return true;
+        });
       }
     });
     return false;
+  });
+
+  $('.data_store_host-create').click(function(e) {
+    $.ajax({
+      type: 'GET',
+      url: $(this).prop('href'),
+      success: function(data) {
+        $('body').append(data);
+        var modal = $('#confirmation-modal');
+        modal.modal('show');
+        modal.on('hidden.bs.modal', function() {
+          modal.remove();
+        });
+
+        $("#data_store_host_host-create-btn").click(function(){
+          var form = $("#data_store_host_form")
+          $.post(form.attr("action"), form.serialize(), function(data){
+
+            if(data.status===true){
+              $('#id_other_hostnames')
+                .append($('<option>')
+                .text(data.response.text)
+                .attr('value', data.response.val));
+
+              modal.modal("hide");
+              $('body').removeClass('modal-open');
+              $('.modal-backdrop').remove();
+            }
+            else{
+              var error_msg = $("#data_store_host-create-alert");
+              error_msg.empty();
+              error_msg.append(data.response);
+              error_msg.show();
+            }
+
+          }, "json");
+
+          return false;
+        });
+      }
+    });
+    return false;
+  });
+
+  $('#storage-create-form').submit(function(){
+    $('#id_hostnames option').prop('selected', true);
   });
 
   $('[href=#index-graph-view]').click(function (e) {

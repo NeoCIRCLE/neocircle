@@ -19,23 +19,128 @@ from __future__ import unicode_literals, absolute_import
 import logging
 
 from django.contrib import messages
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic import UpdateView
+from django.views.generic import UpdateView, TemplateView, CreateView
+from django.contrib.messages.views import SuccessMessageMixin
+from django.shortcuts import redirect
 from django_tables2 import SingleTableView
+from django.http import Http404, HttpResponse
+from django.core.exceptions import PermissionDenied
 
 from braces.views import SuperuserRequiredMixin, LoginRequiredMixin
 from sizefield.utils import filesizeformat
 
 from common.models import WorkerNotFound
-from storage.models import DataStore, Disk
+from storage.models import DataStore, Disk, DataStoreHost
 from ..tables import DiskListTable, StorageListTable
-from ..forms import DataStoreForm, DiskForm, StorageListSearchForm
+from ..forms import (
+    DataStoreForm, CephDataStoreForm, DiskForm, StorageListSearchForm,
+    DataStoreHostForm
+)
 from .util import FilterMixin
+import json
 
 
 logger = logging.getLogger(__name__)
+
+
+class StorageChoose(LoginRequiredMixin, TemplateView):
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/_modal.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(StorageChoose, self).get_context_data(*args, **kwargs)
+        types = DataStore.TYPES
+        context.update({
+            'box_title': _('Choose data store type'),
+            'ajax_title': True,
+            'template': "dashboard/_storage-choose.html",
+            'types': types,
+        })
+        return context
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.has_perm('storage.add_datastore'):
+            raise PermissionDenied()
+
+        type = request.POST.get("type")
+        if any(type in t for t in DataStore.TYPES):
+            return redirect(reverse("dashboard.views.storage-create",
+                                    kwargs={"type": type}))
+        else:
+            messages.warning(request, _("Select an option to proceed."))
+            return redirect(reverse("dashboard.views.storage-choose"))
+
+
+class StorageCreate(SuccessMessageMixin, CreateView):
+    model = DataStore
+    form = None
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            pass
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(StorageCreate, self).get_context_data(*args, **kwargs)
+        other_hostnames = DataStoreHost.objects.all()
+
+        context["hostnames_of_datastore"] = []
+        context["other_hostnames"] = other_hostnames
+        context.update({
+            'box_title': _("Create a new data store"),
+            'template': "dashboard/_storage-create.html",
+        })
+        return context
+
+    def get(self, *args, **kwargs):
+        if not self.request.user.has_perm('storage.add_datastore'):
+            raise PermissionDenied()
+
+        return super(StorageCreate, self).get(*args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if not self.request.user.has_perm('storage.add_datastore'):
+            raise PermissionDenied()
+
+        self.form = self.form_class(request.POST)
+        if not self.form.is_valid():
+            logger.debug("invalid form")
+            return self.get(request, self.form, *args, **kwargs)
+        else:
+            self.form.save()
+            return redirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse_lazy("dashboard.views.storage-list")
+
+    def get_form(self):
+
+        if self.form is not None:
+            return self.form
+        else:
+            type = self.kwargs.get("type")
+            fc = self.form_class
+            f = fc(initial={"type": type})
+            return f
+
+    @property
+    def form_class(self):
+        type = self.kwargs.get("type")
+        if type == "file":
+            fc = DataStoreForm
+        elif type == "ceph_block":
+            fc = CephDataStoreForm
+        else:
+            raise Http404(_("Invalid creation type"))
+        return fc
 
 
 class StorageList(LoginRequiredMixin, FilterMixin, SingleTableView):
@@ -161,3 +266,70 @@ class DiskDetail(SuperuserRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         pass
+
+
+class DataStoreHostCreate(SuccessMessageMixin, CreateView):
+    model = DataStoreHost
+    form_class = DataStoreHostForm
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/_modal.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(DataStoreHostCreate, self).get_context_data(
+            *args, **kwargs)
+
+        context.update({
+            'box_title': _("Create a new hostname"),
+            'ajax_title': True,
+            'template': "dashboard/_data_store_host-create.html",
+        })
+        return context
+
+    def get(self, *args, **kwargs):
+        if not self.request.user.has_perm('vm.add_datastorehost'):
+            raise PermissionDenied()
+
+        return super(DataStoreHostCreate, self).get(*args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if not self.request.user.has_perm('vm.add_datastorehost'):
+            raise PermissionDenied()
+
+        form = self.form_class(request.POST)
+        if not form.is_valid():
+            if self.request.is_ajax():
+                errors = self.errors_to_string(form)
+                return self.json_response(False, errors)
+            else:
+                return self.get(request, form, *args, **kwargs)
+        else:
+            instance = form.save()
+            if self.request.is_ajax():
+                resp = {"val": instance.id, "text": unicode(instance)}
+                return self.json_response(True, resp)
+            else:
+                return redirect(self.get_success_url())
+
+    def json_response(self, status, response):
+        resp = {
+            "status": status,
+            "response": response
+        }
+        return HttpResponse(json.dumps(resp), content_type="application/json")
+
+    def errors_to_string(self, form):
+        error_str = ""
+        if form.errors:
+            for field, error in form.errors.iteritems():
+                    error_str += "%s: %s<br />" % (field, error)
+            for error in form.non_field_errors():
+                error_str += "%s<br />" % error
+
+        return error_str
+
+    def get_success_url(self):
+        return reverse_lazy("dashboard.views.storage-list")  # TODO
