@@ -54,7 +54,7 @@ from firewall.models import Vlan, Host
 from vm.models import (
     InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
-from storage.models import DataStore, Disk
+from storage.models import DataStore, Disk, DataStoreHost
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.models import Permission
 from .models import Profile, GroupProfile, Message
@@ -1614,7 +1614,74 @@ class DataStoreForm(ModelForm):
 
     class Meta:
         model = DataStore
-        fields = ("name", "path", "hostname", )
+        fields = ("type", "name", "path", "hostname", )
+
+
+class CephDataStoreForm(DataStoreForm):
+
+    hostnames = forms.ModelMultipleChoiceField(
+        queryset=None, required=False, label=_("Hostnames"))
+
+    other_hostnames = forms.MultipleChoiceField(
+        required=False, label=_("Other hostnames"))
+
+    type = forms.CharField(widget=forms.HiddenInput())
+
+    def __init__(self, *args, **kwargs):
+        super(DataStoreForm, self).__init__(*args, **kwargs)
+        hostnames = self.fields["hosts"].queryset.all()
+        other_hostnames = set(DataStoreHost.objects.all()) - set(hostnames)
+
+        self.fields['hostnames'].queryset = hostnames
+        self.fields['other_hostnames'].initial = other_hostnames
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.layout = Layout(
+            Fieldset(
+                '',
+                'ceph_user',
+                'secret_uuid',
+            ),
+            FormActions(
+                Submit('submit', _('Save')),
+            )
+        )
+        return helper
+
+    class Meta:
+        model = DataStore
+        fields = ("type", "name", "path", "hostname",
+                  "ceph_user", "secret_uuid", "hosts")
+
+
+class DataStoreHostForm(ModelForm):
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.layout = Layout(
+            Fieldset(
+                '',
+                'name',
+                'address',
+                'port',
+            ),
+            FormActions(
+                Submit('submit', _('Save')),
+            )
+        )
+        return helper
+
+    def __init__(self, *args, **kwargs):
+        super(DataStoreHostForm, self).__init__(*args, **kwargs)
+
+        self.fields['port'].initial = 6789
+
+    class Meta:
+        model = DataStoreHost
+        fields = ("name", "address", "port")
 
 
 class StorageListSearchForm(forms.Form):

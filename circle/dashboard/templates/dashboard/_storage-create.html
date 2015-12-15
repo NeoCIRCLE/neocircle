@@ -1,0 +1,42 @@
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+
+<form id="storage-create-form" action="" method="POST">
+{% with form=form %}
+  {% include "display-form-errors.html" %}
+{% endwith %}
+
+{% csrf_token %}
+{{ form.type }}
+<fieldset>
+  <legend>{% trans "General settings" %}</legend>
+{{ form.name|as_crispy_field }}
+{{ form.path|as_crispy_field }}
+{{ form.hostname|as_crispy_field }}
+</fieldset>
+{% if form.type.value == "ceph_block" %}
+<fieldset>
+  <legend>{% trans "Ceph block storage authentication settings" %}</legend>
+    {{ form.ceph_user|as_crispy_field }}
+    {{ form.secret_uuid|as_crispy_field }}
+</fieldset>
+<fieldset>
+  <legend>{% trans "Select or add new Ceph monitor hostname(s)" %}</legend>
+  {% include 'dashboard/storage/hostname_selector.html' %}
+</fieldset>
+{% endif %}
+
+<fieldset>
+  <input type="submit" value="{% trans "Create new data store" %}" class="btn btn-success">
+</fieldset>
+</form>
+
+<style>
+  fieldset {
+    margin-top: 40px;
+  }
+  fieldset legend {
+    font-weight: bold;
+  }
+</style>
