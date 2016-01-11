@@ -16,7 +16,7 @@
         event.type = handleObj.origType;
         ['clientX', 'clientY', 'pageX', 'pageY'].forEach(function(property) {
           event[property] = event.originalEvent.changedTouches[0][property];
-        })
+        });
 
         // let jQuery handle the triggering of "doubletap" event handlers
         handleObj.handler.apply(this, arguments);
