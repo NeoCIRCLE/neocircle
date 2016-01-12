@@ -150,8 +150,8 @@ class VmDetailView(GraphMixin, CheckedDetailView):
 
         # resources forms
         can_edit = (
-            instance.has_level(user, "owner")
-            and self.request.user.has_perm("vm.change_resources"))
+            instance.has_level(user, "owner") and
+            self.request.user.has_perm("vm.change_resources"))
         context['resources_form'] = VmResourcesForm(
             can_edit=can_edit, instance=instance)
 
@@ -174,8 +174,10 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         context['is_owner'] = is_owner
 
         # operation also allows RUNNING (if with_shutdown is present)
-        context['save_resources_enabled'] = instance.status not in ("RUNNING",
-                                                                    "PENDING")
+        context['save_resources_enabled'] = instance.status in (
+            "STOPPED",
+            "PENDING",
+        )
 
         return context
 
@@ -567,8 +569,8 @@ class VmResourcesChangeView(VmOperationView):
                     content_type="application=json"
                 )
             else:
-                return HttpResponseRedirect(instance.get_absolute_url()
-                                            + "#resources")
+                return HttpResponseRedirect(instance.get_absolute_url() +
+                                            "#resources")
         else:
             extra = form.cleaned_data
             extra['max_ram_size'] = extra['ram_size']
@@ -1259,8 +1261,9 @@ def vm_activity(request, pk):
     response['status'] = instance.status
     response['icon'] = instance.get_status_icon()
     latest = instance.get_latest_activity_in_progress()
-    response['is_new_state'] = (latest and latest.resultant_state is not None
-                                and instance.status != latest.resultant_state)
+    response['is_new_state'] = (latest and
+                                latest.resultant_state is not None and
+                                instance.status != latest.resultant_state)
 
     context = {
         'instance': instance,

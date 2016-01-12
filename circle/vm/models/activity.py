@@ -145,8 +145,8 @@ class InstanceActivity(ActivityModel):
 
     def has_percentage(self):
         op = self.instance.get_operation_from_activity_code(self.activity_code)
-        return (self.task_uuid and op and op.has_percentage
-                and not self.finished)
+        return (self.task_uuid and op and op.has_percentage and
+                not self.finished)
 
     def get_percentage(self):
         """Returns the percentage of the running operation if available.

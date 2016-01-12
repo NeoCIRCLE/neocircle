@@ -174,6 +174,6 @@ class Trait(Model):
     @property
     def in_use(self):
         return (
-            self.instance_set.exists() or self.node_set.exists()
-            or self.instancetemplate_set.exists()
+            self.instance_set.exists() or self.node_set.exists() or
+            self.instancetemplate_set.exists()
         )

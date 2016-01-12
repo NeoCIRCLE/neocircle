@@ -60,7 +60,7 @@ def get_firewall_queues():
     return list(retval)
 
 
-@celery.task(ignore_result=True)
+@celery.task
 def reloadtask_worker():
     from firewall.fw import BuildFirewall, dhcp, dns, ipset, vlan
     from remote_tasks import (reload_dns, reload_dhcp, reload_firewall,
@@ -92,7 +92,7 @@ def reloadtask_worker():
 
 
 @celery.task
-def reloadtask(type='Host', timeout=15):
+def reloadtask(type='Host', timeout=15, sync=False):
     reload = {
         'Host': ['dns', 'dhcp', 'firewall'],
         'Record': ['dns'],
@@ -107,4 +107,6 @@ def reloadtask(type='Host', timeout=15):
     logger.info("Reload %s on next periodic iteration applying change to %s.",
                 ", ".join(reload), type)
     if all([cache.add("%s_lock" % i, 'true', 30) for i in reload]):
-        reloadtask_worker.apply_async(queue='localhost.man', countdown=5)
+        res = reloadtask_worker.apply_async(queue='localhost.man', countdown=5)
+        if sync:
+            res.get(timeout)

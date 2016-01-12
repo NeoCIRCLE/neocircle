@@ -508,6 +508,8 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
     if get_env_variable('DJANGO_SAML_ORG_ID_ATTRIBUTE', False) is not False:
         SAML_ORG_ID_ATTRIBUTE = get_env_variable(
             'DJANGO_SAML_ORG_ID_ATTRIBUTE')
+    SAML_MAIN_ATTRIBUTE_MAX_LENGTH = int(get_env_variable(
+        "DJANGO_SAML_MAIN_ATTRIBUTE_MAX_LENGTH", 0))
 
 LOGIN_REDIRECT_URL = "/"
 
