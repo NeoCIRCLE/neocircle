@@ -28,7 +28,7 @@ from django_tables2.columns import (
 from django_sshkey.models import UserKey
 
 from storage.models import Disk
-from vm.models import Node, InstanceTemplate, Lease
+from vm.models import Node, InstanceTemplate, Lease, Cluster
 from dashboard.models import ConnectCommand, Message
 
 
@@ -109,6 +109,25 @@ class NodeListTable(Table):
                            'node-list-table')}
         fields = ('pk', 'name', 'host', 'get_status_display', 'priority',
                   'minion_online', 'overcommit', 'number_of_VMs', )
+
+
+class ClusterListTable(Table):
+
+    pk = Column(
+        verbose_name="ID",
+        attrs={'th': {'class': 'cluster-list-table-thin'}},
+    )
+
+    name = TemplateColumn(
+        template_name="dashboard/cluster-list/column-name.html",
+        order_by="normalized_name"
+    )
+
+    class Meta:
+        model = Cluster
+        attrs = {'class': ('table table-bordered table-striped table-hover '
+                           'node-list-table')}
+        fields = ('name', )
 
 
 class GroupListTable(Table):

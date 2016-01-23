@@ -1,0 +1,56 @@
+{% extends "dashboard/base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load pipeline %}
+
+{% block title-page %}{{ instance.name }} | vm{% endblock %}
+
+{% block content %}
+
+
+<div class="body-content">
+  <div class="page-header">
+    <div class="pull-right" id="ops">
+      {% include "dashboard/vm-detail/_operations.html" %}
+    </div>
+    <h1>
+      <div id="vm-details-h1-name" class="vm-details-home-edit-name">
+        {{ instance.name }}
+      </div>
+    </h1>
+    <div style="clear: both;"></div>
+  </div>
+  {% if instance.node and not instance.node.online %}
+    <div class="alert alert-warning">
+      {% if user.is_superuser %}
+        {% blocktrans with name=instance.node.name %}
+        The node <strong>{{ name }}</strong> is missing.
+        {% endblocktrans %}
+      {% else %}
+        {% trans "Currently you cannot execute any operations because the virtual machine's node is missing." %}
+      {% endif %}
+    </div>
+  {% endif %}
+  <div class="row">
+    <div class="col-md-4" id="vm-info-pane">
+      <div class="big">
+        <span id="vm-details-state" class="label label-success">
+          <i class="fa {{ status_icon }}"></i>
+          <span>{{ vm_info.state|upper }}</span>
+        </span>
+      </div>
+      <br />
+      <dl class="dl-horizontal vm-details-connection">
+        <dt>{% trans "# of CPU cores" %}</dt>
+        <dd>{{ vm_info.cpu }}</dd>
+        <dt>{% trans "Memory" %}</dt>
+        <dd>{{ vm_info.memory }} MB</dd>
+
+        <dt>{% trans "Time of expiration" %}</dt>
+        <dd>{{ instance.time_of_expiration }}</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

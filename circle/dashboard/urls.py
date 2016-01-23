@@ -19,6 +19,9 @@ from __future__ import absolute_import
 from django.conf.urls import patterns, url, include
 
 import autocomplete_light
+from dashboard.views.cluster import ClusterList, ClusterCreate, ClusterDetailView, ClusterDelete, ClusterEdit
+from dashboard.views.vmwarevminstance import VMwareVMInstanceDelete, VMwareVMInstanceDetail, \
+    VMwareVMInstanceCreate, VMwareVMInstanceAdd
 from vm.models import Instance
 from .views import (
     AclUpdateView, FavouriteView, GroupAclUpdateView, GroupDelete,
@@ -246,6 +249,27 @@ urlpatterns = patterns(
         name="dashboard.views.message-create"),
     url(r'^message/delete/(?P<pk>\d+)/$', MessageDelete.as_view(),
         name="dashboard.views.message-delete"),
+
+    url(r'^cluster/list/$', ClusterList.as_view(), name='dashboard.views.cluster-list'),
+    url(r'^cluster/create/$', ClusterCreate.as_view(),
+        name='dashboard.views.cluster-create'),
+    url(r'^cluster/(?P<pk>\d+)/$', ClusterDetailView.as_view(),
+        name='dashboard.views.cluster-detail'),
+    url(r'^cluster/(?P<pk>\d+)/edit/$', ClusterEdit.as_view(),
+        name='dashboard.views.cluster-edit'),
+    url(r'^cluster/delete/(?P<pk>\d+)/$', ClusterDelete.as_view(),
+        name="dashboard.views.cluster-delete"),
+
+    url(r'^vmwarevminstance/add/cluster/(?P<cluster>\d+)/uuid/(?P<uuid>[A-Za-z0-9\-]+)/$', VMwareVMInstanceAdd.as_view(),
+        name='dashboard.views.vmwarevminstance-add'),
+    url(r'^vmware-vm-instance/create/cluster/(?P<cluster>\d+)/$', VMwareVMInstanceCreate.as_view(),
+        name='dashboard.views.vmwarevminstance-create'),
+    url(r'^vmware-vm-instance/(?P<pk>\d+)/$', VMwareVMInstanceDetail.as_view(),
+        name='dashboard.views.vmwarevminstance-detail'),
+    url(r'^vmware-vm-instance/remove/cluster/(?P<cluster>\d+)/uuid/(?P<uuid>[A-Za-z0-9\-]+)/$', VMwareVMInstanceDelete.as_view(),
+        name='dashboard.views.vmwarevminstance-remove'),
+    url(r'^vmware-vm-instance/remove/cluster/(?P<cluster>\d+)/uuid/(?P<uuid>[A-Za-z0-9\-]+)/$', VMwareVMInstanceDelete.as_view(),
+        name='dashboard.views.vmwarevminstance-remove'),
 )
 
 urlpatterns += patterns(

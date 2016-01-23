@@ -1,0 +1,74 @@
+{% extends "dashboard/base.html" %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+
+{% block title-page %}{{ cluster.name }} | {% trans "Cluster" %}{% endblock %}
+
+{% block content %}
+<div class="body-content">
+  <div class="page-header">
+    <div class="pull-right" style="padding-top: 15px;">
+      <a data-group-uuid="{{ record.uuid }}"
+        class="btn btn-success btn-xs real-link vmwarecluster-edit"
+        href="{% url "dashboard.views.vmwarevminstance-create" cluster=cluster.pk %}?next={{ request.path }}">
+        <i class="fa fa-plus"></i> add new vm
+      </a>
+
+      <a data-group-uuid="{{ record.uuid }}"
+        class="btn btn-info btn-xs real-link vmwarecluster-edit"
+        href="{% url "dashboard.views.cluster-edit" pk=cluster.pk %}?next={{ request.path }}">
+        <i class="fa fa-pencil"></i> edit
+      </a>
+
+      <a data-group-uuid="{{ record.uuid }}"
+        class="btn btn-danger btn-xs real-link vmwarecluster-edit"
+        href="{% url "dashboard.views.cluster-delete" pk=cluster.pk %}?next={{ request.path }}">
+        <i class="fa fa-trash-o"></i> delete
+      </a>
+    </div>
+    <h1>
+      <form action="" method="POST" id="cluster-details-rename-form" class="js-hidden">
+        {% csrf_token %}
+        <div class="input-group">
+          <input id="cluster-details-rename-name" class="form-control" name="new_name"
+            type="text" value="{{ cluster.name }}" required />
+          <span class="input-group-btn">
+            <button type="submit" id="cluster-details-rename-submit" class="btn">
+              {% trans "Modify" %}
+            </button>
+          </span>
+        </div>
+      </form>
+      <div id="cluster-details-h1-name">
+        <span class="no-js-hidden">{{ cluster.name }}</span>
+      </div>
+    </h1>
+  </div><!-- .page-header -->
+  {% if unmanaged_vms_table %}
+    <h3>Unmanaged virtual machines</h3>
+    <div class="panel-body">
+        <div class="table-responsive">
+            {% render_table unmanaged_vms_table %}
+        </div>
+    </div>
+  {% endif %}
+  {% if managed_vms_table %}
+    <h3>Managed virtual machines</h3>
+    <div class="panel-body">
+        <div class="table-responsive">
+            {% render_table managed_vms_table %}
+        </div>
+    </div>
+  {% endif %}
+  {% if deleted_vms_table %}
+    <h3>Deleted virtual machines</h3>
+    <div class="panel-body">
+        <div class="table-responsive">
+            {% render_table deleted_vms_table %}
+        </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

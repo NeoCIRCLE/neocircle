@@ -15,11 +15,13 @@ from .instance import pwgen
 from .network import InterfaceTemplate
 from .network import Interface
 from .node import Node
+from .cluster import Cluster
+from .vmwarevminstance import VMwareVMInstance
 
 __all__ = [
     'InstanceActivity', 'BaseResourceConfigModel',
     'NamedBaseResourceConfig', 'VirtualMachineDescModel', 'InstanceTemplate',
     'Instance', 'post_state_changed', 'pre_state_changed', 'InterfaceTemplate',
     'Interface', 'Trait', 'Node', 'NodeActivity', 'Lease', 'node_activity',
-    'pwgen'
+    'pwgen', 'Cluster', 'VMwareVMInstance',
 ]

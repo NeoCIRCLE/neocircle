@@ -16,11 +16,13 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+
+import datetime
 from django.utils import timezone
 from django.utils.translation import ugettext_noop
 
 from manager.mancelery import celery
-from vm.models import Node, Instance
+from vm.models import Node, Instance, Cluster
 
 logger = logging.getLogger(__name__)
 
@@ -76,3 +78,14 @@ def garbage_collector(timeout=15):
             i.notify_owners_about_expiration()
         else:
             logger.debug("Instance %d didn't expire." % i.pk)
+
+    for c in Cluster.objects.all():
+        for i in c.vmwarevminstance_set.all():
+            if datetime.now > i.time_of_expiration:
+                i.suspend_vm()
+                i.owner.profile.notify(
+                    ugettext_noop('%(instance)s suspended'),
+                    ugettext_noop(
+                        'Your instance <a href="%(url)s">%(instance)s</a> '
+                        'has been suspended due to expiration.'),
+                    instance=i.name, url=i.get_absolute_url())

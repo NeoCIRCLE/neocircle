@@ -1,0 +1,14 @@
+{% extends "dashboard/base.html" %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+
+{% block title-page %}{% trans "Edit cluster " %}{{ cluster.name }}{% endblock %}
+
+{% block content %}
+
+<form method="POST" action="{% url "dashboard.views.cluster-edit" pk=cluster.pk %}">
+{% csrf_token %}
+{% crispy form %}
+</form>
+
+{% endblock %}

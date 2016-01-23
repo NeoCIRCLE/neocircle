@@ -1,0 +1,12 @@
+{% load crispy_forms_tags %}
+{% load i18n %}
+
+<p class="text-muted">
+{% trans "Create a new virtual machine." %}
+</p>
+
+
+<form method="POST" action="{% url "dashboard.views.vmwarevminstance-create" cluster=cluster_pk %}">
+{% csrf_token %}
+{% crispy form %}
+</form>

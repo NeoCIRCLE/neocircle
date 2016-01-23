@@ -19,6 +19,9 @@
     <div class="col-lg-4 col-sm-6">
       {% include "dashboard/index-vm.html" %}
     </div>
+    <div class="col-lg-4 col-sm-6">
+      {% include "dashboard/index-vmware-instances.html" %}
+    </div>
     {% else %}
       <div class="alert alert-info">
         {% trans "You have no permission to start or manage virtual machines." %}
@@ -40,6 +43,12 @@
     {% if perms.vm.create_template %}
     <div class="col-lg-4 col-sm-6">
       {% include "dashboard/index-templates.html" %}
+    </div>
+    {% endif %}
+
+    {% if perms.vm.create_cluster %}
+    <div class="col-lg-4 col-sm-6">
+      {% include "dashboard/index-vmware-clusters.html" %}
     </div>
     {% endif %}
 

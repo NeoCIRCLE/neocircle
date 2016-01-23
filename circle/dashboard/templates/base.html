@@ -23,6 +23,7 @@
 
 
     {% block extra_css %}{% endblock %}
+  <script src="{% static "jquery/dist/jquery.min.js" %}"></script>
   </head>
 
   <body>
@@ -87,7 +88,6 @@
       <span class="pull-right">{{ COMPANY_NAME }}</span>
     </footer>
 
-  <script src="{% static "jquery/dist/jquery.min.js" %}"></script>
   <script src="{{ STATIC_URL }}jsi18n/{{ LANGUAGE_CODE }}/djangojs.js"></script>
   {% javascript 'all' %}
 

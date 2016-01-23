@@ -27,7 +27,7 @@ from django.views.generic import TemplateView
 from braces.views import LoginRequiredMixin
 
 from dashboard.models import GroupProfile
-from vm.models import Instance, Node, InstanceTemplate
+from vm.models import Instance, Node, InstanceTemplate, Cluster, VMwareVMInstance
 from dashboard.views.vm import vm_ops
 
 from ..store_api import Store
@@ -77,6 +77,16 @@ class IndexView(LoginRequiredMixin, TemplateView):
                     'offline': Node.get_state_count(False, False)
                 }
             })
+
+        # VMWare clusters
+        context.update({
+            'clusters': Cluster.objects.all()
+        })
+
+        # VMWare instances
+        context.update({
+            'vmware_instances': VMwareVMInstance.objects.filter(owner=user)
+        })
 
         # groups
         if user.has_module_perms('auth'):

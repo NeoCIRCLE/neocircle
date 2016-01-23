@@ -1,0 +1,26 @@
+{% load i18n %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <div class="pull-right toolbar">
+      <span class="btn btn-default btn-xs infobtn" data-container="body" title="{% trans "List of your assigned VMware clusters." %}">
+        <i class="fa fa-info-circle"></i>
+      </span>
+    </div>
+    <h3 class="no-margin">
+      <i class="fa fa-cloud"></i> {% trans "VMware instances" %}
+    </h3>
+  </div >
+  <div class="list-group" id="vmware-instance-list-view">
+    <div id="dashboard-vmware-instance-list">
+      {% for i in vmware_instances %}
+      <a href="{{ i.get_absolute_url }}" class="list-group-item real-link
+        {% if forloop.last and clusters|length < 5 %} list-group-item-last{% endif %}">
+        <span class="index-vmware-instance-list-name">
+           {{ i.name }}
+        </span>
+        <div style="clear: both;"></div>
+      </a>
+      {% endfor %}
+    </div>
+  </div><!-- #vmware-instance-list-view -->
+</div>

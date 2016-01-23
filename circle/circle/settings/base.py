@@ -201,6 +201,7 @@ PIPELINE_JS = {
         "datatables/media/js/jquery.dataTables.js",
         "dashboard/dashboard.js",
         "dashboard/activity.js",
+        "dashboard/cluster-details.js",
         "dashboard/group-details.js",
         "dashboard/group-list.js",
         "dashboard/js/stupidtable.min.js",  # no bower file
@@ -343,6 +344,7 @@ THIRD_PARTY_APPS = (
     'django_sshkey',
     'autocomplete_light',
     'pipeline',
+    'pyVmomi',
 )
 
 
@@ -439,6 +441,33 @@ CACHES = {
     }
 }
 
+
+import ldap
+from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
+import logging
+
+logger = logging.getLogger('django_auth_ldap')
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.DEBUG)
+
+# Baseline configuration.
+AUTH_LDAP_SERVER_URI = "ldap://sch.bme.hu"
+
+AUTH_LDAP_BIND_DN = "cn=_vmware_reader,ou=VMware,ou=KSZK,ou=Hosts,dc=sch,dc=bme,dc=hu"
+AUTH_LDAP_BIND_PASSWORD = "scheu3iSeez"
+AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=Users,ou=SCHAccount,dc=sch,dc=bme,dc=hu",
+    ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
+
+AUTH_LDAP_USER_ATTR_MAP = {
+    "first_name": "givenName",
+    "last_name": "sn",
+    "email": "mail"
+}
+
+AUTHENTICATION_BACKENDS = (
+    'django_auth_ldap.backend.LDAPBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
     try:

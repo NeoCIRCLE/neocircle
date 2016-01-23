@@ -1,0 +1,5 @@
+<a data-group-uuid="{{ record.uuid }}"
+  class="btn btn-info btn-xs real-link vmwarevminstance-modify"
+  href="{% url "dashboard.views.vmwarevminstance-add" cluster=record.cluster_pk uuid=record.uuid %}?next={{ request.path }}">
+  <i class="fa fa-pencil"></i> modify
+</a>

@@ -1,0 +1,12 @@
+{% load crispy_forms_tags %}
+{% load i18n %}
+
+<p class="text-muted">
+{% trans "Adding VMware clusters enable managing virtual machines inside them." %}
+</p>
+
+
+<form method="POST" action="{% url "dashboard.views.cluster-create" %}">
+{% csrf_token %}
+{% crispy form %}
+</form>

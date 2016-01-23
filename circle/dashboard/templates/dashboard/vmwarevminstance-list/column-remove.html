@@ -1,0 +1,5 @@
+<a data-group-uuid="{{ record.uuid }}"
+  class="btn btn-danger btn-xs real-link vmwarevminstance-remove"
+  href="{% url "dashboard.views.vmwarevminstance-remove" cluster=record.cluster_pk uuid=record.uuid %}?next={{ request.path }}">
+  <i class="fa fa-minus"></i> remove
+</a>

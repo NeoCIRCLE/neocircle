@@ -1,0 +1,12 @@
+{% load crispy_forms_tags %}
+{% load i18n %}
+
+<p class="text-muted">
+{% trans "Add a virtual machine to the managed list, choose an owner and expiration date." %}
+</p>
+
+
+<form method="POST" action="{% url "dashboard.views.vmwarevminstance-add" uuid=instance_uuid cluster=cluster_pk %}">
+{% csrf_token %}
+{% crispy form %}
+</form>

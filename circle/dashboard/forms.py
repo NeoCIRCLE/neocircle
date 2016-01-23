@@ -52,8 +52,8 @@ from django.core.urlresolvers import reverse_lazy
 from django_sshkey.models import UserKey
 from firewall.models import Vlan, Host
 from vm.models import (
-    InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
-)
+    InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance, Cluster,
+    VMwareVMInstance)
 from storage.models import DataStore, Disk
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.models import Permission
@@ -77,7 +77,6 @@ priority_choices = (
 
 
 class NoFormTagMixin(object):
-
     @property
     def helper(self):
         helper = FormHelper(self)
@@ -187,7 +186,7 @@ class VmCustomizeForm(forms.Form):
             self.initial['ram_size'] = self.template.ram_size
 
         else:
-            self.allowed_fields = ("name", "template", "customized", )
+            self.allowed_fields = ("name", "template", "customized",)
 
         # initial name and template pk
         self.initial['name'] = self.template.name
@@ -212,7 +211,6 @@ class VmCustomizeForm(forms.Form):
 
 
 class GroupCreateForm(NoFormTagMixin, forms.ModelForm):
-
     description = forms.CharField(label=_("Description"), required=False,
                                   widget=forms.Textarea(attrs={'rows': 3}))
 
@@ -256,11 +254,10 @@ class GroupCreateForm(NoFormTagMixin, forms.ModelForm):
 
     class Meta:
         model = Group
-        fields = ('name', )
+        fields = ('name',)
 
 
 class GroupProfileUpdateForm(NoFormTagMixin, forms.ModelForm):
-
     def __init__(self, *args, **kwargs):
         new_groups = kwargs.pop('new_groups', None)
         superuser = kwargs.pop('superuser', False)
@@ -295,7 +292,6 @@ class GroupProfileUpdateForm(NoFormTagMixin, forms.ModelForm):
 
 
 class HostForm(NoFormTagMixin, forms.ModelForm):
-
     def setowner(self, user):
         self.instance.owner = user
 
@@ -316,48 +312,48 @@ class HostForm(NoFormTagMixin, forms.ModelForm):
                     css_class="row",
                 ),
                 Div(  # host data
-                    Div(  # hostname
-                        HTML('<label for="node-hostname-box">'
-                             'Name'
-                             '</label>'),
-                        css_class="col-sm-3",
-                    ),
-                    Div(  # hostname
-                        'hostname',
-                        css_class="col-sm-9",
-                    ),
-                    Div(  # mac
-                        HTML('<label for="node-mac-box">'
-                             'MAC'
-                             '</label>'),
-                        css_class="col-sm-3",
-                    ),
-                    Div(
-                        'mac',
-                        css_class="col-sm-9",
-                    ),
-                    Div(  # ip
-                        HTML('<label for="node-ip-box">'
-                             'IP'
-                             '</label>'),
-                        css_class="col-sm-3",
-                    ),
-                    Div(
-                        'ipv4',
-                        css_class="col-sm-9",
-                    ),
-                    Div(  # vlan
-                        HTML('<label for="node-vlan-box">'
-                             'VLAN'
-                             '</label>'),
-                        css_class="col-sm-3",
-                    ),
-                    Div(
-                        'vlan',
-                        css_class="col-sm-9",
-                    ),
-                    css_class="row",
-                ),
+                      Div(  # hostname
+                            HTML('<label for="node-hostname-box">'
+                                 'Name'
+                                 '</label>'),
+                            css_class="col-sm-3",
+                            ),
+                      Div(  # hostname
+                            'hostname',
+                            css_class="col-sm-9",
+                            ),
+                      Div(  # mac
+                            HTML('<label for="node-mac-box">'
+                                 'MAC'
+                                 '</label>'),
+                            css_class="col-sm-3",
+                            ),
+                      Div(
+                          'mac',
+                          css_class="col-sm-9",
+                      ),
+                      Div(  # ip
+                            HTML('<label for="node-ip-box">'
+                                 'IP'
+                                 '</label>'),
+                            css_class="col-sm-3",
+                            ),
+                      Div(
+                          'ipv4',
+                          css_class="col-sm-9",
+                      ),
+                      Div(  # vlan
+                            HTML('<label for="node-vlan-box">'
+                                 'VLAN'
+                                 '</label>'),
+                            css_class="col-sm-3",
+                            ),
+                      Div(
+                          'vlan',
+                          css_class="col-sm-9",
+                      ),
+                      css_class="row",
+                      ),
             ),
         )
         return helper
@@ -368,7 +364,6 @@ class HostForm(NoFormTagMixin, forms.ModelForm):
 
 
 class NodeForm(forms.ModelForm):
-
     def __init__(self, *args, **kwargs):
         super(NodeForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
@@ -388,11 +383,11 @@ class NodeForm(forms.ModelForm):
                     ),
                     Div(
                         Div(  # nodename
-                            HTML('<label for="node-nodename-box">'
-                                 'Name'
-                                 '</label>'),
-                            css_class="col-sm-3",
-                        ),
+                              HTML('<label for="node-nodename-box">'
+                                   'Name'
+                                   '</label>'),
+                              css_class="col-sm-3",
+                              ),
                         Div(
                             'name',
                             css_class="col-sm-9",
@@ -401,11 +396,11 @@ class NodeForm(forms.ModelForm):
                     ),
                     Div(
                         Div(  # priority
-                            HTML('<label for="node-nodename-box">'
-                                 'Priority'
-                                 '</label>'),
-                            css_class="col-sm-3",
-                        ),
+                              HTML('<label for="node-nodename-box">'
+                                   'Priority'
+                                   '</label>'),
+                              css_class="col-sm-3",
+                              ),
                         Div(
                             'priority',
                             css_class="col-sm-9",
@@ -414,11 +409,11 @@ class NodeForm(forms.ModelForm):
                     ),
                     Div(
                         Div(  # enabled
-                            HTML('<label for="node-nodename-box">'
-                                 'Enabled'
-                                 '</label>'),
-                            css_class="col-sm-3",
-                        ),
+                              HTML('<label for="node-nodename-box">'
+                                   'Enabled'
+                                   '</label>'),
+                              css_class="col-sm-3",
+                              ),
                         Div(
                             'enabled',
                             css_class="col-sm-9",
@@ -426,22 +421,22 @@ class NodeForm(forms.ModelForm):
                         css_class="row",
                     ),
                     Div(  # nested host
-                        HTML("""{% load crispy_forms_tags %}
+                          HTML("""{% load crispy_forms_tags %}
                             {% crispy hostform %}
                             """)
-                    ),
+                          ),
                     Div(
                         Div(
                             AnyTag(  # tip: don't try to use Button class
-                                "button",
-                                AnyTag(
-                                    "i",
-                                    css_class="fa fa-play"
-                                ),
-                                HTML("Start"),
-                                css_id="node-create-submit",
-                                css_class="btn btn-success",
-                            ),
+                                     "button",
+                                     AnyTag(
+                                         "i",
+                                         css_class="fa fa-play"
+                                     ),
+                                     HTML("Start"),
+                                     css_id="node-create-submit",
+                                     css_class="btn btn-success",
+                                     ),
                             css_class="col-sm-12 text-right",
                         ),
                         css_class="row",
@@ -455,6 +450,317 @@ class NodeForm(forms.ModelForm):
     class Meta:
         model = Node
         fields = ['name', 'priority', 'enabled', ]
+
+
+class ClusterCreateForm(forms.ModelForm):
+    password = forms.CharField(label=_("Password"),
+                               widget=forms.PasswordInput)
+
+    def __init__(self, *args, **kwargs):
+        super(ClusterCreateForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_show_labels = False
+        self.helper.layout = Layout(
+            Div(
+                Div(
+                    Div(
+                        Div(
+                            AnyTag(
+                                'h3',
+                                HTML(_("Cluster")),
+                            ),
+                            css_class="col-sm-3",
+                        ),
+                        css_class="row",
+                    ),
+                    Div(
+                        Div(  # cluster name
+                              HTML('<label for="node-nodename-box">'
+                                   'Name'
+                                   '</label>'),
+                              css_class="col-sm-3",
+                              ),
+                        Div(
+                            'name',
+                            css_class="col-sm-9",
+                        ),
+                        css_class="row",
+                    ),
+                    Div(
+                        Div(  # cluster address
+                              HTML('<label for="node-nodename-box">'
+                                   'Address'
+                                   '</label>'),
+                              css_class="col-sm-3",
+                              ),
+                        Div(
+                            'address',
+                            css_class="col-sm-9",
+                        ),
+                        css_class="row",
+                    ),
+                    Div(
+                        Div(  # username used for the connection
+                              HTML('<label for="node-nodename-box">'
+                                   'Username'
+                                   '</label>'),
+                              css_class="col-sm-3",
+                              ),
+                        Div(
+                            'username',
+                            css_class="col-sm-9",
+                        ),
+                        css_class="row",
+                    ),
+                    Div(
+                        Div(  # password used for the connection
+                              HTML('<label for="node-nodename-box">'
+                                   'Password'
+                                   '</label>'),
+                              css_class="col-sm-3",
+                              ),
+                        Div(
+                            'password',
+                            css_class="col-sm-9",
+                        ),
+                        css_class="row",
+                    ),
+                    Div(
+                        Div(
+                            AnyTag(  # tip: don't try to use Button class
+                                     "button",
+                                     AnyTag(
+                                         "i",
+                                         css_class="fa fa-save"
+                                     ),
+                                     HTML("Save"),
+                                     css_id="node-create-submit",
+                                     css_class="btn btn-success",
+                                     ),
+                            css_class="col-sm-12 text-right",
+                        ),
+                        css_class="row",
+                    ),
+                    css_class="col-sm-11",
+                ),
+                css_class="row",
+            ),
+        )
+
+    def save(self):
+        new_cluster = super(ClusterCreateForm, self).save()
+
+        return new_cluster
+
+    class Meta:
+        model = Cluster
+        fields = ['name', 'address', 'username', 'password', ]
+
+
+class VMwareVMInstanceCreateForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(VMwareVMInstanceCreateForm, self).__init__(*args)
+
+        if "cluster_pk" in kwargs:
+            self.cluster_pk = kwargs.pop('cluster_pk')
+
+        self.helper = FormHelper(self)
+        self.helper.form_show_labels = False
+        self.helper.layout = Layout(
+            Div(
+                Div(
+                    Div(
+                        Div(
+                              HTML('<label>'
+                                   'Name'
+                                   '</label>'),
+                              css_class="col-sm-3",
+                              ),
+                        Div(
+                            'name',
+                            css_class="col-sm-9",
+                        ),
+                        css_class="row",
+                    ),
+                    Div(
+                        Div(
+                              HTML('<label>'
+                                   '# of CPU cores'
+                                   '</label>'),
+                              css_class="col-sm-3",
+                              ),
+                        Div(
+                            'cpu_cores',
+                            css_class="col-sm-9",
+                        ),
+                        css_class="row",
+                    ),
+                    Div(
+                        Div(
+                              HTML('<label>'
+                                   'Amount of memory'
+                                   '</label>'),
+                              css_class="col-sm-3",
+                              ),
+                        Div(
+                            'memory_size',
+                            css_class="col-sm-9",
+                        ),
+                        css_class="row",
+                    ),
+                    Div(
+                        Div(
+                              HTML('<label>'
+                                   'Time of expiration'
+                                   '</label>'),
+                              css_class="col-sm-3",
+                              ),
+                        Div(
+                            'time_of_expiration',
+                            css_class="col-sm-9",
+                        ),
+                        css_class="row",
+                    ),
+                    Div(
+                        Div(
+                              HTML('<label>'
+                                   'Owner'
+                                   '</label>'),
+                              css_class="col-sm-3",
+                              ),
+                        Div(
+                            'owner',
+                            css_class="col-sm-9",
+                        ),
+                        css_class="row",
+                    ),
+                    Div(
+                        Div(
+                            AnyTag(  # tip: don't try to use Button class
+                                     "button",
+                                     AnyTag(
+                                         "i",
+                                         css_class="fa fa-save"
+                                     ),
+                                     HTML("Create"),
+                                     css_id="node-create-submit",
+                                     css_class="btn btn-success",
+                                     ),
+                            css_class="col-sm-12 text-right",
+                        ),
+                        css_class="row",
+                    ),
+                    css_class="col-sm-11",
+                ),
+                css_class="row",
+            ),
+        )
+
+    def save(self, **kwargs):
+        new_vmware_vm = super(VMwareVMInstanceCreateForm, self).save(commit=False)
+        own_cluster = Cluster.objects.get(pk=self.cluster_pk)
+        new_vmware_vm.cluster = own_cluster
+        new_vmware_vm.uuid = 'placeholder'
+        new_vmware_vm.operating_system = 'placeholder'
+
+        new_vmware_vm.save()
+
+        return new_vmware_vm
+
+    class Meta:
+        model = VMwareVMInstance
+        fields = ['name', 'cpu_cores', 'memory_size', 'time_of_expiration', 'owner', ]
+
+
+class VMwareVMInstanceForm(forms.ModelForm):
+
+    time_of_expiration = forms.DateField(widget=forms.TextInput(attrs=
+                                         {
+                                            'class': 'datepicker',
+                                         }))
+
+    def __init__(self, *args, **kwargs):
+
+        if "uuid" in kwargs:
+            self.uuid = kwargs.pop('uuid')
+
+        if "cluster_pk" in kwargs:
+            self.cluster_pk = kwargs.pop('cluster_pk')
+
+        super(VMwareVMInstanceForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_show_labels = False
+        self.helper.layout = Layout(
+            Div(
+                Div(
+                    Div(
+                        Div(  # time of expiration
+                              HTML('<label>'
+                                   'Time of expiration'
+                                   '</label>'),
+                              css_class="col-sm-3",
+                              ),
+                        Div(
+                            'time_of_expiration',
+                            css_class="col-sm-9",
+                        ),
+                        css_class="row",
+                    ),
+                    Div(
+                        Div(  # the owner of the vm
+                              HTML('<label>'
+                                   'Owner'
+                                   '</label>'),
+                              css_class="col-sm-3",
+                              ),
+                        Div(
+                            'owner',
+                            css_class="col-sm-9",
+                        ),
+                        css_class="row",
+                    ),
+                    Div(
+                        Div(
+                            AnyTag(  # tip: don't try to use Button class
+                                     "button",
+                                     AnyTag(
+                                         "i",
+                                         css_class="fa fa-plus"
+                                     ),
+                                     HTML("Add"),
+                                     css_id="node-create-submit",
+                                     css_class="btn btn-success",
+                                     ),
+                            css_class="col-sm-12 text-right",
+                        ),
+                        css_class="row",
+                    ),
+                    css_class="col-sm-11",
+                ),
+                css_class="row",
+            ),
+        )
+
+    def save(self):
+        new_virtual_machine = super(VMwareVMInstanceForm, self).save(commit=False)
+        own_cluster = Cluster.objects.get(pk=self.cluster_pk)
+
+        new_virtual_machine.cluster = own_cluster
+        new_virtual_machine.instanceUUID = self.uuid
+
+        vm_details = own_cluster.get_vm_details_by_uuid(self.uuid)
+
+        new_virtual_machine.name = vm_details["name"]
+        new_virtual_machine.cpu_cores = vm_details["cpu"]
+        new_virtual_machine.memory_size = vm_details["memory"]
+        new_virtual_machine.operating_system = vm_details["os"]
+        new_virtual_machine.save()
+        return new_virtual_machine
+
+    class Meta:
+        model = VMwareVMInstance
+        fields = ['time_of_expiration', 'owner']
 
 
 class TemplateForm(forms.ModelForm):
@@ -507,11 +813,11 @@ class TemplateForm(forms.ModelForm):
                 'name', 'access_method', 'description', 'system', 'tags',
                 'arch', 'lease', 'has_agent')
         if (self.user.has_perm('vm.change_template_resources')
-                or not self.instance.pk):
+            or not self.instance.pk):
             self.allowed_fields += tuple(set(self.fields.keys()) -
                                          set(['raw_data']))
         if self.user.is_superuser:
-            self.allowed_fields += ('raw_data', )
+            self.allowed_fields += ('raw_data',)
         for name, field in self.fields.items():
             if name not in self.allowed_fields:
                 field.widget.attrs['disabled'] = 'disabled'
@@ -600,7 +906,7 @@ class TemplateForm(forms.ModelForm):
 
     class Meta:
         model = InstanceTemplate
-        exclude = ('state', 'disks', )
+        exclude = ('state', 'disks',)
         widgets = {
             'system': forms.TextInput,
             'max_ram_size': forms.HiddenInput,
@@ -609,7 +915,6 @@ class TemplateForm(forms.ModelForm):
 
 
 class LeaseForm(forms.ModelForm):
-
     def __init__(self, *args, **kwargs):
         super(LeaseForm, self).__init__(*args, **kwargs)
         self.generate_fields()
@@ -743,7 +1048,6 @@ class LeaseForm(forms.ModelForm):
 
 
 class VmRenewForm(OperationForm):
-
     force = forms.BooleanField(required=False, label=_(
         "Set expiration times even if they are shorter than "
         "the current value."))
@@ -783,11 +1087,10 @@ class VmMigrateForm(forms.Form):
 
 
 class VmStateChangeForm(OperationForm):
-
     interrupt = forms.BooleanField(required=False, label=_(
         "Forcibly interrupt all running activities."),
-        help_text=_("Set all activities to finished state, "
-                    "but don't interrupt any tasks."))
+                                   help_text=_("Set all activities to finished state, "
+                                               "but don't interrupt any tasks."))
     new_state = forms.ChoiceField(Instance.STATUS, label=_(
         "New status"))
     reset_node = forms.BooleanField(required=False, label=_("Reset node"))
@@ -856,7 +1159,7 @@ class VmDiskResizeForm(OperationForm):
                                           " GB or MB!"))
         if int(size_in_bytes) < int(disk.size):
             raise forms.ValidationError(_("Disk size must be greater than the "
-                                        "actual size."))
+                                          "actual size."))
         return cleaned_data
 
     @property
@@ -980,7 +1283,6 @@ class DeployChoiceField(forms.ModelChoiceField):
 
 
 class VmDeployForm(OperationForm):
-
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices', None)
         instance = kwargs.pop('instance', None)
@@ -1125,7 +1427,6 @@ class CirclePasswordResetForm(PasswordResetForm):
 
 
 class CircleSetPasswordForm(SetPasswordForm):
-
     @property
     def helper(self):
         helper = FormHelper()
@@ -1136,7 +1437,6 @@ class CircleSetPasswordForm(SetPasswordForm):
 
 
 class LinkButton(BaseInput):
-
     """
     Used to create a link button descriptor for the {% crispy %} template tag::
 
@@ -1183,7 +1483,6 @@ class AnyTag(Div):
 
 
 class WorkingBaseInput(BaseInput):
-
     def __init__(self, name, value, input_type="text", **kwargs):
         self.input_type = input_type
         self.field_classes = ""  # we need this for some reason
@@ -1191,7 +1490,6 @@ class WorkingBaseInput(BaseInput):
 
 
 class TraitForm(forms.ModelForm):
-
     def __init__(self, *args, **kwargs):
         super(TraitForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
@@ -1223,7 +1521,7 @@ class MyProfileForm(forms.ModelForm):
 
     class Meta:
         fields = ('preferred_language', 'email_notifications',
-                  'use_gravatar', )
+                  'use_gravatar',)
         model = Profile
 
     @property
@@ -1238,9 +1536,8 @@ class MyProfileForm(forms.ModelForm):
 
 
 class UnsubscribeForm(forms.ModelForm):
-
     class Meta:
-        fields = ('email_notifications', )
+        fields = ('email_notifications',)
         model = Profile
 
     @property
@@ -1251,7 +1548,6 @@ class UnsubscribeForm(forms.ModelForm):
 
 
 class CirclePasswordChangeForm(PasswordChangeForm):
-
     @property
     def helper(self):
         helper = FormHelper()
@@ -1392,10 +1688,9 @@ class ConnectCommandForm(forms.ModelForm):
 
 
 class TraitsForm(forms.ModelForm):
-
     class Meta:
         model = Instance
-        fields = ('req_traits', )
+        fields = ('req_traits',)
 
     @property
     def helper(self):
@@ -1415,7 +1710,7 @@ class RawDataForm(forms.ModelForm):
 
     class Meta:
         model = Instance
-        fields = ('raw_data', )
+        fields = ('raw_data',)
 
     @property
     def helper(self):
@@ -1477,7 +1772,7 @@ class GroupPermissionForm(forms.ModelForm):
 
     class Meta:
         model = Group
-        fields = ('permissions', )
+        fields = ('permissions',)
 
     @property
     def helper(self):
@@ -1525,7 +1820,7 @@ class VmResourcesForm(forms.ModelForm):
 
     class Meta:
         model = Instance
-        fields = ('num_cores', 'priority', 'ram_size', )
+        fields = ('num_cores', 'priority', 'ram_size',)
 
 
 vm_search_choices = (
@@ -1586,7 +1881,6 @@ class UserListSearchForm(forms.Form):
 
 
 class DataStoreForm(ModelForm):
-
     @property
     def helper(self):
         helper = FormHelper()
@@ -1605,7 +1899,7 @@ class DataStoreForm(ModelForm):
 
     class Meta:
         model = DataStore
-        fields = ("name", "path", "hostname", )
+        fields = ("name", "path", "hostname",)
 
 
 class DiskForm(ModelForm):
@@ -1623,7 +1917,7 @@ class DiskForm(ModelForm):
     class Meta:
         model = Disk
         fields = ("name", "filename", "datastore", "type", "bus", "size",
-                  "base", "dev_num", "destroyed", "is_ready", )
+                  "base", "dev_num", "destroyed", "is_ready",)
 
 
 class MessageForm(ModelForm):
