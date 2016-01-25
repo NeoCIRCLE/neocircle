@@ -1,5 +1,34 @@
-(function($){
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 
+function csrfSafeMethod(method) {
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+
+var csrftoken = getCookie('csrftoken');
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
+
+(function($){
   $.event.special.doubletap = {
     bindType: 'touchend',
     delegateType: 'touchend',
@@ -18,7 +47,6 @@
           event[property] = event.originalEvent.changedTouches[0][property];
         });
 
-        // let jQuery handle the triggering of "doubletap" event handlers
         handleObj.handler.apply(this, arguments);
       } else {
         targetData.lastTouch = now;
@@ -72,27 +100,26 @@ jsPlumb.ready(function() {
 
     var stackIndexer = 0;
     var stackSize = 0;
-
     var objectStack = [];
     var undoStack = [];
     var redoStack = [];
 
-    $("#dropContainer").attr('unselectable', 'on')
-        .css({
+    $("#dropContainer").attr('unselectable', 'on').css({
             'user-select': 'none',
-            'MozUserSelect': 'none'
-        })
+            'MozUserSelect': 'none'})
         .on('selectstart', false)
         .on('mousedown', false);
+
 
     setServiceStatus = function(status) {
         if (status == "unsaved") {
             $("#serviceStatus").text("Unsaved");
         }
-        if (status == "saved") {
+        else {
             $("#serviceStatus").empty();
         }
     };
+
 
     addInfo = function(title, info, type, object) {
         $("#informationContainer").empty();
@@ -167,66 +194,13 @@ jsPlumb.ready(function() {
 
         $("#informationContainer").append(div);
 
-        $("#infoInput").val(info).keyup(function() {
-            setServiceStatus("unsaved");
-            newParams = $("#infoInput").val();
-
-            if (type == "connection") object.parameters = newParams;
-            if (type == "element") object.attr("parameters", newParams);
-        });
-
-        $("#addEndpoint").click(function() {
-            addEndpoint(object);
-            undoStack.splice(stackIndexer, 0, removeEndoint);
-            redoStack.splice(stackIndexer, 0, addEndpoint);
-            objectStack.splice(stackIndexer, 0, object);
-            stackIndexer++;
-            stackSize++;
-        });
-
-        $("#removeEndpoint").click(function() {
-            removeEndoint(object);
-            undoStack.splice(stackIndexer, 0, addEndpoint);
-            redoStack.splice(stackIndexer, 0, removeEndoint);
-            objectStack.splice(stackIndexer, 0, object);
-            stackIndexer++;
-            stackSize++;
-        });
-
-        $("#removeFromWorkspace").click(function() {
-            $('.element').removeClass('elementSelected');
-            removeElement(object);
-
-            $("#informationPanel").hide();
-            $("#dragPanel").show();
-
-            undoStack.splice(stackIndexer, 0, addElement);
-            redoStack.splice(stackIndexer, 0, removeElement);
-            objectStack.splice(stackIndexer, 0, object);
-            stackSize++;
-            stackIndexer++;
-        });
-
-        $("#removeConnection").click(function() {
-            jsPlumbInstance.detach(object);
-            $("#informationPanel").hide();
-            $("#dragPanel").show();
-        });
-
-        $("#addElementToWorkspace").click(function() {
-            addElement(object.attr("id"), (++elementIndex) + "_" + object.attr("id"), (elementIndex % 21) * 30, 4, "", (elementIndex % 21) * 30);
-
-            undoStack.splice(stackIndexer, 0, removeElement);
-            redoStack.splice(stackIndexer, 0, addElement);
-            objectStack.splice(stackIndexer, 0, newInstance);
-            stackSize++;
-            stackIndexer++;
-        });
+        $("#infoInput").val(info);
 
         $("#dragPanel").hide();
 
         $("#informationPanel").show();
     };
+
 
     updateConnections = function(connection, remove) {
         if (!remove) {
@@ -277,6 +251,7 @@ jsPlumb.ready(function() {
         return true;
     };
 
+
     checkSourceTargetEquality = function(connection) {
         if (connection.targetId == connection.sourceId) {
             addMessage("Connecting element to itself is forbidden.", "danger");
@@ -284,6 +259,7 @@ jsPlumb.ready(function() {
         }
         return true;
     };
+
 
     getAnchorCoordinate = function(rate) {
         x = Math.cos(2.0 * Math.PI * rate) / 2;
@@ -317,6 +293,7 @@ jsPlumb.ready(function() {
         return [y + 0.5, -x + 0.5, dy, -dx];
     };
 
+
     isConnected = function(anchorId) {
         returnValue = false;
         $.each(elementConnections, function(index) {
@@ -328,6 +305,7 @@ jsPlumb.ready(function() {
         });
         return returnValue;
     };
+
 
     getConnectionparamAndAnchor = function(anchorId) {
         parameters = "";
@@ -350,6 +328,7 @@ jsPlumb.ready(function() {
         return [otherAnchor, parameters];
     };
 
+
     addEndpoint = function(element) {
         anchors = element.attr("anchors");
 
@@ -357,37 +336,35 @@ jsPlumb.ready(function() {
 
         anchors++;
 
-        jsPlumbInstance.addEndpoint(document.getElementById(
-                element.attr("id")), {
-                anchor: getAnchorCoordinate((anchors - 1) / anchors),
+        jsPlumbInstance.addEndpoint(document.getElementById(element.attr("id")), {
                 uuid: (anchors - 1) + "_" + element.attr("id")
             },
             jsPlumbEndpoint);
 
-        for (i = 0; i < anchors; i++) jsPlumbInstance.getEndpoint(i + "_" + element.attr("id")).setAnchor(getAnchorCoordinate(i / (anchors)));
+        for (i = 0; i < anchors; i++) {
+            jsPlumbInstance.getEndpoint(i + "_" + element.attr("id")).setAnchor(getAnchorCoordinate(i / (anchors)));
+        }
 
         element.attr("anchors", anchors);
 
         jsPlumbInstance.repaintEverything();
     };
 
+
     removeEndoint = function(element) {
         anchors = element.attr("anchors");
 
         if (anchors == 4) return;
 
-        i = anchors - 1;
-        anchors--;
+        i = --anchors;
 
-        while (isConnected(i + "_" + element.attr("id")) &&
-            i >= 0) i--;
+        while (isConnected(i + "_" + element.attr("id")) && i >= 0) i--;
 
         if (i == -1) {
             addMessage("Removing anchors is obstructed.", "danger");
             return;
         } else if (i == anchors) {
-            jsPlumbInstance.deleteEndpoint(
-                jsPlumbInstance.getEndpoint(anchors + "_" + element.attr("id")));
+            jsPlumbInstance.deleteEndpoint(jsPlumbInstance.getEndpoint(anchors + "_" + element.attr("id")));
         } else {
             newId = i + "_" + element.attr("id");
             oldId = anchors + "_" + element.attr("id");
@@ -408,6 +385,7 @@ jsPlumb.ready(function() {
         jsPlumbInstance.repaintEverything();
     };
 
+
     connectEndpoints = function(data) {
         connectionObject =
             jsPlumbInstance.connect({
@@ -419,6 +397,7 @@ jsPlumb.ready(function() {
         setServiceStatus("unsaved");
     };
 
+
     disconnectEndpoints = function(data) {
         for (var i = 0; i < elementConnections.length; i++) {
             if (elementConnections[i].endpoints[0].getUuid() == data[0] &&
@@ -429,6 +408,7 @@ jsPlumb.ready(function() {
         }
         return;
     };
+
 
     addElement = function(idOrInstance, newId, newPositionY, endpoints, parameters, newPositionX) {
         newInstance = "";
@@ -460,46 +440,50 @@ jsPlumb.ready(function() {
             containment: $("#dropContainer")
         });
 
-        newInstance.on('dblclick doubletap', function() {
-            element = $(this);
-            $('.element').removeClass('elementSelected');
-            jsPlumbInstance.select().setPaintStyle({strokeStyle:'#9932cc', lineWidth: 8});
-            element.addClass("elementSelected");
-            addInfo(element.attr("alt"), element.attr("parameters"), "element", element);
-        }).mousedown(function(e) {
-            if (e.button == 2) {
-                setServiceStatus("unsaved");
-                $("#informationPanel").hide();
-                $("#dragPanel").show();
-                
-                $('.element').removeClass('elementSelected');
-                jsPlumbInstance.select().setPaintStyle({strokeStyle:'#9932cc', lineWidth: 8});
-                
-                removeElement($(this));
-
-                undoStack.splice(stackIndexer, 0, addElement);
-                redoStack.splice(stackIndexer, 0, removeElement);
-                objectStack.splice(stackIndexer, 0, $(this));
-                stackSize++;
-                stackIndexer++;
-                return false;
-            }
-            return true;
-        });
-
         setServiceStatus("unsaved");
 
         jsPlumbInstance.repaintEverything();
     };
+
 
     removeElement = function(object) {
         jsPlumbInstance.detachAllConnections(object);
         jsPlumbInstance.remove(object.attr("id"));
     };
 
+
+    scrollContainer = function(direction) {
+        dragContainerScroll += direction;
+
+        if (dragContainerScroll == $(".elementTemplate").length - 2) dragContainerScroll--;
+        if (dragContainerScroll == -1) dragContainerScroll++;
+
+        $("#dragContainer").scrollTop(
+            dragContainerScroll * $("#elementTemplatePanel").height()
+        );
+    };
+
+
+    mouseScrollContainer = function(event) {
+        var e = window.event || event;
+        var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+
+        $('body').addClass("noScroll");
+
+        scrollContainer(-delta);
+
+        $('body').removeClass("noScroll");
+    };
+
+
     jsPlumbInstance.bind("connection", function(info) {
         updateConnections(info.connection);
         info.connection.parameters = "";
+
+        // For right click on a connection.
+        $("path").on('doubletap', function() {
+            //Todo
+        });
 
         if (clickEvent === 0) {
             undoStack.splice(stackIndexer, 0, disconnectEndpoints);
@@ -513,11 +497,15 @@ jsPlumb.ready(function() {
             stackSize++;
         }
     });
+
+
     jsPlumbInstance.bind("beforeDrop", function(info) {
         return checkDuplicateConnection(info.connection) &&
             checkSourceTargetEquality(info.connection) &&
             checkCompatibility(info.connection.sourceId, info.connection.targetId);
     });
+
+
     jsPlumbInstance.bind("connectionDetached", function(info) {
         updateConnections(info.connection, true);
 
@@ -533,14 +521,20 @@ jsPlumb.ready(function() {
             stackSize++;
         }
     });
+
+
     jsPlumbInstance.bind("connectionMoved", function(info) {
         updateConnections(info.connection, true);
     });
+
+
     jsPlumbInstance.bind("contextmenu", function(info) {
         jsPlumbInstance.detach(info);
         $("#informationPanel").hide();
         $("#dragPanel").show();
     });
+
+
     jsPlumbInstance.bind("dblclick", function(info) {
         $('.element').removeClass('elementSelected');
         jsPlumbInstance.select().setPaintStyle({strokeStyle:'#9932cc', lineWidth: 8});
@@ -550,11 +544,14 @@ jsPlumb.ready(function() {
             "connection",
             info);
     });
+
+
     jsPlumbInstance.draggable(jsPlumb.getSelector(".element"), {
         containment: $("#dropContainer")
     });
 
-    $(".elementTemplate").click(function() {
+
+    $('body').on('click', '.elementTemplate', function() {
         addElement($(this).attr("id"), (++elementIndex) + "_" + $(this).attr("id"), (elementIndex % 21) * 30, 4, "", (elementIndex % 21) * 30);
 
         undoStack.splice(stackIndexer, 0, removeElement);
@@ -564,25 +561,115 @@ jsPlumb.ready(function() {
         stackIndexer++;
     });
 
-    $("#closeInfoPanel").click(function(){
+
+    $('body').on('dblclick doubletap', '.element', function() {
+        element = $(this);
+        $('.element').removeClass('elementSelected');
+        jsPlumbInstance.select().setPaintStyle({strokeStyle:'#9932cc', lineWidth: 8});
+        element.addClass("elementSelected");
+        addInfo(element.attr("alt"), element.attr("parameters"), "element", element);
+        $(document).scrollTop(0);
+    });
+
+
+    $('body').on('contextmenu', '.element', function(event) {
+        setServiceStatus("unsaved");
+        $("#informationPanel").hide();
+        $("#dragPanel").show();
+
+        $('.element').removeClass('elementSelected');
+        jsPlumbInstance.select().setPaintStyle({strokeStyle:'#9932cc', lineWidth: 8});
+
+        removeElement($(this));
+
+        undoStack.splice(stackIndexer, 0, addElement);
+        redoStack.splice(stackIndexer, 0, removeElement);
+        objectStack.splice(stackIndexer, 0, $(this));
+        stackSize++;
+        stackIndexer++;
+    });
+
+
+    $('body').on('click', '#closeInfoPanel', function() {
         $('#informationPanel').hide();
         $('#dragPanel').show();
         $('.element').removeClass('elementSelected');
         jsPlumbInstance.select().setPaintStyle({strokeStyle:'#9932cc', lineWidth: 8});
     });
 
-    $("#clearService").click(function() {
-        jsPlumbInstance.detachEveryConnection();
-        jsPlumbInstance.deleteEveryEndpoint();
+
+    $('body').on('keyUp', '#infoInput', function() {
+        setServiceStatus("unsaved");
+        newParams = $("#infoInput").val();
+
+        if (type == "connection") object.parameters = newParams;
+        if (type == "element") object.attr("parameters", newParams);
+    });
+
+
+    $('body').on('click', '#addEndpoint', function() {
+        addEndpoint(object);
+        undoStack.splice(stackIndexer, 0, removeEndoint);
+        redoStack.splice(stackIndexer, 0, addEndpoint);
+        objectStack.splice(stackIndexer, 0, object);
+        stackIndexer++;
+        stackSize++;
+    });
+
+
+    $('body').on('click', '#removeEndpoint', function() {
+        removeEndoint(object);
+        undoStack.splice(stackIndexer, 0, addEndpoint);
+        redoStack.splice(stackIndexer, 0, removeEndoint);
+        objectStack.splice(stackIndexer, 0, object);
+        stackIndexer++;
+        stackSize++;
+    });
+
+
+    $('body').on('click', '#removeFromWorkspace', function() {
+        $('.element').removeClass('elementSelected');
+        removeElement(object);
+
+        $("#informationPanel").hide();
+        $("#dragPanel").show();
+
+        undoStack.splice(stackIndexer, 0, addElement);
+        redoStack.splice(stackIndexer, 0, removeElement);
+        objectStack.splice(stackIndexer, 0, object);
+        stackSize++;
+        stackIndexer++;
+    });
+
+
+    $('body').on('click', '#removeConnection', function() {
+        jsPlumbInstance.detach(object);
+        $("#informationPanel").hide();
+        $("#dragPanel").show();
+    });
+
+
+    $('body').on('click', '#addElementToWorkspace', function() {
+        addElement(object.attr("id"), (++elementIndex) + "_" + object.attr("id"), (elementIndex % 21) * 30, 4, "", (elementIndex % 21) * 30);
+
+        undoStack.splice(stackIndexer, 0, removeElement);
+        redoStack.splice(stackIndexer, 0, addElement);
+        objectStack.splice(stackIndexer, 0, newInstance);
+        stackSize++;
+        stackIndexer++;
+    });
+
+
+    $('body').on('click', '#clearService', function() {
+        jsPlumbInstance.reset();
         $(".element").remove();
         setServiceStatus("unsaved");
-
-        jsPlumbInstance.repaintEverything();
 
         elementIndex = 0;
     });
 
-    $("#undoMovement").click(function() {
+
+    $('body').on('click', '#undoMovement', function() {
         if (stackIndexer <= 0) return;
         stackIndexer--;
         clickEvent = 1;
@@ -591,7 +678,8 @@ jsPlumb.ready(function() {
         clickEvent = 0;
     });
 
-    $("#redoMovement").click(function() {
+
+    $('body').on('click', '#redoMovement', function() {
         if (stackIndexer >= stackSize) return;
         clickEvent = 1;
         object = objectStack[stackIndexer];
@@ -599,19 +687,32 @@ jsPlumb.ready(function() {
         clickEvent = 0;
     });
 
-    $(".elementTemplateInfo").click(function() {
-        id = $(this).attr("element");
 
+    $('body').on('click', '.elementTemplateInfo', function() {
+        id = $(this).attr("element");
         addInfo($("#" + id).attr("alt"), $("#" + id).attr("desc"), "elementTemplate", $("#" + id));
     });
 
 
-    $("#serviceName").keydown(function() {
+    $('body').on('click', '#serviceName', function() {
+        $(this).replaceWith('<input type="text" id="serviceName" class="form-control form-control-sm" style="margin-top: -4px !important; margin-bottom: -4px !important;" value="' + $(this).html() + '" />');
+        document.getElementById("serviceName").select();
         setServiceStatus("unsaved");
     });
 
-    $("#saveService").click(function() {
-        serviceName = $("#serviceName").text();
+
+    $('body').on('click', '#dragContainerScrollUp', function() {
+        scrollContainer(-1);
+    });
+
+
+    $('body').on('click', '#dragContainerScrollDown', function() {
+        scrollContainer(1);
+    });
+
+
+    $('body').on('click', '#saveService', function() {
+        serviceName = $("#serviceName").val() === ''?$("#serviceName").text():$("#serviceName").val();
         connectionSet = [];
         instanceSet = [];
 
@@ -621,8 +722,7 @@ jsPlumb.ready(function() {
                 "sourceEndpoint": elementConnections[index].endpoints[0].getUuid(),
                 "targetId": elementConnections[index].targetId,
                 "targetEndpoint": elementConnections[index].endpoints[1].getUuid(),
-                "parameters": elementConnections[index].parameters
-            });
+                "parameters": elementConnections[index].parameters});
         });
 
         $.each($(".element"), function() {
@@ -631,8 +731,7 @@ jsPlumb.ready(function() {
                 "posX": Math.floor($(this).position().left),
                 "posY": Math.floor($(this).position().top),
                 "anchors": $(this).attr("anchors"),
-                "parameters": $(this).attr("parameters")
-            });
+                "parameters": $(this).attr("parameters")});
         });
 
         $.post("", {
@@ -640,17 +739,10 @@ jsPlumb.ready(function() {
             data: JSON.stringify({
                 "serviceName": serviceName,
                 "elementConnections": connectionSet,
-                "elements": instanceSet
-            })
-        }, function(resultValue) {
-            if (window.location.href.indexOf(
-                    "/create") >= 0) {
-                window.location = "../" +
-                    resultValue;
-            } else {
-                addMessage("Saved successfully.","success");
-                setServiceStatus("saved");
-            }
+                "elements": instanceSet})
+        }, function(result) {
+            addMessage(result.serviceName + " saved successfully.","success");
+            setServiceStatus("saved");
         });
     });
 
@@ -664,37 +756,6 @@ jsPlumb.ready(function() {
         jsPlumbInstance.repaintEverything();
     });
 
-
-    scrollContainer = function(direction) {
-        dragContainerScroll += direction;
-
-        if (dragContainerScroll == $(".elementTemplate").length - 2) dragContainerScroll--;
-        if (dragContainerScroll == -1) dragContainerScroll++;
-
-        $("#dragContainer").scrollTop(
-            dragContainerScroll * $("#elementTemplatePanel").height()
-        );
-    };
-
-
-    mouseScrollContainer = function(ev) {
-        var e = window.event || ev;
-        var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
-
-        $('body').addClass("noScroll");
-
-        scrollContainer(-delta);
-
-        $('body').removeClass("noScroll");
-    };
-
-    $("#dragContainerScrollUp").click(function() {
-        scrollContainer(-1);
-    });
-
-    $("#dragContainerScrollDown").click(function() {
-        scrollContainer(1);
-    });
 
     var dragContainer = document.getElementById("dragContainer");
 
@@ -716,10 +777,9 @@ jsPlumb.ready(function() {
     $(document).ready(function() {
         $.post("", {
             event: "loadService"
-        }, function(resultValue) {
-            if (resultValue === "") return;
+        }, function(result) {
+            if (result === "") return;
 
-            result = jQuery.parseJSON(resultValue);
             $("#serviceName").text(result.serviceName);
 
             $.each(result.elements, function(i, element) {

@@ -15,67 +15,46 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.template import RequestContext
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import TemplateView, DeleteView
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse_lazy
 from django.db.models import Q
-from django.http import HttpResponseForbidden, Http404
-from django.shortcuts import redirect
-from django.contrib import auth
-from .models import (
-    Element,
-    ElementTemplate,
-    ElementConnection,
-    Service
-)
+from django.http import JsonResponse
+from braces.views import LoginRequiredMixin
+from django.views.generic import TemplateView, DeleteView, CreateView
+from .models import Element, ElementTemplate, ElementConnection, Service
 import json
 
 
-class IndexView(TemplateView):
+class DetailView(LoginRequiredMixin, TemplateView):
     template_name = "setty/index.html"
 
-    def get(self, request, *args, **kwargs):
-        if self.request.user.is_authenticated():
-            return TemplateView.get(self, request, *args, **kwargs)
-        else:
-            return redirect(auth.views.login)
-
     def get_context_data(self, **kwargs):
-        elementTemplateList = ElementTemplate.objects.all()
-        context = RequestContext(
-            self.request,
-            {'elementTemplateList': elementTemplateList})
+        context = super(DetailView, self).get_context_data(**kwargs)
+        context['elementTemplateList'] = ElementTemplate.objects.all()
         return context
 
-    @csrf_exempt
     def post(self, request, *args, **kwargs):
-        if not self.request.user.is_authenticated():
-            return redirect(auth.views.login)
-
         if self.request.POST.get('event') == "saveService":
-            jsonData = json.loads(self.request.POST.get('data'))
-
-            serviceName = jsonData['serviceName']
+            data = json.loads(self.request.POST.get('data'))
+            service_name = data['serviceName']
 
             if 'pk' in kwargs:
-                serviceObject = Service.objects.get(id=kwargs['pk'])
-                serviceObject.name = serviceName
-                serviceObject.save()
+                service = Service.objects.get(id=kwargs['pk'])
+                service.name = service_name
+                service.save()
 
-                Element.objects.filter(service=serviceObject).delete()
+                Element.objects.filter(service=service).delete()
 
             else:
-                serviceObject = Service(
-                    name=serviceName,
+                service = Service(
+                    name=service_name,
                     user=self.request.user
                 )
-                serviceObject.save()
+                service.save()
 
-            for element in jsonData['elements']:
+            for element in data['elements']:
                 elementObject = Element(
-                    service=serviceObject,
+                    service=service,
                     parameters=element['parameters'],
                     display_id=element['displayId'],
                     pos_x=element['posX'],
@@ -84,7 +63,7 @@ class IndexView(TemplateView):
                 )
                 elementObject.save()
 
-            for elementConnection in jsonData['elementConnections']:
+            for elementConnection in data['elementConnections']:
                 sourceId = elementConnection['sourceId']
                 targetId = elementConnection['targetId']
                 sourceEndpoint = elementConnection['sourceEndpoint']
@@ -93,11 +72,11 @@ class IndexView(TemplateView):
 
                 targetObject = Element.objects.get(
                     display_id=targetId,
-                    service=serviceObject)
+                    service=service)
 
                 sourceObject = Element.objects.get(
                     display_id=sourceId,
-                    service=serviceObject)
+                    service=service)
 
                 connectionObject = ElementConnection(
                     target=targetObject,
@@ -108,46 +87,11 @@ class IndexView(TemplateView):
                 )
                 connectionObject.save()
 
-            return HttpResponse(serviceObject.pk)
+            return JsonResponse({'serviceName': service.name})
 
-        else:
-            return HttpResponse()
-
-
-class DeleteView(DeleteView):
-    model = Service
-
-    success_url = reverse_lazy("dashboard.index")
-
-
-class StartView(TemplateView):
-    pass
-
-
-class ListView(TemplateView):
-    pass
-
-
-class DetailView(IndexView):
-    def get(self, request, *args, **kwargs):
-        try:
-            serviceObject = Service.objects.get(id=kwargs['pk'])
-            if serviceObject.user != self.request.user:
-                return HttpResponseForbidden(
-                    "You don't have permission to open the service.")
-        except:
-            raise Http404
-        else:
-            return IndexView.get(self, request, *args, **kwargs)
-
-    @csrf_exempt
-    def post(self, request, *args, **kwargs):
-        if not self.request.user.is_authenticated():
-            return redirect(auth.views.login)
-
-        if self.request.POST.get('event') == "loadService":
-            serviceObject = Service.objects.get(id=kwargs['pk'])
-            elementList = Element.objects.filter(service=serviceObject)
+        elif self.request.POST.get('event') == "loadService":
+            service = Service.objects.get(id=kwargs['pk'])
+            elementList = Element.objects.filter(service=service)
             elementConnectionList = ElementConnection.objects.filter(
                 Q(target__in=elementList) | Q(source__in=elementList))
 
@@ -160,20 +104,39 @@ class DetailView(IndexView):
                     'displayId': item.display_id,
                     'posX': item.pos_x,
                     'posY': item.pos_y,
-                    'anchors': item.anchors
-                })
+                    'anchors': item.anchors})
 
             for item in elementConnectionList:
                 elementConnections.append({
                     'targetEndpoint': item.target_endpoint,
                     'sourceEndpoint': item.source_endpoint,
-                    'parameters': item.parameters
-                })
+                    'parameters': item.parameters})
 
-            return HttpResponse(json.dumps(
-                {"elements": elements,
-                 "elementConnections": elementConnections,
-                 "serviceName": serviceObject.name}))
+            return JsonResponse(
+                {'elements': elements,
+                 'elementConnections': elementConnections,
+                 'serviceName': service.name})
 
         else:
-            return IndexView.post(self, request, *args, **kwargs)
+            raise PermissionDenied
+
+
+class DeleteView(LoginRequiredMixin, DeleteView):
+    model = Service
+    success_url = reverse_lazy("dashboard.index")
+
+
+class CreateView(LoginRequiredMixin, CreateView):
+    pass
+
+
+class StartView(LoginRequiredMixin, TemplateView):
+    pass
+
+
+class StopView(LoginRequiredMixin, TemplateView):
+    pass
+
+
+class ListView(LoginRequiredMixin, TemplateView):
+    pass

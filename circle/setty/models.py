@@ -53,7 +53,7 @@ class Element(Model):
     anchors = models.PositiveSmallIntegerField()
 
     def __unicode__(self):
-        return self.service.name + ", id: " + self.display_id
+        return "%s (%s)" % (self.service.name, self.display_id)
 
 
 class ElementConnection(Model):
@@ -70,4 +70,4 @@ class ElementConnection(Model):
     parameters = models.TextField()
 
     def __unicode__(self):
-        return self.target.service.name + ", " + str(self.id)
+        return "%s (%d)" % (self.target.service.name, self.id)
