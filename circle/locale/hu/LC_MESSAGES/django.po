@@ -2576,7 +2576,7 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"A Tulajdonos szint minden műveletet engedélyez. A Tulajdonosok adhatnak/visszavonhatnak Felhasználó, Operátor is Tulajdonos szintű hozzáféréseket. A virtuális gépért felelős tulajdonos nem fokozható le. A felelős tulajdonosi cím átruházható másik felhasználó számára, a \"Tulajdon átruházása\" gombbal."
+"A Tulajdonos szint minden műveletet engedélyez. A Tulajdonosok adhatnak/visszavonhatnak Felhasználó, Operátor és Tulajdonos szintű hozzáféréseket. A virtuális gépért felelős tulajdonos nem fokozható le. A felelős tulajdonosi cím átruházható másik felhasználó számára, a \"Tulajdon átruházása\" gombbal."
 
 #: dashboard/templates/dashboard/vm-detail/console.html:6
 msgid "You are not authorized to access the VNC console."
