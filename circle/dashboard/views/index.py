@@ -103,7 +103,8 @@ class IndexView(LoginRequiredMixin, TemplateView):
 
         # setty services
         if user.has_perm('vm.create_template'):
-            context['services'] = Service.objects.filter(user=user).order_by('-pk')[:5]
+            context['services'] = Service.objects.filter(
+                user=user).order_by('-pk')[:5]
 
         # toplist
         if settings.STORE_URL:
