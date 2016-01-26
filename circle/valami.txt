@@ -1,0 +1,541 @@
+./vm/migrations/0001_initial.py:29:80: E501 line too long (114 > 79 characters)
+./vm/migrations/0001_initial.py:30:80: E501 line too long (140 > 79 characters)
+./vm/migrations/0001_initial.py:31:80: E501 line too long (147 > 79 characters)
+./vm/migrations/0001_initial.py:32:80: E501 line too long (326 > 79 characters)
+./vm/migrations/0001_initial.py:33:80: E501 line too long (152 > 79 characters)
+./vm/migrations/0001_initial.py:34:80: E501 line too long (216 > 79 characters)
+./vm/migrations/0001_initial.py:35:80: E501 line too long (167 > 79 characters)
+./vm/migrations/0001_initial.py:36:80: E501 line too long (197 > 79 characters)
+./vm/migrations/0001_initial.py:37:80: E501 line too long (154 > 79 characters)
+./vm/migrations/0001_initial.py:38:80: E501 line too long (160 > 79 characters)
+./vm/migrations/0001_initial.py:39:80: E501 line too long (196 > 79 characters)
+./vm/migrations/0001_initial.py:40:80: E501 line too long (146 > 79 characters)
+./vm/migrations/0001_initial.py:41:80: E501 line too long (149 > 79 characters)
+./vm/migrations/0001_initial.py:42:80: E501 line too long (165 > 79 characters)
+./vm/migrations/0001_initial.py:43:80: E501 line too long (183 > 79 characters)
+./vm/migrations/0001_initial.py:44:80: E501 line too long (138 > 79 characters)
+./vm/migrations/0001_initial.py:45:80: E501 line too long (90 > 79 characters)
+./vm/migrations/0001_initial.py:46:80: E501 line too long (129 > 79 characters)
+./vm/migrations/0001_initial.py:47:80: E501 line too long (179 > 79 characters)
+./vm/migrations/0001_initial.py:48:80: E501 line too long (175 > 79 characters)
+./vm/migrations/0001_initial.py:49:80: E501 line too long (174 > 79 characters)
+./vm/migrations/0001_initial.py:51:80: E501 line too long (134 > 79 characters)
+./vm/migrations/0001_initial.py:52:80: E501 line too long (155 > 79 characters)
+./vm/migrations/0001_initial.py:59:80: E501 line too long (448 > 79 characters)
+./vm/migrations/0001_initial.py:66:80: E501 line too long (114 > 79 characters)
+./vm/migrations/0001_initial.py:67:80: E501 line too long (140 > 79 characters)
+./vm/migrations/0001_initial.py:68:80: E501 line too long (147 > 79 characters)
+./vm/migrations/0001_initial.py:69:80: E501 line too long (98 > 79 characters)
+./vm/migrations/0001_initial.py:70:80: E501 line too long (172 > 79 characters)
+./vm/migrations/0001_initial.py:71:80: E501 line too long (169 > 79 characters)
+./vm/migrations/0001_initial.py:72:80: E501 line too long (142 > 79 characters)
+./vm/migrations/0001_initial.py:73:80: E501 line too long (146 > 79 characters)
+./vm/migrations/0001_initial.py:74:80: E501 line too long (117 > 79 characters)
+./vm/migrations/0001_initial.py:75:80: E501 line too long (154 > 79 characters)
+./vm/migrations/0001_initial.py:76:80: E501 line too long (92 > 79 characters)
+./vm/migrations/0001_initial.py:77:80: E501 line too long (124 > 79 characters)
+./vm/migrations/0001_initial.py:78:80: E501 line too long (166 > 79 characters)
+./vm/migrations/0001_initial.py:79:80: E501 line too long (120 > 79 characters)
+./vm/migrations/0001_initial.py:80:80: E501 line too long (168 > 79 characters)
+./vm/migrations/0001_initial.py:91:80: E501 line too long (114 > 79 characters)
+./vm/migrations/0001_initial.py:92:80: E501 line too long (140 > 79 characters)
+./vm/migrations/0001_initial.py:93:80: E501 line too long (147 > 79 characters)
+./vm/migrations/0001_initial.py:94:80: E501 line too long (216 > 79 characters)
+./vm/migrations/0001_initial.py:95:80: E501 line too long (167 > 79 characters)
+./vm/migrations/0001_initial.py:96:80: E501 line too long (197 > 79 characters)
+./vm/migrations/0001_initial.py:97:80: E501 line too long (154 > 79 characters)
+./vm/migrations/0001_initial.py:98:80: E501 line too long (160 > 79 characters)
+./vm/migrations/0001_initial.py:99:80: E501 line too long (196 > 79 characters)
+./vm/migrations/0001_initial.py:100:80: E501 line too long (146 > 79 characters)
+./vm/migrations/0001_initial.py:101:80: E501 line too long (149 > 79 characters)
+./vm/migrations/0001_initial.py:102:80: E501 line too long (165 > 79 characters)
+./vm/migrations/0001_initial.py:103:80: E501 line too long (183 > 79 characters)
+./vm/migrations/0001_initial.py:104:80: E501 line too long (126 > 79 characters)
+./vm/migrations/0001_initial.py:105:80: E501 line too long (90 > 79 characters)
+./vm/migrations/0001_initial.py:106:80: E501 line too long (164 > 79 characters)
+./vm/migrations/0001_initial.py:113:80: E501 line too long (228 > 79 characters)
+./vm/migrations/0001_initial.py:120:80: E501 line too long (114 > 79 characters)
+./vm/migrations/0001_initial.py:121:80: E501 line too long (108 > 79 characters)
+./vm/migrations/0001_initial.py:122:80: E501 line too long (121 > 79 characters)
+./vm/migrations/0001_initial.py:123:80: E501 line too long (114 > 79 characters)
+./vm/migrations/0001_initial.py:134:80: E501 line too long (114 > 79 characters)
+./vm/migrations/0001_initial.py:135:80: E501 line too long (170 > 79 characters)
+./vm/migrations/0001_initial.py:136:80: E501 line too long (186 > 79 characters)
+./vm/migrations/0001_initial.py:137:80: E501 line too long (132 > 79 characters)
+./vm/migrations/0001_initial.py:150:80: E501 line too long (114 > 79 characters)
+./vm/migrations/0001_initial.py:151:80: E501 line too long (93 > 79 characters)
+./vm/migrations/0001_initial.py:152:80: E501 line too long (189 > 79 characters)
+./vm/migrations/0001_initial.py:153:80: E501 line too long (185 > 79 characters)
+./vm/migrations/0001_initial.py:165:80: E501 line too long (114 > 79 characters)
+./vm/migrations/0001_initial.py:166:80: E501 line too long (140 > 79 characters)
+./vm/migrations/0001_initial.py:167:80: E501 line too long (147 > 79 characters)
+./vm/migrations/0001_initial.py:168:80: E501 line too long (216 > 79 characters)
+./vm/migrations/0001_initial.py:169:80: E501 line too long (167 > 79 characters)
+./vm/migrations/0001_initial.py:170:80: E501 line too long (197 > 79 characters)
+./vm/migrations/0001_initial.py:171:80: E501 line too long (154 > 79 characters)
+./vm/migrations/0001_initial.py:172:80: E501 line too long (160 > 79 characters)
+./vm/migrations/0001_initial.py:173:80: E501 line too long (142 > 79 characters)
+./vm/migrations/0001_initial.py:183:80: E501 line too long (114 > 79 characters)
+./vm/migrations/0001_initial.py:184:80: E501 line too long (140 > 79 characters)
+./vm/migrations/0001_initial.py:185:80: E501 line too long (147 > 79 characters)
+./vm/migrations/0001_initial.py:186:80: E501 line too long (134 > 79 characters)
+./vm/migrations/0001_initial.py:187:80: E501 line too long (123 > 79 characters)
+./vm/migrations/0001_initial.py:188:80: E501 line too long (109 > 79 characters)
+./vm/migrations/0001_initial.py:189:80: E501 line too long (153 > 79 characters)
+./vm/migrations/0001_initial.py:190:80: E501 line too long (187 > 79 characters)
+./vm/migrations/0001_initial.py:191:80: E501 line too long (163 > 79 characters)
+./vm/migrations/0001_initial.py:192:80: E501 line too long (116 > 79 characters)
+./vm/migrations/0001_initial.py:193:80: E501 line too long (182 > 79 characters)
+./vm/migrations/0001_initial.py:198:80: E501 line too long (91 > 79 characters)
+./vm/migrations/0001_initial.py:205:80: E501 line too long (114 > 79 characters)
+./vm/migrations/0001_initial.py:206:80: E501 line too long (140 > 79 characters)
+./vm/migrations/0001_initial.py:207:80: E501 line too long (147 > 79 characters)
+./vm/migrations/0001_initial.py:208:80: E501 line too long (98 > 79 characters)
+./vm/migrations/0001_initial.py:209:80: E501 line too long (172 > 79 characters)
+./vm/migrations/0001_initial.py:210:80: E501 line too long (169 > 79 characters)
+./vm/migrations/0001_initial.py:211:80: E501 line too long (142 > 79 characters)
+./vm/migrations/0001_initial.py:212:80: E501 line too long (146 > 79 characters)
+./vm/migrations/0001_initial.py:213:80: E501 line too long (117 > 79 characters)
+./vm/migrations/0001_initial.py:214:80: E501 line too long (154 > 79 characters)
+./vm/migrations/0001_initial.py:215:80: E501 line too long (150 > 79 characters)
+./vm/migrations/0001_initial.py:216:80: E501 line too long (116 > 79 characters)
+./vm/migrations/0001_initial.py:217:80: E501 line too long (168 > 79 characters)
+./vm/migrations/0001_initial.py:227:80: E501 line too long (114 > 79 characters)
+./vm/migrations/0001_initial.py:238:80: E501 line too long (121 > 79 characters)
+./vm/migrations/0001_initial.py:244:80: E501 line too long (116 > 79 characters)
+./vm/migrations/0001_initial.py:256:80: E501 line too long (215 > 79 characters)
+./vm/migrations/0001_initial.py:262:80: E501 line too long (195 > 79 characters)
+./vm/migrations/0001_initial.py:268:80: E501 line too long (174 > 79 characters)
+./vm/migrations/0001_initial.py:274:80: E501 line too long (116 > 79 characters)
+./vm/migrations/0001_initial.py:280:80: E501 line too long (178 > 79 characters)
+./vm/migrations/0001_initial.py:292:80: E501 line too long (195 > 79 characters)
+./vm/migrations/0001_initial.py:298:80: E501 line too long (174 > 79 characters)
+./vm/migrations/0001_initial.py:304:80: E501 line too long (234 > 79 characters)
+./vm/migrations/0002_interface_model.py:17:80: E501 line too long (190 > 79 characters)
+./storage/migrations/0001_initial.py:19:80: E501 line too long (114 > 79 characters)
+./storage/migrations/0001_initial.py:20:80: E501 line too long (93 > 79 characters)
+./storage/migrations/0001_initial.py:21:80: E501 line too long (93 > 79 characters)
+./storage/migrations/0001_initial.py:22:80: E501 line too long (100 > 79 characters)
+./storage/migrations/0001_initial.py:34:80: E501 line too long (114 > 79 characters)
+./storage/migrations/0001_initial.py:35:80: E501 line too long (140 > 79 characters)
+./storage/migrations/0001_initial.py:36:80: E501 line too long (147 > 79 characters)
+./storage/migrations/0001_initial.py:37:80: E501 line too long (92 > 79 characters)
+./storage/migrations/0001_initial.py:38:80: E501 line too long (101 > 79 characters)
+./storage/migrations/0001_initial.py:39:80: E501 line too long (198 > 79 characters)
+./storage/migrations/0001_initial.py:40:80: E501 line too long (82 > 79 characters)
+./storage/migrations/0001_initial.py:41:80: E501 line too long (103 > 79 characters)
+./storage/migrations/0001_initial.py:42:80: E501 line too long (89 > 79 characters)
+./storage/migrations/0001_initial.py:44:80: E501 line too long (114 > 79 characters)
+./storage/migrations/0001_initial.py:45:80: E501 line too long (147 > 79 characters)
+./storage/migrations/0001_initial.py:51:80: E501 line too long (166 > 79 characters)
+./storage/migrations/0002_disk_bus.py:17:80: E501 line too long (153 > 79 characters)
+./request/migrations/0001_initial.py:23:80: E501 line too long (114 > 79 characters)
+./request/migrations/0001_initial.py:34:80: E501 line too long (114 > 79 characters)
+./request/migrations/0001_initial.py:46:80: E501 line too long (114 > 79 characters)
+./request/migrations/0001_initial.py:47:80: E501 line too long (140 > 79 characters)
+./request/migrations/0001_initial.py:48:80: E501 line too long (147 > 79 characters)
+./request/migrations/0001_initial.py:49:80: E501 line too long (169 > 79 characters)
+./request/migrations/0001_initial.py:50:80: E501 line too long (166 > 79 characters)
+./request/migrations/0001_initial.py:54:80: E501 line too long (115 > 79 characters)
+./request/migrations/0001_initial.py:55:80: E501 line too long (83 > 79 characters)
+./request/migrations/0001_initial.py:56:80: E501 line too long (94 > 79 characters)
+./request/migrations/0001_initial.py:66:80: E501 line too long (114 > 79 characters)
+./request/migrations/0001_initial.py:67:80: E501 line too long (216 > 79 characters)
+./request/migrations/0001_initial.py:68:80: E501 line too long (167 > 79 characters)
+./request/migrations/0001_initial.py:69:80: E501 line too long (160 > 79 characters)
+./request/migrations/0001_initial.py:80:80: E501 line too long (114 > 79 characters)
+./request/migrations/0001_initial.py:81:80: E501 line too long (132 > 79 characters)
+./request/migrations/0001_initial.py:91:80: E501 line too long (114 > 79 characters)
+./request/migrations/0001_initial.py:93:80: E501 line too long (80 > 79 characters)
+./request/migrations/0002_auto_20150407_1117.py:35:80: E501 line too long (93 > 79 characters)
+./request/migrations/0003_auto_20150410_1917.py:23:80: E501 line too long (166 > 79 characters)
+./.ropeproject/config.py:23:5: E265 block comment should start with '# '
+./.ropeproject/config.py:33:5: E265 block comment should start with '# '
+./.ropeproject/config.py:36:5: E265 block comment should start with '# '
+./acl/migrations/0001_initial.py:20:80: E501 line too long (114 > 79 characters)
+./acl/migrations/0001_initial.py:21:80: E501 line too long (80 > 79 characters)
+./acl/migrations/0001_initial.py:22:80: E501 line too long (89 > 79 characters)
+./acl/migrations/0001_initial.py:23:80: E501 line too long (83 > 79 characters)
+./acl/migrations/0001_initial.py:24:80: E501 line too long (83 > 79 characters)
+./acl/migrations/0001_initial.py:33:80: E501 line too long (114 > 79 characters)
+./acl/migrations/0001_initial.py:35:80: E501 line too long (83 > 79 characters)
+./firewall/migrations/0001_initial.py:21:80: E501 line too long (114 > 79 characters)
+./firewall/migrations/0001_initial.py:22:80: E501 line too long (86 > 79 characters)
+./firewall/migrations/0001_initial.py:23:80: E501 line too long (80 > 79 characters)
+./firewall/migrations/0001_initial.py:24:80: E501 line too long (94 > 79 characters)
+./firewall/migrations/0001_initial.py:25:80: E501 line too long (233 > 79 characters)
+./firewall/migrations/0001_initial.py:26:80: E501 line too long (99 > 79 characters)
+./firewall/migrations/0001_initial.py:27:80: E501 line too long (97 > 79 characters)
+./firewall/migrations/0001_initial.py:38:80: E501 line too long (114 > 79 characters)
+./firewall/migrations/0001_initial.py:39:80: E501 line too long (120 > 79 characters)
+./firewall/migrations/0001_initial.py:40:80: E501 line too long (99 > 79 characters)
+./firewall/migrations/0001_initial.py:41:80: E501 line too long (97 > 79 characters)
+./firewall/migrations/0001_initial.py:43:80: E501 line too long (90 > 79 characters)
+./firewall/migrations/0001_initial.py:44:80: E501 line too long (96 > 79 characters)
+./firewall/migrations/0001_initial.py:53:80: E501 line too long (114 > 79 characters)
+./firewall/migrations/0001_initial.py:54:80: E501 line too long (200 > 79 characters)
+./firewall/migrations/0001_initial.py:55:80: E501 line too long (99 > 79 characters)
+./firewall/migrations/0001_initial.py:56:80: E501 line too long (97 > 79 characters)
+./firewall/migrations/0001_initial.py:65:80: E501 line too long (114 > 79 characters)
+./firewall/migrations/0001_initial.py:66:80: E501 line too long (92 > 79 characters)
+./firewall/migrations/0001_initial.py:75:80: E501 line too long (114 > 79 characters)
+./firewall/migrations/0001_initial.py:76:80: E501 line too long (128 > 79 characters)
+./firewall/migrations/0001_initial.py:77:80: E501 line too long (129 > 79 characters)
+./firewall/migrations/0001_initial.py:78:80: E501 line too long (99 > 79 characters)
+./firewall/migrations/0001_initial.py:79:80: E501 line too long (97 > 79 characters)
+./firewall/migrations/0001_initial.py:80:80: E501 line too long (119 > 79 characters)
+./firewall/migrations/0001_initial.py:89:80: E501 line too long (114 > 79 characters)
+./firewall/migrations/0001_initial.py:90:80: E501 line too long (209 > 79 characters)
+./firewall/migrations/0001_initial.py:91:80: E501 line too long (131 > 79 characters)
+./firewall/migrations/0001_initial.py:92:80: E501 line too long (247 > 79 characters)
+./firewall/migrations/0001_initial.py:93:80: E501 line too long (211 > 79 characters)
+./firewall/migrations/0001_initial.py:94:80: E501 line too long (186 > 79 characters)
+./firewall/migrations/0001_initial.py:95:80: E501 line too long (227 > 79 characters)
+./firewall/migrations/0001_initial.py:96:80: E501 line too long (220 > 79 characters)
+./firewall/migrations/0001_initial.py:97:80: E501 line too long (162 > 79 characters)
+./firewall/migrations/0001_initial.py:98:80: E501 line too long (154 > 79 characters)
+./firewall/migrations/0001_initial.py:99:80: E501 line too long (80 > 79 characters)
+./firewall/migrations/0001_initial.py:100:80: E501 line too long (135 > 79 characters)
+./firewall/migrations/0001_initial.py:101:80: E501 line too long (99 > 79 characters)
+./firewall/migrations/0001_initial.py:102:80: E501 line too long (97 > 79 characters)
+./firewall/migrations/0001_initial.py:103:80: E501 line too long (167 > 79 characters)
+./firewall/migrations/0001_initial.py:104:80: E501 line too long (147 > 79 characters)
+./firewall/migrations/0001_initial.py:114:80: E501 line too long (114 > 79 characters)
+./firewall/migrations/0001_initial.py:115:80: E501 line too long (152 > 79 characters)
+./firewall/migrations/0001_initial.py:116:80: E501 line too long (212 > 79 characters)
+./firewall/migrations/0001_initial.py:117:80: E501 line too long (86 > 79 characters)
+./firewall/migrations/0001_initial.py:119:80: E501 line too long (90 > 79 characters)
+./firewall/migrations/0001_initial.py:120:80: E501 line too long (99 > 79 characters)
+./firewall/migrations/0001_initial.py:121:80: E501 line too long (97 > 79 characters)
+./firewall/migrations/0001_initial.py:122:80: E501 line too long (91 > 79 characters)
+./firewall/migrations/0001_initial.py:123:80: E501 line too long (108 > 79 characters)
+./firewall/migrations/0001_initial.py:124:80: E501 line too long (96 > 79 characters)
+./firewall/migrations/0001_initial.py:134:80: E501 line too long (114 > 79 characters)
+./firewall/migrations/0001_initial.py:135:80: E501 line too long (190 > 79 characters)
+./firewall/migrations/0001_initial.py:136:80: E501 line too long (148 > 79 characters)
+./firewall/migrations/0001_initial.py:137:80: E501 line too long (264 > 79 characters)
+./firewall/migrations/0001_initial.py:138:80: E501 line too long (260 > 79 characters)
+./firewall/migrations/0001_initial.py:139:80: E501 line too long (218 > 79 characters)
+./firewall/migrations/0001_initial.py:140:80: E501 line too long (218 > 79 characters)
+./firewall/migrations/0001_initial.py:141:80: E501 line too long (161 > 79 characters)
+./firewall/migrations/0001_initial.py:142:80: E501 line too long (233 > 79 characters)
+./firewall/migrations/0001_initial.py:143:80: E501 line too long (140 > 79 characters)
+./firewall/migrations/0001_initial.py:144:80: E501 line too long (260 > 79 characters)
+./firewall/migrations/0001_initial.py:145:80: E501 line too long (147 > 79 characters)
+./firewall/migrations/0001_initial.py:146:80: E501 line too long (99 > 79 characters)
+./firewall/migrations/0001_initial.py:147:80: E501 line too long (97 > 79 characters)
+./firewall/migrations/0001_initial.py:148:80: E501 line too long (207 > 79 characters)
+./firewall/migrations/0001_initial.py:151:80: E501 line too long (98 > 79 characters)
+./firewall/migrations/0001_initial.py:160:80: E501 line too long (114 > 79 characters)
+./firewall/migrations/0001_initial.py:161:80: E501 line too long (90 > 79 characters)
+./firewall/migrations/0001_initial.py:162:80: E501 line too long (99 > 79 characters)
+./firewall/migrations/0001_initial.py:163:80: E501 line too long (97 > 79 characters)
+./firewall/migrations/0001_initial.py:172:80: E501 line too long (114 > 79 characters)
+./firewall/migrations/0001_initial.py:173:80: E501 line too long (224 > 79 characters)
+./firewall/migrations/0001_initial.py:174:80: E501 line too long (177 > 79 characters)
+./firewall/migrations/0001_initial.py:175:80: E501 line too long (285 > 79 characters)
+./firewall/migrations/0001_initial.py:176:80: E501 line too long (321 > 79 characters)
+./firewall/migrations/0001_initial.py:177:80: E501 line too long (204 > 79 characters)
+./firewall/migrations/0001_initial.py:178:80: E501 line too long (267 > 79 characters)
+./firewall/migrations/0001_initial.py:179:80: E501 line too long (185 > 79 characters)
+./firewall/migrations/0001_initial.py:180:80: E501 line too long (87 > 79 characters)
+./firewall/migrations/0001_initial.py:181:80: E501 line too long (162 > 79 characters)
+./firewall/migrations/0001_initial.py:182:80: E501 line too long (129 > 79 characters)
+./firewall/migrations/0001_initial.py:183:80: E501 line too long (539 > 79 characters)
+./firewall/migrations/0001_initial.py:184:80: E501 line too long (181 > 79 characters)
+./firewall/migrations/0001_initial.py:185:80: E501 line too long (254 > 79 characters)
+./firewall/migrations/0001_initial.py:186:80: E501 line too long (99 > 79 characters)
+./firewall/migrations/0001_initial.py:187:80: E501 line too long (97 > 79 characters)
+./firewall/migrations/0001_initial.py:188:80: E501 line too long (153 > 79 characters)
+./firewall/migrations/0001_initial.py:189:80: E501 line too long (119 > 79 characters)
+./firewall/migrations/0001_initial.py:190:80: E501 line too long (270 > 79 characters)
+./firewall/migrations/0001_initial.py:200:80: E501 line too long (114 > 79 characters)
+./firewall/migrations/0001_initial.py:201:80: E501 line too long (128 > 79 characters)
+./firewall/migrations/0001_initial.py:202:80: E501 line too long (129 > 79 characters)
+./firewall/migrations/0001_initial.py:203:80: E501 line too long (99 > 79 characters)
+./firewall/migrations/0001_initial.py:204:80: E501 line too long (97 > 79 characters)
+./firewall/migrations/0001_initial.py:205:80: E501 line too long (119 > 79 characters)
+./firewall/migrations/0001_initial.py:206:80: E501 line too long (170 > 79 characters)
+./firewall/migrations/0001_initial.py:215:80: E501 line too long (142 > 79 characters)
+./firewall/migrations/0001_initial.py:221:80: E501 line too long (117 > 79 characters)
+./firewall/migrations/0001_initial.py:227:80: E501 line too long (212 > 79 characters)
+./firewall/migrations/0001_initial.py:233:80: E501 line too long (179 > 79 characters)
+./firewall/migrations/0001_initial.py:239:80: E501 line too long (196 > 79 characters)
+./firewall/migrations/0001_initial.py:245:80: E501 line too long (159 > 79 characters)
+./firewall/migrations/0001_initial.py:251:80: E501 line too long (179 > 79 characters)
+./firewall/migrations/0001_initial.py:257:80: E501 line too long (200 > 79 characters)
+./firewall/migrations/0001_initial.py:263:80: E501 line too long (129 > 79 characters)
+./firewall/migrations/0001_initial.py:273:80: E501 line too long (123 > 79 characters)
+./firewall/migrations/0001_initial.py:279:80: E501 line too long (100 > 79 characters)
+./firewall/migrations/0002_auto_20150115_0021.py:18:80: E501 line too long (677 > 79 characters)
+./firewall/migrations/0003_auto_20150226_1927.py:21:80: E501 line too long (103 > 79 characters)
+./firewall/migrations/0003_auto_20150226_1927.py:27:80: E501 line too long (81 > 79 characters)
+./firewall/migrations/0003_auto_20150226_1927.py:33:80: E501 line too long (108 > 79 characters)
+./firewall/migrations/0003_auto_20150226_1927.py:39:80: E501 line too long (81 > 79 characters)
+./firewall/migrations/0003_auto_20150226_1927.py:45:80: E501 line too long (88 > 79 characters)
+./firewall/migrations/0004_auto_20150318_1317.py:4:1: F401 'models' imported but unused
+./firewall/migrations/0004_auto_20150318_1317.py:16:80: E501 line too long (118 > 79 characters)
+./firewall/migrations/0004_auto_20150318_1317.py:20:80: E501 line too long (102 > 79 characters)
+./firewall/migrations/0004_auto_20150318_1317.py:24:80: E501 line too long (120 > 79 characters)
+./firewall/migrations/0004_auto_20150318_1317.py:28:80: E501 line too long (106 > 79 characters)
+./firewall/migrations/0004_auto_20150318_1317.py:32:80: E501 line too long (110 > 79 characters)
+./firewall/migrations/0004_auto_20150318_1317.py:36:80: E501 line too long (113 > 79 characters)
+./firewall/migrations/0004_auto_20150318_1317.py:40:80: E501 line too long (112 > 79 characters)
+./firewall/migrations/0004_auto_20150318_1317.py:44:80: E501 line too long (99 > 79 characters)
+./firewall/migrations/0004_auto_20150318_1317.py:48:80: E501 line too long (110 > 79 characters)
+./firewall/migrations/0005_auto_20150520_2250.py:17:80: E501 line too long (146 > 79 characters)
+./firewall/migrations/0005_auto_20150520_2250.py:22:80: E501 line too long (248 > 79 characters)
+./firewall/migrations/0005_auto_20150520_2250.py:27:80: E501 line too long (150 > 79 characters)
+./bower_components/no-vnc/utils/img2js.py:9:11: E401 multiple imports on one line
+./bower_components/no-vnc/utils/img2js.py:23:4: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/img2js.py:26:3: E271 multiple spaces after keyword
+./bower_components/no-vnc/utils/img2js.py:26:18: E701 multiple statements on one line (colon)
+./bower_components/no-vnc/utils/img2js.py:27:28: E701 multiple statements on one line (colon)
+./bower_components/no-vnc/utils/img2js.py:28:18: E701 multiple statements on one line (colon)
+./bower_components/no-vnc/utils/img2js.py:40:9: E126 continuation line over-indented for hanging indent
+./bower_components/no-vnc/utils/json2graph.py:10:1: F401 'pprint' imported but unused
+./bower_components/no-vnc/utils/json2graph.py:10:11: E401 multiple imports on one line
+./bower_components/no-vnc/utils/json2graph.py:15:1: E302 expected 2 blank lines, found 1
+./bower_components/no-vnc/utils/json2graph.py:18:72: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:19:59: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:20:72: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:21:70: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:22:15: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:24:16: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:25:26: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:26:32: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:27:37: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:28:37: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:29:24: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:30:21: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:31:32: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:32:37: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:33:37: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:34:24: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:35:21: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:36:32: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:37:37: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:38:37: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:39:24: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:40:20: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:41:19: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:42:27: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:43:37: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:44:39: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:45:59: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:46:59: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:47:26: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:48:23: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:49:39: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:50:24: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:51:23: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:52:21: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:53:37: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:54:24: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:55:21: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:56:22: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:57:19: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:58:16: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/json2graph.py:61:1: E302 expected 2 blank lines, found 1
+./bower_components/no-vnc/utils/json2graph.py:66:1: E265 block comment should start with '# '
+./bower_components/no-vnc/utils/json2graph.py:165:36: E261 at least two spaces before inline comment
+./bower_components/no-vnc/utils/json2graph.py:167:29: E231 missing whitespace after ','
+./bower_components/no-vnc/utils/json2graph.py:179:22: E201 whitespace after '('
+./bower_components/no-vnc/utils/json2graph.py:179:35: E202 whitespace before ')'
+./bower_components/no-vnc/utils/json2graph.py:183:13: E201 whitespace after '('
+./bower_components/no-vnc/utils/json2graph.py:184:13: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/json2graph.py:184:16: E251 unexpected spaces around keyword / parameter equals
+./bower_components/no-vnc/utils/json2graph.py:184:18: E251 unexpected spaces around keyword / parameter equals
+./bower_components/no-vnc/utils/json2graph.py:184:49: E251 unexpected spaces around keyword / parameter equals
+./bower_components/no-vnc/utils/json2graph.py:184:51: E251 unexpected spaces around keyword / parameter equals
+./bower_components/no-vnc/utils/json2graph.py:186:1: E302 expected 2 blank lines, found 1
+./bower_components/no-vnc/utils/json2graph.py:192:68: E228 missing whitespace around modulo operator
+./bower_components/no-vnc/utils/json2graph.py:192:80: E501 line too long (80 > 79 characters)
+./bower_components/no-vnc/utils/json2graph.py:193:17: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/json2graph.py:201:1: E265 block comment should start with '# '
+./bower_components/no-vnc/utils/web.py:11:17: E401 multiple imports on one line
+./bower_components/no-vnc/utils/web.py:14:1: E265 block comment should start with '# '
+./bower_components/no-vnc/utils/web.py:17:1: E302 expected 2 blank lines, found 1
+./bower_components/no-vnc/utils/web.py:22:1: E302 expected 2 blank lines, found 1
+./bower_components/no-vnc/utils/web.py:25:5: E265 block comment should start with '# '
+./bower_components/no-vnc/utils/web.py:37:25: E126 continuation line over-indented for hanging indent
+./bower_components/no-vnc/utils/websocket.py:19:10: E401 multiple imports on one line
+./bower_components/no-vnc/utils/websocket.py:20:13: E401 multiple imports on one line
+./bower_components/no-vnc/utils/websocket.py:34:4: E701 multiple statements on one line (colon)
+./bower_components/no-vnc/utils/websocket.py:34:5: E272 multiple spaces before keyword
+./bower_components/no-vnc/utils/websocket.py:35:7: E701 multiple statements on one line (colon)
+./bower_components/no-vnc/utils/websocket.py:35:9: F401 'StringIO' imported but unused
+./bower_components/no-vnc/utils/websocket.py:36:4: E701 multiple statements on one line (colon)
+./bower_components/no-vnc/utils/websocket.py:36:5: E272 multiple spaces before keyword
+./bower_components/no-vnc/utils/websocket.py:37:7: E701 multiple statements on one line (colon)
+./bower_components/no-vnc/utils/websocket.py:40:4: E701 multiple statements on one line (colon)
+./bower_components/no-vnc/utils/websocket.py:40:5: E272 multiple spaces before keyword
+./bower_components/no-vnc/utils/websocket.py:41:7: E701 multiple statements on one line (colon)
+./bower_components/no-vnc/utils/websocket.py:48:5: E301 expected 1 blank line, found 0
+./bower_components/no-vnc/utils/websocket.py:63:4: F821 undefined name 'multiprocessing'
+./bower_components/no-vnc/utils/websocket.py:82:80: E501 line too long (84 > 79 characters)
+./bower_components/no-vnc/utils/websocket.py:103:17: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:118:12: F821 undefined name 'numpy'
+./bower_components/no-vnc/utils/websocket.py:121:24: F821 undefined name 'numpy'
+./bower_components/no-vnc/utils/websocket.py:121:52: F821 undefined name 'numpy'
+./bower_components/no-vnc/utils/websocket.py:122:25: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:123:24: F821 undefined name 'numpy'
+./bower_components/no-vnc/utils/websocket.py:123:52: F821 undefined name 'numpy'
+./bower_components/no-vnc/utils/websocket.py:124:25: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:125:17: E265 block comment should start with '# '
+./bower_components/no-vnc/utils/websocket.py:126:21: F821 undefined name 'numpy'
+./bower_components/no-vnc/utils/websocket.py:129:17: E265 block comment should start with '# '
+./bower_components/no-vnc/utils/websocket.py:130:24: F821 undefined name 'numpy'
+./bower_components/no-vnc/utils/websocket.py:130:52: F821 undefined name 'numpy'
+./bower_components/no-vnc/utils/websocket.py:131:25: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:132:24: F821 undefined name 'numpy'
+./bower_components/no-vnc/utils/websocket.py:132:52: F821 undefined name 'numpy'
+./bower_components/no-vnc/utils/websocket.py:133:25: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:134:25: E126 continuation line over-indented for hanging indent
+./bower_components/no-vnc/utils/websocket.py:135:21: F821 undefined name 'numpy'
+./bower_components/no-vnc/utils/websocket.py:161:36: E261 at least two spaces before inline comment
+./bower_components/no-vnc/utils/websocket.py:170:9: E265 block comment should start with '# '
+./bower_components/no-vnc/utils/websocket.py:189:28: E203 whitespace before ':'
+./bower_components/no-vnc/utils/websocket.py:190:28: E203 whitespace before ':'
+./bower_components/no-vnc/utils/websocket.py:191:28: E203 whitespace before ':'
+./bower_components/no-vnc/utils/websocket.py:192:28: E203 whitespace before ':'
+./bower_components/no-vnc/utils/websocket.py:193:28: E203 whitespace before ':'
+./bower_components/no-vnc/utils/websocket.py:194:28: E203 whitespace before ':'
+./bower_components/no-vnc/utils/websocket.py:195:28: E203 whitespace before ':'
+./bower_components/no-vnc/utils/websocket.py:196:28: E203 whitespace before ':'
+./bower_components/no-vnc/utils/websocket.py:197:28: E203 whitespace before ':'
+./bower_components/no-vnc/utils/websocket.py:206:21: E261 at least two spaces before inline comment
+./bower_components/no-vnc/utils/websocket.py:218:25: E261 at least two spaces before inline comment
+./bower_components/no-vnc/utils/websocket.py:223:25: E261 at least two spaces before inline comment
+./bower_components/no-vnc/utils/websocket.py:228:28: E261 at least two spaces before inline comment
+./bower_components/no-vnc/utils/websocket.py:229:21: E261 at least two spaces before inline comment
+./bower_components/no-vnc/utils/websocket.py:238:51: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:260:5: E303 too many blank lines (2)
+./bower_components/no-vnc/utils/websocket.py:301:80: E501 line too long (91 > 79 characters)
+./bower_components/no-vnc/utils/websocket.py:303:80: E501 line too long (92 > 79 characters)
+./bower_components/no-vnc/utils/websocket.py:307:29: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:308:33: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:350:13: E265 block comment should start with '# '
+./bower_components/no-vnc/utils/websocket.py:352:33: E711 comparison to None should be 'if cond is None:'
+./bower_components/no-vnc/utils/websocket.py:359:43: E261 at least two spaces before inline comment
+./bower_components/no-vnc/utils/websocket.py:367:17: F841 local variable 'start' is assigned to but never used
+./bower_components/no-vnc/utils/websocket.py:368:17: F841 local variable 'end' is assigned to but never used
+./bower_components/no-vnc/utils/websocket.py:371:52: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:374:48: E127 continuation line over-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:376:25: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:379:13: E303 too many blank lines (2)
+./bower_components/no-vnc/utils/websocket.py:422:80: E501 line too long (89 > 79 characters)
+./bower_components/no-vnc/utils/websocket.py:439:80: E501 line too long (104 > 79 characters)
+./bower_components/no-vnc/utils/websocket.py:448:13: E129 visually indented line with same indent as next logical line
+./bower_components/no-vnc/utils/websocket.py:457:27: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:488:31: E701 multiple statements on one line (colon)
+./bower_components/no-vnc/utils/websocket.py:505:80: E501 line too long (85 > 79 characters)
+./bower_components/no-vnc/utils/websocket.py:520:80: E501 line too long (92 > 79 characters)
+./bower_components/no-vnc/utils/websocket.py:553:80: E501 line too long (118 > 79 characters)
+./bower_components/no-vnc/utils/websocket.py:565:13: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:566:13: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:567:13: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:568:13: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:569:13: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:570:13: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:574:21: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:575:25: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:576:25: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:577:25: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:578:22: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:579:20: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:580:22: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:581:21: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:582:26: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:583:21: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:585:25: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:586:27: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:587:24: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:589:20: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:590:27: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:591:25: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:592:26: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:593:27: E221 multiple spaces before operator
+./bower_components/no-vnc/utils/websocket.py:610:16: F821 undefined name 'ssl'
+./bower_components/no-vnc/utils/websocket.py:612:32: F821 undefined name 'resource'
+./bower_components/no-vnc/utils/websocket.py:618:17: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:622:12: F821 undefined name 'ssl'
+./bower_components/no-vnc/utils/websocket.py:659:28: F821 undefined name 'ssl'
+./bower_components/no-vnc/utils/websocket.py:660:80: E501 line too long (86 > 79 characters)
+./bower_components/no-vnc/utils/websocket.py:660:86: E703 statement ends with a semicolon
+./bower_components/no-vnc/utils/websocket.py:668:21: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:676:15: E271 multiple spaces after keyword
+./bower_components/no-vnc/utils/websocket.py:691:28: F821 undefined name 'ssl'
+./bower_components/no-vnc/utils/websocket.py:713:25: E701 multiple statements on one line (colon)
+./bower_components/no-vnc/utils/websocket.py:715:25: E701 multiple statements on one line (colon)
+./bower_components/no-vnc/utils/websocket.py:722:17: F821 undefined name 'resource'
+./bower_components/no-vnc/utils/websocket.py:722:36: F821 undefined name 'resource'
+./bower_components/no-vnc/utils/websocket.py:723:21: F821 undefined name 'resource'
+./bower_components/no-vnc/utils/websocket.py:723:43: E701 multiple statements on one line (colon)
+./bower_components/no-vnc/utils/websocket.py:730:44: E701 multiple statements on one line (colon)
+./bower_components/no-vnc/utils/websocket.py:756:1: W293 blank line contains whitespace
+./bower_components/no-vnc/utils/websocket.py:757:9: E303 too many blank lines (2)
+./bower_components/no-vnc/utils/websocket.py:762:9: E265 block comment should start with '# '
+./bower_components/no-vnc/utils/websocket.py:775:20: F821 undefined name 'ssl'
+./bower_components/no-vnc/utils/websocket.py:782:27: F821 undefined name 'ssl'
+./bower_components/no-vnc/utils/websocket.py:783:25: E126 continuation line over-indented for hanging indent
+./bower_components/no-vnc/utils/websocket.py:787:20: F821 undefined name 'ssl'
+./bower_components/no-vnc/utils/websocket.py:789:33: F821 undefined name 'ssl'
+./bower_components/no-vnc/utils/websocket.py:831:5: E303 too many blank lines (2)
+./bower_components/no-vnc/utils/websocket.py:840:9: E265 block comment should start with '# '
+./bower_components/no-vnc/utils/websocket.py:847:80: E501 line too long (101 > 79 characters)
+./bower_components/no-vnc/utils/websocket.py:870:26: W291 trailing whitespace
+./bower_components/no-vnc/utils/websocket.py:897:80: E501 line too long (82 > 79 characters)
+./bower_components/no-vnc/utils/websocket.py:939:80: E501 line too long (80 > 79 characters)
+./bower_components/no-vnc/utils/websocket.py:944:37: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:955:80: E501 line too long (82 > 79 characters)
+./bower_components/no-vnc/utils/websocket.py:956:80: E501 line too long (81 > 79 characters)
+./bower_components/no-vnc/utils/websocket.py:957:45: E127 continuation line over-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:987:50: E203 whitespace before ':'
+./bower_components/no-vnc/utils/websocket.py:989:41: E128 continuation line under-indented for visual indent
+./bower_components/no-vnc/utils/websocket.py:994:37: E126 continuation line over-indented for hanging indent
+./bower_components/no-vnc/utils/websocket.py:1030:1: W391 blank line at end of file
+./dashboard/migrations/0001_initial.py:26:80: E501 line too long (114 > 79 characters)
+./dashboard/migrations/0001_initial.py:27:80: E501 line too long (200 > 79 characters)
+./dashboard/migrations/0001_initial.py:28:80: E501 line too long (125 > 79 characters)
+./dashboard/migrations/0001_initial.py:29:80: E501 line too long (300 > 79 characters)
+./dashboard/migrations/0001_initial.py:30:80: E501 line too long (101 > 79 characters)
+./dashboard/migrations/0001_initial.py:39:80: E501 line too long (114 > 79 characters)
+./dashboard/migrations/0001_initial.py:50:80: E501 line too long (114 > 79 characters)
+./dashboard/migrations/0001_initial.py:51:80: E501 line too long (129 > 79 characters)
+./dashboard/migrations/0001_initial.py:61:80: E501 line too long (114 > 79 characters)
+./dashboard/migrations/0001_initial.py:62:80: E501 line too long (161 > 79 characters)
+./dashboard/migrations/0001_initial.py:74:80: E501 line too long (114 > 79 characters)
+./dashboard/migrations/0001_initial.py:75:80: E501 line too long (140 > 79 characters)
+./dashboard/migrations/0001_initial.py:76:80: E501 line too long (147 > 79 characters)
+./dashboard/migrations/0001_initial.py:77:80: E501 line too long (192 > 79 characters)
+./dashboard/migrations/0001_initial.py:91:80: E501 line too long (114 > 79 characters)
+./dashboard/migrations/0001_initial.py:92:80: E501 line too long (174 > 79 characters)
+./dashboard/migrations/0001_initial.py:93:80: E501 line too long (165 > 79 characters)
+./dashboard/migrations/0001_initial.py:95:80: E501 line too long (165 > 79 characters)
+./dashboard/migrations/0001_initial.py:96:80: E501 line too long (180 > 79 characters)
+./dashboard/migrations/0001_initial.py:97:80: E501 line too long (204 > 79 characters)
+./dashboard/migrations/0001_initial.py:98:80: E501 line too long (148 > 79 characters)
+./dashboard/migrations/0001_initial.py:102:80: E501 line too long (80 > 79 characters)
+./dashboard/migrations/0002_auto_20150318_1317.py:4:1: F401 'models' imported but unused
+./dashboard/migrations/0002_auto_20150318_1317.py:28:80: E501 line too long (107 > 79 characters)
+./dashboard/migrations/0003_message.py:19:80: E501 line too long (114 > 79 characters)
+./dashboard/migrations/0003_message.py:20:80: E501 line too long (140 > 79 characters)
+./dashboard/migrations/0003_message.py:21:80: E501 line too long (147 > 79 characters)
+./dashboard/migrations/0003_message.py:22:80: E501 line too long (93 > 79 characters)
+./dashboard/migrations/0003_message.py:23:80: E501 line too long (89 > 79 characters)
+./dashboard/migrations/0003_message.py:24:80: E501 line too long (86 > 79 characters)
+./dashboard/migrations/0003_message.py:25:80: E501 line too long (202 > 79 characters)
+./dashboard/migrations/0003_message.py:26:80: E501 line too long (88 > 79 characters)
+./setty/migrations/0001_initial.py:20:80: E501 line too long (114 > 79 characters)
+./setty/migrations/0001_initial.py:30:80: E501 line too long (114 > 79 characters)
+./setty/migrations/0001_initial.py:34:80: E501 line too long (89 > 79 characters)
+./setty/migrations/0001_initial.py:35:80: E501 line too long (89 > 79 characters)
+./setty/migrations/0001_initial.py:41:80: E501 line too long (114 > 79 characters)
+./setty/migrations/0001_initial.py:45:80: E501 line too long (182 > 79 characters)
+./setty/migrations/0001_initial.py:51:80: E501 line too long (114 > 79 characters)
+./setty/migrations/0002_elementtemplate_description.py:19:80: E501 line too long (106 > 79 characters)
+./setty/migrations/0003_auto_20150701_1621.py:4:1: F401 'models' imported but unused
+./setty/migrations/0004_service_status.py:19:80: E501 line too long (120 > 79 characters)
+./setty/migrations/0005_elementtemplate_compatibles.py:17:80: E501 line too long (103 > 79 characters)
+./setty/migrations/0008_auto_20150827_1044.py:18:80: E501 line too long (98 > 79 characters)

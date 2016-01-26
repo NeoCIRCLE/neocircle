@@ -48,8 +48,8 @@ class Element(Model):
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     parameters = models.TextField()
     display_id = models.TextField()
-    pos_x = models.PositiveSmallIntegerField()
-    pos_y = models.PositiveSmallIntegerField()
+    pos_x = models.FloatField()  # Stores a rate.
+    pos_y = models.FloatField()  # Stores concrete position.
     anchors = models.PositiveSmallIntegerField()
 
     def __unicode__(self):

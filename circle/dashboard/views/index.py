@@ -29,6 +29,7 @@ from braces.views import LoginRequiredMixin
 from dashboard.models import GroupProfile
 from vm.models import Instance, Node, InstanceTemplate
 from dashboard.views.vm import vm_ops
+from setty.models import Service
 
 from ..store_api import Store
 
@@ -99,6 +100,10 @@ class IndexView(LoginRequiredMixin, TemplateView):
         if user.has_perm('vm.create_template'):
             context['templates'] = InstanceTemplate.get_objects_with_level(
                 'operator', user, disregard_superuser=True).all()[:5]
+
+        # setty services
+        if user.has_perm('vm.create_template'):
+            context['services'] = Service.objects.filter(user=user).order_by('-pk')[:5]
 
         # toplist
         if settings.STORE_URL:

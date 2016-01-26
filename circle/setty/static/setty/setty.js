@@ -1,3 +1,4 @@
+/* Settimng up csrf token, touch event and zoom options. */
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -29,32 +30,41 @@ $.ajaxSetup({
 });
 
 (function($){
-  $.event.special.doubletap = {
-    bindType: 'touchend',
-    delegateType: 'touchend',
+    $.event.special.doubletap = {
+        bindType: 'touchend',
+        delegateType: 'touchend',
 
-    handle: function(event) {
-      var handleObj   = event.handleObj,
-          targetData  = jQuery.data(event.target),
-          now         = new Date().getTime(),
-          delta       = targetData.lastTouch ? now - targetData.lastTouch : 0,
-          delay       = delay === null ? 300 : delay;
+        handle: function(event) {
+            var handleObj = event.handleObj,
+                targetData = jQuery.data(event.target),
+                now = new Date().getTime(),
+                delta = targetData.lastTouch ? now - targetData.lastTouch : 0,
+                delay = delay === null ? 300 : delay;
 
-      if (delta < delay && delta > 30) {
-        targetData.lastTouch = null;
-        event.type = handleObj.origType;
-        ['clientX', 'clientY', 'pageX', 'pageY'].forEach(function(property) {
-          event[property] = event.originalEvent.changedTouches[0][property];
-        });
+            if (delta < delay && delta > 30) {
+                targetData.lastTouch = null;
+                event.type = handleObj.origType;
+                ['clientX', 'clientY', 'pageX', 'pageY'].forEach(function(property) {
+                    event[property] = event.originalEvent.changedTouches[0][property];
+                });
 
-        handleObj.handler.apply(this, arguments);
-      } else {
-        targetData.lastTouch = now;
-      }
-    }
-  };
+                handleObj.handler.apply(this, arguments);
+            } else {
+                targetData.lastTouch = now;
+            }
+        }
+    };
+
+    $("#dropContainer").attr('unselectable', 'on').css({
+            'user-select': 'none',
+            'MozUserSelect': 'none'})
+        .on('selectstart', false)
+        .on('mousedown', false);
 
 })(jQuery);
+
+
+/* Setty implementation starts here. */
 
 jsPlumb.ready(function() {
     var jsPlumbInstance = jsPlumb.getInstance({
@@ -96,7 +106,8 @@ jsPlumb.ready(function() {
     var elementIndex = 0;
     var dragContainerScroll = 0;
     var clickEvent = 0;
-
+    var dragContainer = document.getElementById("dragContainer");
+    var workspaceWidth = $("#dropContainer").width();
 
     var stackIndexer = 0;
     var stackSize = 0;
@@ -104,12 +115,7 @@ jsPlumb.ready(function() {
     var undoStack = [];
     var redoStack = [];
 
-    $("#dropContainer").attr('unselectable', 'on').css({
-            'user-select': 'none',
-            'MozUserSelect': 'none'})
-        .on('selectstart', false)
-        .on('mousedown', false);
-
+/* Functions. */
 
     setServiceStatus = function(status) {
         if (status == "unsaved") {
@@ -119,7 +125,6 @@ jsPlumb.ready(function() {
             $("#serviceStatus").empty();
         }
     };
-
 
     addInfo = function(title, info, type, object) {
         $("#informationContainer").empty();
@@ -199,8 +204,9 @@ jsPlumb.ready(function() {
         $("#dragPanel").hide();
 
         $("#informationPanel").show();
+        
+        sharedObject = object;
     };
-
 
     updateConnections = function(connection, remove) {
         if (!remove) {
@@ -221,7 +227,6 @@ jsPlumb.ready(function() {
         setServiceStatus("unsaved");
     };
 
-
     checkDuplicateConnection = function(connection) {
         for (var i = 0; i < elementConnections.length; i++) {
             if (((elementConnections[i].targetId ==
@@ -240,7 +245,6 @@ jsPlumb.ready(function() {
         return true;
     };
 
-
     checkCompatibility = function(sourceId, targetId) {
         validTargets = $("#" + sourceId).attr("type").split(',');
 
@@ -251,7 +255,6 @@ jsPlumb.ready(function() {
         return true;
     };
 
-
     checkSourceTargetEquality = function(connection) {
         if (connection.targetId == connection.sourceId) {
             addMessage("Connecting element to itself is forbidden.", "danger");
@@ -259,7 +262,6 @@ jsPlumb.ready(function() {
         }
         return true;
     };
-
 
     getAnchorCoordinate = function(rate) {
         x = Math.cos(2.0 * Math.PI * rate) / 2;
@@ -293,7 +295,6 @@ jsPlumb.ready(function() {
         return [y + 0.5, -x + 0.5, dy, -dx];
     };
 
-
     isConnected = function(anchorId) {
         returnValue = false;
         $.each(elementConnections, function(index) {
@@ -305,7 +306,6 @@ jsPlumb.ready(function() {
         });
         return returnValue;
     };
-
 
     getConnectionparamAndAnchor = function(anchorId) {
         parameters = "";
@@ -328,7 +328,6 @@ jsPlumb.ready(function() {
         return [otherAnchor, parameters];
     };
 
-
     addEndpoint = function(element) {
         anchors = element.attr("anchors");
 
@@ -349,7 +348,6 @@ jsPlumb.ready(function() {
 
         jsPlumbInstance.repaintEverything();
     };
-
 
     removeEndoint = function(element) {
         anchors = element.attr("anchors");
@@ -385,7 +383,6 @@ jsPlumb.ready(function() {
         jsPlumbInstance.repaintEverything();
     };
 
-
     connectEndpoints = function(data) {
         connectionObject =
             jsPlumbInstance.connect({
@@ -397,7 +394,6 @@ jsPlumb.ready(function() {
         setServiceStatus("unsaved");
     };
 
-
     disconnectEndpoints = function(data) {
         for (var i = 0; i < elementConnections.length; i++) {
             if (elementConnections[i].endpoints[0].getUuid() == data[0] &&
@@ -408,7 +404,6 @@ jsPlumb.ready(function() {
         }
         return;
     };
-
 
     addElement = function(idOrInstance, newId, newPositionY, endpoints, parameters, newPositionX) {
         newInstance = "";
@@ -443,14 +438,14 @@ jsPlumb.ready(function() {
         setServiceStatus("unsaved");
 
         jsPlumbInstance.repaintEverything();
+        
+        return newInstance;
     };
-
 
     removeElement = function(object) {
         jsPlumbInstance.detachAllConnections(object);
         jsPlumbInstance.remove(object.attr("id"));
     };
-
 
     scrollContainer = function(direction) {
         dragContainerScroll += direction;
@@ -463,7 +458,6 @@ jsPlumb.ready(function() {
         );
     };
 
-
     mouseScrollContainer = function(event) {
         var e = window.event || event;
         var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
@@ -475,6 +469,16 @@ jsPlumb.ready(function() {
         $('body').removeClass("noScroll");
     };
 
+
+/* Registering eventlisteners for controlling scroll events. */
+
+    if (dragContainer.addEventListener) {
+        dragContainer.addEventListener("mousewheel", mouseScrollContainer, false);
+        dragContainer.addEventListener("DOMMouseScroll", mouseScrollContainer, false);
+    } else dragContainer.attachEvent("onmousewheel", mouseScrollContainer);
+
+
+/* Registering events using JsPlumb. */
 
     jsPlumbInstance.bind("connection", function(info) {
         updateConnections(info.connection);
@@ -498,13 +502,11 @@ jsPlumb.ready(function() {
         }
     });
 
-
     jsPlumbInstance.bind("beforeDrop", function(info) {
         return checkDuplicateConnection(info.connection) &&
             checkSourceTargetEquality(info.connection) &&
             checkCompatibility(info.connection.sourceId, info.connection.targetId);
     });
-
 
     jsPlumbInstance.bind("connectionDetached", function(info) {
         updateConnections(info.connection, true);
@@ -522,18 +524,15 @@ jsPlumb.ready(function() {
         }
     });
 
-
     jsPlumbInstance.bind("connectionMoved", function(info) {
         updateConnections(info.connection, true);
     });
-
 
     jsPlumbInstance.bind("contextmenu", function(info) {
         jsPlumbInstance.detach(info);
         $("#informationPanel").hide();
         $("#dragPanel").show();
     });
-
 
     jsPlumbInstance.bind("dblclick", function(info) {
         $('.element').removeClass('elementSelected');
@@ -545,11 +544,12 @@ jsPlumb.ready(function() {
             info);
     });
 
-
     jsPlumbInstance.draggable(jsPlumb.getSelector(".element"), {
         containment: $("#dropContainer")
     });
 
+
+/* Registering events using JQuery. */
 
     $('body').on('click', '.elementTemplate', function() {
         addElement($(this).attr("id"), (++elementIndex) + "_" + $(this).attr("id"), (elementIndex % 21) * 30, 4, "", (elementIndex % 21) * 30);
@@ -561,7 +561,6 @@ jsPlumb.ready(function() {
         stackIndexer++;
     });
 
-
     $('body').on('dblclick doubletap', '.element', function() {
         element = $(this);
         $('.element').removeClass('elementSelected');
@@ -570,7 +569,6 @@ jsPlumb.ready(function() {
         addInfo(element.attr("alt"), element.attr("parameters"), "element", element);
         $(document).scrollTop(0);
     });
-
 
     $('body').on('contextmenu', '.element', function(event) {
         setServiceStatus("unsaved");
@@ -589,14 +587,12 @@ jsPlumb.ready(function() {
         stackIndexer++;
     });
 
-
     $('body').on('click', '#closeInfoPanel', function() {
         $('#informationPanel').hide();
         $('#dragPanel').show();
         $('.element').removeClass('elementSelected');
         jsPlumbInstance.select().setPaintStyle({strokeStyle:'#9932cc', lineWidth: 8});
     });
-
 
     $('body').on('keyUp', '#infoInput', function() {
         setServiceStatus("unsaved");
@@ -606,51 +602,46 @@ jsPlumb.ready(function() {
         if (type == "element") object.attr("parameters", newParams);
     });
 
-
     $('body').on('click', '#addEndpoint', function() {
-        addEndpoint(object);
+        addEndpoint(sharedObject);
         undoStack.splice(stackIndexer, 0, removeEndoint);
         redoStack.splice(stackIndexer, 0, addEndpoint);
-        objectStack.splice(stackIndexer, 0, object);
+        objectStack.splice(stackIndexer, 0, sharedObject);
         stackIndexer++;
         stackSize++;
     });
-
 
     $('body').on('click', '#removeEndpoint', function() {
-        removeEndoint(object);
+        removeEndoint(sharedObject);
         undoStack.splice(stackIndexer, 0, addEndpoint);
         redoStack.splice(stackIndexer, 0, removeEndoint);
-        objectStack.splice(stackIndexer, 0, object);
+        objectStack.splice(stackIndexer, 0, sharedObject);
         stackIndexer++;
         stackSize++;
     });
-
 
     $('body').on('click', '#removeFromWorkspace', function() {
         $('.element').removeClass('elementSelected');
-        removeElement(object);
+        removeElement(sharedObject);
 
         $("#informationPanel").hide();
         $("#dragPanel").show();
 
         undoStack.splice(stackIndexer, 0, addElement);
         redoStack.splice(stackIndexer, 0, removeElement);
-        objectStack.splice(stackIndexer, 0, object);
+        objectStack.splice(stackIndexer, 0, sharedObject);
         stackSize++;
         stackIndexer++;
     });
 
-
     $('body').on('click', '#removeConnection', function() {
-        jsPlumbInstance.detach(object);
+        jsPlumbInstance.detach(sharedObject);
         $("#informationPanel").hide();
         $("#dragPanel").show();
     });
 
-
     $('body').on('click', '#addElementToWorkspace', function() {
-        addElement(object.attr("id"), (++elementIndex) + "_" + object.attr("id"), (elementIndex % 21) * 30, 4, "", (elementIndex % 21) * 30);
+        newInstance = addElement(sharedObject.attr("id"), (++elementIndex) + "_" + sharedObject.attr("id"), (elementIndex % 21) * 30, 4, "", (elementIndex % 21) * 30);
 
         undoStack.splice(stackIndexer, 0, removeElement);
         redoStack.splice(stackIndexer, 0, addElement);
@@ -659,7 +650,6 @@ jsPlumb.ready(function() {
         stackIndexer++;
     });
 
-
     $('body').on('click', '#clearService', function() {
         jsPlumbInstance.reset();
         $(".element").remove();
@@ -667,7 +657,6 @@ jsPlumb.ready(function() {
 
         elementIndex = 0;
     });
-
 
     $('body').on('click', '#undoMovement', function() {
         if (stackIndexer <= 0) return;
@@ -678,7 +667,6 @@ jsPlumb.ready(function() {
         clickEvent = 0;
     });
 
-
     $('body').on('click', '#redoMovement', function() {
         if (stackIndexer >= stackSize) return;
         clickEvent = 1;
@@ -687,12 +675,10 @@ jsPlumb.ready(function() {
         clickEvent = 0;
     });
 
-
     $('body').on('click', '.elementTemplateInfo', function() {
         id = $(this).attr("element");
         addInfo($("#" + id).attr("alt"), $("#" + id).attr("desc"), "elementTemplate", $("#" + id));
     });
-
 
     $('body').on('click', '#serviceName', function() {
         $(this).replaceWith('<input type="text" id="serviceName" class="form-control form-control-sm" style="margin-top: -4px !important; margin-bottom: -4px !important;" value="' + $(this).html() + '" />');
@@ -700,16 +686,34 @@ jsPlumb.ready(function() {
         setServiceStatus("unsaved");
     });
 
-
     $('body').on('click', '#dragContainerScrollUp', function() {
         scrollContainer(-1);
     });
-
 
     $('body').on('click', '#dragContainerScrollDown', function() {
         scrollContainer(1);
     });
 
+    $('body').on('keyup', '#searchElementTemplate', function() {
+        $(".elementTemplate").each(function() {
+            $(this).parent().parent().hide();
+            if ($(this).attr("alt").toLowerCase().indexOf($("#searchElementTemplateInput").val().toLowerCase()) >= 0)
+                $(this).parent().parent().show();
+        });
+    });
+
+    $(window).on('resize', function() {
+        $(".element").each(function() {
+            rate = ($(this).position().left)/(workspaceWidth-45.0);
+            left = rate*($("#dropContainer").width()-45.0);
+            $(this).css("left", left);
+        });
+        workspaceWidth = $("#dropContainer").width();
+        jsPlumbInstance.repaintEverything();
+    });
+
+
+/* Registering events concerning persistence. */
 
     $('body').on('click', '#saveService', function() {
         serviceName = $("#serviceName").val() === ''?$("#serviceName").text():$("#serviceName").val();
@@ -728,7 +732,7 @@ jsPlumb.ready(function() {
         $.each($(".element"), function() {
             instanceSet.push({
                 "displayId": $(this).prop("id"),
-                "posX": Math.floor($(this).position().left),
+                "posX": $(this).position().left/(workspaceWidth-45.0),
                 "posY": Math.floor($(this).position().top),
                 "anchors": $(this).attr("anchors"),
                 "parameters": $(this).attr("parameters")});
@@ -746,34 +750,6 @@ jsPlumb.ready(function() {
         });
     });
 
-
-    $(window).resize(function() {
-        $(".element").each(function() {
-            if ($(this).position().left + $(this).width() > $("#dropContainer").position().left + $("#dropContainer").width()) {
-                $(this).css("left", $("#dropContainer").position().left + $("#dropContainer").width() - $(this).width() +4);
-            }
-        });
-        jsPlumbInstance.repaintEverything();
-    });
-
-
-    var dragContainer = document.getElementById("dragContainer");
-
-    if (dragContainer.addEventListener) {
-        dragContainer.addEventListener("mousewheel", mouseScrollContainer, false);
-        dragContainer.addEventListener("DOMMouseScroll", mouseScrollContainer, false);
-    } else dragContainer.attachEvent("onmousewheel", mouseScrollContainer);
-
-
-    $("#searchElementTemplate").keyup(function() {
-        $(".elementTemplate").each(function() {
-            $(this).parent().parent().hide();
-            if ($(this).attr("alt").toLowerCase().indexOf($("#searchElementTemplateInput").val().toLowerCase()) >= 0)
-                $(this).parent().parent().show();
-        });
-    });
-
-
     $(document).ready(function() {
         $.post("", {
             event: "loadService"
@@ -785,10 +761,10 @@ jsPlumb.ready(function() {
             $.each(result.elements, function(i, element) {
                 addElement(element.displayId.split('_')[1],
                     element.displayId,
-                    element.posY + "px",
+                    element.posY + "px",  // Server stores a concrete position.
                     element.anchors,
                     element.parameters,
-                    element.posX + "px");
+                    (element.posX*(workspaceWidth-45.0) ) + "px");  // Server stores a rate.
                 if (elementIndex < element.displayId.split('_')[0])
                     elementIndex = element.displayId.split('_')[0];
                 elementIndex++;

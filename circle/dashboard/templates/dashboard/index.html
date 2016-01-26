@@ -43,6 +43,12 @@
     </div>
     {% endif %}
 
+    {% if perms.vm.create_template %}
+    <div class="col-lg-4 col-sm-6">
+      {% include "dashboard/index-setty.html" %}
+    </div>
+    {% endif %}
+
     {% if perms.vm.view_statistics %}
     <div class="col-lg-4 col-sm-6">
       {% include "dashboard/index-nodes.html" %}
