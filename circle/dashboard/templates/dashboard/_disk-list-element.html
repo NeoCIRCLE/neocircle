@@ -18,6 +18,10 @@
         <i class="fa fa-arrows-alt fa-fw-12"></i> {% trans "Request resize" %}
       </a>
     {% endif %}
+  {% else %}
+    <small class="btn-xs">
+      {% trans "Not resizable" %}
+    </small>
   {% endif %}
   {% if op.remove_disk %}
     <a href="{{ op.remove_disk.get_url }}?disk={{d.pk}}"
