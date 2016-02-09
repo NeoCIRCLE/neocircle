@@ -4,24 +4,29 @@
 <i class="fa fa-file"></i>
 {{ d.name }} (#{{ d.id }}) - {{ d.size|filesize }}
 
-{% if op.remove_disk %}
-  <span class="operation-wrapper">
+
+<span class="operation-wrapper pull-right">
+  {% if d.is_resizable %}
+    {% if op.resize_disk %}
+      <a href="{{ op.resize_disk.get_url }}?disk={{d.pk}}"
+        class="btn btn-xs btn-{{ op.resize_disk.effect }} operation disk-resize-btn
+        {% if op.resize_disk.disabled %}disabled{% endif %}">
+        <i class="fa fa-{{ op.resize_disk.icon }} fa-fw-12"></i> {% trans "Resize" %}
+      </a>
+    {% else %}
+      <a href="{% url "request.views.request-resize" vm_pk=instance.pk disk_pk=d.pk %}" class="btn btn-xs btn-primary operation">
+        <i class="fa fa-arrows-alt fa-fw-12"></i> {% trans "Request resize" %}
+      </a>
+    {% endif %}
+  {% endif %}
+  {% if op.remove_disk %}
     <a href="{{ op.remove_disk.get_url }}?disk={{d.pk}}"
-      class="btn btn-xs btn-{{ op.remove_disk.effect}} pull-right operation disk-remove-btn
+      class="btn btn-xs btn-{{ op.remove_disk.effect}} operation disk-remove-btn
       {% if op.remove_disk.disabled %}disabled{% endif %}">
       <i class="fa fa-{{ op.remove_disk.icon }} fa-fw-12"></i> {% trans "Remove" %}
     </a>
-  </span>
-{% endif %}
-{% if op.resize_disk %}
-  <span class="operation-wrapper">
-    <a href="{{ op.resize_disk.get_url }}?disk={{d.pk}}"
-      class="btn btn-xs btn-{{ op.resize_disk.effect }} pull-right operation disk-resize-btn
-      {% if op.resize_disk.disabled %}disabled{% endif %}">
-      <i class="fa fa-{{ op.resize_disk.icon }} fa-fw-12"></i> {% trans "Resize" %}
-    </a>
-  </span>
-{% endif %}
+  {% endif %}
+</span>
 <div style="clear: both;"></div>
 
 {% if request.user.is_superuser %}
