@@ -629,6 +629,7 @@ class RemovePortOperation(InstanceOperation):
     name = _("close port")
     description = _("Close the specified port.")
     concurrency_check = False
+    acl_level = "operator"
     required_perms = ('vm.config_ports', )
 
     def _operation(self, activity, rule):
