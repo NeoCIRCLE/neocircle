@@ -647,6 +647,7 @@ class AddPortOperation(InstanceOperation):
     name = _("open port")
     description = _("Open the specified port.")
     concurrency_check = False
+    acl_level = "operator"
     required_perms = ('vm.config_ports', )
 
     def _operation(self, activity, host, proto, port):
