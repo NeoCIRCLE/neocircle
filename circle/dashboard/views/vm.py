@@ -28,7 +28,9 @@ from django.contrib.auth.decorators import login_required
 from django.core import signing
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.http import (
+    HttpResponse, Http404, HttpResponseRedirect, JsonResponse
+)
 from django.shortcuts import redirect, get_object_or_404
 from django.template import RequestContext
 from django.template.loader import render_to_string
@@ -274,10 +276,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
             message = u"Not success"
 
         if request.is_ajax():
-            return HttpResponse(
-                json.dumps({'message': message}),
-                content_type="application=json"
-            )
+            return JsonResponse({'message': message})
         else:
             return redirect(reverse_lazy("dashboard.views.detail",
                             kwargs={'pk': self.object.pk}))
@@ -563,11 +562,8 @@ class VmResourcesChangeView(VmOperationView):
             if request.is_ajax():  # this is not too nice
                 store = messages.get_messages(request)
                 store.used = True
-                return HttpResponse(
-                    json.dumps({'success': False,
-                                'messages': [unicode(m) for m in store]}),
-                    content_type="application=json"
-                )
+                return JsonResponse({'success': False,
+                                     'messages': [unicode(m) for m in store]})
             else:
                 return HttpResponseRedirect(instance.get_absolute_url() +
                                             "#resources")
