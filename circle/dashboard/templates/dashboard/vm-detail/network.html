@@ -18,7 +18,7 @@
   <h3 class="list-group-item-heading dashboard-vm-details-network-h3">
     <i class="fa fa-{% if i.host %}globe{% else %}link{% endif %}"></i> {{ i.vlan.name }}
     {% if not i.host%}({% trans "unmanaged" %}){% endif %}
-    {% if user.is_superuser %}
+    {% if user.is_superuser and i.host %}
       <a href="{{ i.host.get_absolute_url }}"
         class="btn btn-default btn-xs">{% trans "edit" %}</a>
     {% endif %}
