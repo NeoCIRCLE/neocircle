@@ -42,7 +42,7 @@ from .views import (
     ConnectCommandDelete, ConnectCommandDetail, ConnectCommandCreate,
     StoreList, store_download, store_upload, store_get_upload_url, StoreRemove,
     store_new_directory, store_refresh_toplist,
-    VmTraitsUpdate, VmRawDataUpdate,
+    VmTraitsUpdate, VmRawDataUpdate, VmToggleBootMenuUpdate,
     GroupPermissionsView,
     LeaseAclUpdateView,
     toggle_template_tutorial,
@@ -113,6 +113,9 @@ urlpatterns = patterns(
         name='dashboard.views.vm-traits'),
     url(r'^vm/(?P<pk>\d+)/raw_data/$', VmRawDataUpdate.as_view(),
         name='dashboard.views.vm-raw-data'),
+    url(r'^vm/(?P<pk>\d+)/toggle_boot_menu/$',
+        VmToggleBootMenuUpdate.as_view(),
+        name='dashboard.views.vm-toggle-boot-menu'),
     url(r'^vm/(?P<pk>\d+)/toggle_tutorial/$', toggle_template_tutorial,
         name='dashboard.views.vm-toggle-tutorial'),
 

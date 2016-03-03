@@ -178,6 +178,7 @@ PIPELINE_CSS = {
     "all": {"source_filenames": (
         "compile_bootstrap.less",
         "bootstrap/dist/css/bootstrap-theme.css",
+        "bootstrap-toggle/css/bootstrap-toggle.min.css",
         "fontawesome/css/font-awesome.css",
         "jquery-simple-slider/css/simple-slider.css",
         "intro.js/introjs.css",
@@ -227,6 +228,7 @@ PIPELINE_JS = {
         "output_filename": "all.js",
     },
     "vm-detail": {"source_filenames": (
+        "bootstrap-toggle/js/bootstrap-toggle.min.js",
         "dashboard/vm-details.js",
         "no-vnc/include/util.js",
         "no-vnc/include/webutil.js",

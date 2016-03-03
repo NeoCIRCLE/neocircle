@@ -1429,6 +1429,27 @@ class RawDataForm(forms.ModelForm):
         return helper
 
 
+class ToggleBootMenuForm(forms.ModelForm):
+
+    class Meta:
+        model = Instance
+        fields = ('boot_menu', )
+        widgets = {
+            'boot_menu': forms.CheckboxInput(attrs={'data-toggle': 'toggle',
+                                                    'data-on': _('On'),
+                                                    'data-off': _('Off')})
+        }
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = True
+        helper.form_action =\
+            reverse_lazy("dashboard.views.vm-toggle-boot-menu",
+                         kwargs={'pk': self.instance.pk})
+        return helper
+
+
 class GroupPermissionForm(forms.ModelForm):
     permissions = forms.ModelMultipleChoiceField(
         queryset=None,

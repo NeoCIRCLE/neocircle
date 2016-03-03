@@ -2,7 +2,6 @@
 {% load sizefieldtags %}
 {% load crispy_forms_tags %}
 
-
 <div class="label label-info label-100" id="modify-the-resources">
   {% trans "Modify the resources" %}
 </div>
@@ -102,6 +101,15 @@
   </div>
 </div>
 
+{% endif %}
+
+{% if toggle_boot_menu_form %}
+<hr />
+<div class="row">
+  <div class="col-sm-12">
+    {% crispy toggle_boot_menu_form %}
+  </div>
+</div>
 {% endif %}
 
 {% block extra_js %}

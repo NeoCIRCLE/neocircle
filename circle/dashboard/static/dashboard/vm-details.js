@@ -252,4 +252,8 @@ $(function() {
     return e.preventDefault();
   });
 
+  $("#id_boot_menu").change(function(){
+    $("#id_boot_menu").parents("form").submit();
+  });
+
 });

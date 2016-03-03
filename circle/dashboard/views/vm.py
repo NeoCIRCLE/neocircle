@@ -61,6 +61,7 @@ from .util import (
 )
 from ..forms import (
     AclUserOrGroupAddForm, VmResourcesForm, TraitsForm, RawDataForm,
+    ToggleBootMenuForm,
     VmAddInterfaceForm, VmCreateDiskForm, VmDownloadDiskForm, VmSaveForm,
     VmRenewForm, VmStateChangeForm, VmListSearchForm, VmCustomizeForm,
     VmDiskResizeForm, RedeployForm, VmDiskRemoveForm,
@@ -160,6 +161,10 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         if self.request.user.is_superuser:
             context['traits_form'] = TraitsForm(instance=instance)
             context['raw_data_form'] = RawDataForm(instance=instance)
+
+        if is_owner and user.has_perm("vm.toggle_boot_menu"):
+            context['toggle_boot_menu_form'] =\
+                ToggleBootMenuForm(instance=instance)
 
         # resources change perm
         context['can_change_resources'] = self.request.user.has_perm(
@@ -305,6 +310,26 @@ class VmRawDataUpdate(SuperuserRequiredMixin, UpdateView):
     form_class = RawDataForm
     model = Instance
     template_name = 'dashboard/vm-detail/raw_data.html'
+
+    def get_success_url(self):
+        return self.get_object().get_absolute_url() + "#resources"
+
+
+class VmToggleBootMenuUpdate(LoginRequiredMixin, UpdateView):
+    form_class = ToggleBootMenuForm
+    model = Instance
+
+    def get(self, *args, **kwargs):
+        raise Http404()
+
+    def form_valid(self, form):
+        user = self.request.user
+        is_owner = form.instance.has_level(user, "owner")
+
+        if not (is_owner and user.has_perm("vm.toggle_boot_menu")):
+            raise PermissionDenied()
+
+        return super(VmToggleBootMenuUpdate, self).form_valid(form)
 
     def get_success_url(self):
         return self.get_object().get_absolute_url() + "#resources"
