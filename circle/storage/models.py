@@ -542,4 +542,4 @@ class Disk(TimeStampedModel):
 
     @property
     def is_resizable(self):
-        return self.type in ('qcow2-norm', 'raw-rw')
+        return self.type in ('qcow2-norm', 'raw-rw', 'qcow2-snap', )
