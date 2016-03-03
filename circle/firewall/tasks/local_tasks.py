@@ -109,4 +109,4 @@ def reloadtask(type='Host', timeout=15, sync=False):
     if all([cache.add("%s_lock" % i, 'true', 30) for i in reload]):
         res = reloadtask_worker.apply_async(queue='localhost.man', countdown=5)
         if sync:
-            res.get(15)
+            res.get(timeout)

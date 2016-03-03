@@ -133,8 +133,8 @@ class InstanceOperation(Operation):
 
         super(InstanceOperation, self).check_auth(user=user)
 
-        if (self.instance.node and not self.instance.node.online
-                and not user.is_superuser):
+        if (self.instance.node and not self.instance.node.online and
+                not user.is_superuser):
             raise self.instance.WrongStateError(self.instance)
 
     def create_activity(self, parent, user, kwargs):
@@ -306,6 +306,9 @@ class ResizeDiskOperation(RemoteInstanceOperation):
             size=filesizeformat(kwargs['size']), name=kwargs['disk'].name)
 
     def _operation(self, disk, size):
+        if not disk.is_resizable:
+            raise HumanReadableException.create(ugettext_noop(
+                'Disk type "%(type)s" is not resizable.'), type=disk.type)
         super(ResizeDiskOperation, self)._operation(disk=disk, size=size)
         disk.size = size
         disk.save()
@@ -534,8 +537,8 @@ class MigrateOperation(RemoteInstanceOperation):
     remote_timeout = 1000
 
     def _get_remote_args(self, to_node, live_migration, **kwargs):
-        return (super(MigrateOperation, self)._get_remote_args(**kwargs)
-                + [to_node.host.hostname, live_migration])
+        return (super(MigrateOperation, self)._get_remote_args(**kwargs) +
+                [to_node.host.hostname, live_migration])
 
     def rollback(self, activity):
         with activity.sub_activity(
@@ -908,8 +911,8 @@ class SleepOperation(InstanceOperation):
 
         def _get_remote_args(self, **kwargs):
             return (super(SleepOperation.SuspendVmOperation, self)
-                    ._get_remote_args(**kwargs)
-                    + [self.instance.mem_dump['path']])
+                    ._get_remote_args(**kwargs) +
+                    [self.instance.mem_dump['path']])
 
 
 @register_operation
@@ -962,8 +965,8 @@ class WakeUpOperation(InstanceOperation):
 
         def _get_remote_args(self, **kwargs):
             return (super(WakeUpOperation.WakeUpVmOperation, self)
-                    ._get_remote_args(**kwargs)
-                    + [self.instance.mem_dump['path']])
+                    ._get_remote_args(**kwargs) +
+                    [self.instance.mem_dump['path']])
 
 
 @register_operation
@@ -1408,9 +1411,9 @@ class PasswordResetOperation(RemoteAgentOperation):
     task = agent_tasks.change_password
     required_perms = ()
 
-    def _get_remote_args(self, password, **kwargs):
-        return (super(PasswordResetOperation, self)._get_remote_args(**kwargs)
-                + [password])
+    def _get_remote_args(self, password, **kwrgs):
+        return (super(PasswordResetOperation, self)._get_remote_args(**kwrgs) +
+                [password])
 
     def _operation(self, password=None):
         if not password:
@@ -1433,8 +1436,8 @@ class InstallKeysOperation(RemoteAgentOperation):
     def _get_remote_args(self, user, keys=None, **kwargs):
         if keys is None:
             keys = list(user.userkey_set.values_list('key', flat=True))
-        return (super(InstallKeysOperation, self)._get_remote_args(**kwargs)
-                + [keys])
+        return (super(InstallKeysOperation, self)._get_remote_args(**kwargs) +
+                [keys])
 
 
 @register_operation
@@ -1446,8 +1449,8 @@ class RemoveKeysOperation(RemoteAgentOperation):
     required_perms = ()
 
     def _get_remote_args(self, user, keys, **kwargs):
-        return (super(RemoveKeysOperation, self)._get_remote_args(**kwargs)
-                + [keys])
+        return (super(RemoveKeysOperation, self)._get_remote_args(**kwargs) +
+                [keys])
 
 
 @register_operation
@@ -1541,8 +1544,8 @@ class AgentStartedOperation(InstanceOperation):
 
         def _get_remote_args(self, **kwargs):
             cls = AgentStartedOperation.SetTimeOperation
-            return (super(cls, self)._get_remote_args(**kwargs)
-                    + [time.time()])
+            return (super(cls, self)._get_remote_args(**kwargs) +
+                    [time.time()])
 
     @register_operation
     class SetHostnameOperation(SubOperationMixin, RemoteAgentOperation):
@@ -1552,8 +1555,8 @@ class AgentStartedOperation(InstanceOperation):
 
         def _get_remote_args(self, **kwargs):
             cls = AgentStartedOperation.SetHostnameOperation
-            return (super(cls, self)._get_remote_args(**kwargs)
-                    + [self.instance.short_hostname])
+            return (super(cls, self)._get_remote_args(**kwargs) +
+                    [self.instance.short_hostname])
 
     @register_operation
     class RestartNetworkingOperation(SubOperationMixin, RemoteAgentOperation):
@@ -1572,8 +1575,8 @@ class AgentStartedOperation(InstanceOperation):
             interfaces = {str(host.mac): host.get_network_config()
                           for host in hosts}
             cls = AgentStartedOperation.ChangeIpOperation
-            return (super(cls, self)._get_remote_args(**kwargs)
-                    + [interfaces, settings.FIREWALL_SETTINGS['rdns_ip']])
+            return (super(cls, self)._get_remote_args(**kwargs) +
+                    [interfaces, settings.FIREWALL_SETTINGS['rdns_ip']])
 
 
 @register_operation
@@ -1697,8 +1700,8 @@ class AbstractDiskOperation(SubOperationMixin, RemoteInstanceOperation):
     required_perms = ()
 
     def _get_remote_args(self, disk, **kwargs):
-        return (super(AbstractDiskOperation, self)._get_remote_args(**kwargs)
-                + [disk.get_vmdisk_desc()])
+        return (super(AbstractDiskOperation, self)._get_remote_args(**kwargs) +
+                [disk.get_vmdisk_desc()])
 
 
 @register_operation

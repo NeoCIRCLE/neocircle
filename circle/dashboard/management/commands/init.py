@@ -64,8 +64,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.changed = False
 
-        if (DataStore.objects.exists() and Vlan.objects.exists()
-                and not options['force']):
+        if (DataStore.objects.exists() and Vlan.objects.exists() and
+                not options['force']):
             return self.print_state()
 
         admin = self.create(User, 'username', username=options['admin_user'],

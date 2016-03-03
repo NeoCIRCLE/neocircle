@@ -66,6 +66,17 @@
   {% endfor %}
 </div>
 
+<hr />
+{% if instance.disks.all %}
+  <div id="vm-details-resize-how-to">
+    <i class="fa fa-question"></i>
+    {% url "info.resize" as resize_url %}
+    {% blocktrans with url=resize_url %}
+    If you need help resizing the disks check out our <a href="{{ url }}">resize how-to.</a>
+    {% endblocktrans %}
+  </div>
+{% endif %}
+
 {% if user.is_superuser %}
 <hr/>
 

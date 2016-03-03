@@ -54,7 +54,7 @@ def measure_response_time():
 
 @celery.task(ignore_result=True)
 def check_celery_queues():
-    graphite_string = lambda component, hostname, celery, is_alive, time: (
+    def graphite_string(component, hostname, celery, is_alive, time): return (
         "%s.%s.celery-queues.%s %d %s" % (
             component, hostname, celery, 1 if is_alive else 0, time)
     )
@@ -92,7 +92,7 @@ def check_celery_queues():
 
 @celery.task(ignore_result=True)
 def instance_per_template():
-    graphite_string = lambda pk, state, val, time: (
+    def graphite_string(pk, state, val, time): return (
         "template.%d.instances.%s %d %s" % (
             pk, state, val, time)
     )
@@ -111,7 +111,7 @@ def instance_per_template():
 
 @celery.task(ignore_result=True)
 def allocated_memory():
-    graphite_string = lambda hostname, val, time: (
+    def graphite_string(hostname, val, time): return (
         "circle.%s.memory.allocated %d %s" % (
             hostname, val, time)
     )

@@ -1,5 +1,5 @@
-Deploy
-======
+Deploying CIRCLE
+================
 
 This tutorial describes the installation of a production environment. To
 have a fully working environment, you have to set up the other components

@@ -71,3 +71,5 @@ STORE_URL = ""
 
 # buildbot doesn't love pipeline
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
+SAML_MAIN_ATTRIBUTE_MAX_LENGTH=0  # doctest on SAML2 backend runs either way

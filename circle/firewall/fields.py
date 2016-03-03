@@ -188,11 +188,11 @@ class IPNetworkField(models.Field):
 
         if isinstance(value, IPNetwork):
             if self.version == 4:
-                return ('.'.join("%03d" % x for x in value.ip.words)
-                        + '/%02d' % value.prefixlen)
+                return ('.'.join("%03d" % x for x in value.ip.words) +
+                        '/%02d' % value.prefixlen)
             else:
-                return (':'.join("%04X" % x for x in value.ip.words)
-                        + '/%03d' % value.prefixlen)
+                return (':'.join("%04X" % x for x in value.ip.words) +
+                        '/%03d' % value.prefixlen)
         return value
 
     def formfield(self, **kwargs):

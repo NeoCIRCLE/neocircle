@@ -25,7 +25,7 @@ from django.shortcuts import redirect
 
 
 from circle.settings.base import get_env_variable
-from dashboard.views import circle_login, HelpView
+from dashboard.views import circle_login, HelpView, ResizeHelpView
 from dashboard.forms import CirclePasswordResetForm, CircleSetPasswordForm
 from firewall.views import add_blacklist_item
 
@@ -65,6 +65,8 @@ urlpatterns = patterns(
     url(r'^info/support/$',
         TemplateView.as_view(template_name="info/support.html"),
         name="info.support"),
+    url(r'^info/resize-how-to/$', ResizeHelpView.as_view(),
+        name="info.resize"),
 )
 
 

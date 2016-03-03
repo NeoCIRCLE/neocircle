@@ -17,8 +17,13 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
+import logging
+import sha
 
+from django.conf import settings
 from djangosaml2.backends import Saml2Backend as Saml2BackendBase
+
+logger = logging.getLogger(__name__)
 
 
 class Saml2Backend(Saml2BackendBase):
@@ -41,7 +46,14 @@ class Saml2Backend(Saml2BackendBase):
         if isinstance(main_attribute, str):
             main_attribute = main_attribute.decode('UTF-8')
         assert isinstance(main_attribute, unicode)
-        return re.sub(r'[^\w.@-]', replace, main_attribute)
+        attr = re.sub(r'[^\w.@-]', replace, main_attribute)
+        max_length = settings.SAML_MAIN_ATTRIBUTE_MAX_LENGTH
+        if max_length > 0 and len(attr) > max_length:
+            logger.info("Main attribute '%s' is too long." % attr)
+            hashed = sha.new(attr).hexdigest()
+            attr = hashed[:max_length]
+            logger.info("New main attribute: %s" % attr)
+        return attr
 
     def _set_attribute(self, obj, attr, value):
         if attr == 'username':

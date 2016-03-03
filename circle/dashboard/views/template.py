@@ -47,7 +47,8 @@ from ..tables import TemplateListTable, LeaseListTable
 from .util import (
     AclUpdateView, FilterMixin,
     TransferOwnershipConfirmView, TransferOwnershipView,
-    DeleteViewBase
+    DeleteViewBase,
+    GraphMixin
 )
 
 logger = logging.getLogger(__name__)
@@ -258,7 +259,8 @@ class TemplateDelete(DeleteViewBase):
         object.delete()
 
 
-class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class TemplateDetail(LoginRequiredMixin, GraphMixin,
+                     SuccessMessageMixin, UpdateView):
     model = InstanceTemplate
     template_name = "dashboard/template-edit.html"
     form_class = TemplateForm
@@ -300,6 +302,7 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         context['is_owner'] = obj.has_level(self.request.user, 'owner')
         context['aclform'] = AclUserOrGroupAddForm()
         context['parent'] = obj.parent
+        context['show_graph'] = obj.has_level(self.request.user, 'operator')
         return context
 
     def get_success_url(self):

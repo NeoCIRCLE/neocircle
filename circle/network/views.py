@@ -979,8 +979,8 @@ def remove_switch_port_device(request, **kwargs):
 def add_switch_port_device(request, **kwargs):
     device_name = request.POST.get('device_name')
 
-    if (request.method == "POST" and device_name and len(device_name) > 0
-       and EthernetDevice.objects.filter(name=device_name).count() == 0):
+    if (request.method == "POST" and device_name and len(device_name) > 0 and
+            EthernetDevice.objects.filter(name=device_name).count() == 0):
 
         switch_port = SwitchPort.objects.get(pk=kwargs['pk'])
         new_device = EthernetDevice(name=device_name, switch_port=switch_port)
