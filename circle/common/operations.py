@@ -175,8 +175,9 @@ class Operation(object):
             raise ImproperlyConfigured(
                 "Set required_perms to () if none needed.")
         if not user.has_perms(cls.required_perms):
-            raise PermissionDenied(
-                u"%s doesn't have the required permissions." % user)
+            raise humanize_exception(ugettext_noop(
+                "You don't have the required permissions."),
+                PermissionDenied())
         if cls.superuser_required and not user.is_superuser:
             raise humanize_exception(ugettext_noop(
                 "Superuser privileges are required."), PermissionDenied())

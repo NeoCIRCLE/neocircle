@@ -13,7 +13,7 @@
       <select class="form-control" name="proto" style="width: 70px;"><option>tcp</option><option>udp</option></select>
       <div class="input-group-btn">
         <button type="submit" class="btn btn-success btn-sm
-          {% if not is_operator %}disabled{% endif %}">
+          {% if not op.add_port %}disabled{% endif %}">
           <span class="hidden-xs">{% trans "Add" %}</span>
           <span class="visible-xs"><i class="fa fa-plus-circle"></i></span>
         </button>
