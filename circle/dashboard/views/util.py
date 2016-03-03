@@ -30,7 +30,9 @@ from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth.views import redirect_to_login
 from django.db.models import Q
-from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.http import (
+    HttpResponse, Http404, HttpResponseRedirect, JsonResponse
+)
 from django.shortcuts import redirect, render
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from django.views.generic import DetailView, View, DeleteView
@@ -343,12 +345,9 @@ class AjaxOperationMixin(object):
                 store.used = True
             else:
                 store = []
-            return HttpResponse(
-                json.dumps({'success': True,
-                            'with_reload': self.with_reload,
-                            'messages': [unicode(m) for m in store]}),
-                content_type="application=json"
-            )
+            return JsonResponse({'success': True,
+                                 'with_reload': self.with_reload,
+                                 'messages': [unicode(m) for m in store]})
         else:
             return resp
 
@@ -378,11 +377,8 @@ class FormOperationMixin(object):
             resp = super(FormOperationMixin, self).post(
                 request, extra, *args, **kwargs)
             if request.is_ajax():
-                return HttpResponse(
-                    json.dumps({
-                        'success': True,
-                        'with_reload': self.with_reload}),
-                    content_type="application=json")
+                return JsonResponse({'success': True,
+                                     'with_reload': self.with_reload})
             else:
                 return resp
         else:
