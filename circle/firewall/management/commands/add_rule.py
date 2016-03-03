@@ -107,8 +107,9 @@ class Command(BaseCommand):
         if port:
             self.validate_port(port)
             try:
-                rule = self.make_rule(port, proto, action,
-                                      dir, owner, firewall, fnet)
+                rule = self.make_rule(dport=port, proto=proto, action=action,
+                                      direction=dir, owner=owner,
+                                      firewall=firewall, foreign_network=fnet)
                 rule.save()
             except Warning as e:
                 logger.warning(e)
@@ -130,29 +131,17 @@ class Command(BaseCommand):
 
             Rule.objects.bulk_create(rules)
 
-    def make_rule(self, port, proto, action, dir, owner, firewall, fnet):
+    def make_rule(self, **kwargs):
 
-        rule = Rule(direction=dir, dport=port, proto=proto, action=action,
-                    firewall=firewall, foreign_network=fnet, owner=owner)
+        rule, created = Rule.objects.get_or_create(**kwargs)
 
-        if self.is_exist(port, proto, action, dir, owner, firewall, fnet):
+        if not created:
             raise Warning(('Rule does exist: %s' %
                           unicode(rule)).encode('utf-8'))
 
         rule.full_clean()
 
         return rule
-
-    def is_exist(self, port, proto, action, dir, owner, firewall, fnet):
-
-        rules = Rule.objects.filter(direction=dir,
-                                    dport=port,
-                                    proto=proto,
-                                    action=action,
-                                    firewall=firewall,
-                                    foreign_network=fnet,
-                                    owner=owner)
-        return rules.exists()
 
     def validate_port(self, port):
         if port < 0 or port > 65535:
