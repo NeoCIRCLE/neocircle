@@ -1,0 +1,25 @@
+{% load i18n %}
+
+<p class="text-muted">
+{% trans "Services lets you to create virtual machines or services graphically." %}
+</p>
+
+
+<form method="post" action="{% url 'setty.views.service-create' %}">
+{% csrf_token %}
+  <div class="row">
+    <div class="col-xs-12 text-left">
+      <label>{% trans 'Name' %}</label>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <input name="serviceName" class="form-control" type="text" />
+    </div>
+    &nbsp;
+    <div class="col-xs-12 text-left">
+      <input type="submit" class="btn btn-primary" value="{% trans 'Create' %}" />
+    </div>
+  </div>
+</form>
+

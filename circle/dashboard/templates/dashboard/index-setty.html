@@ -13,7 +13,7 @@
       <a href="{% url 'setty.views.service-detail' pk=s.pk %}" class="list-group-item
         {% if forloop.last and templates|length < 5 %} list-group-item-last{% endif %}">
         <span class="index-template-list-name">
-          {{ s.name }}
+          <i class="fa fa-server"></i>&nbsp;{{ s.name }}
         </span>
         <small class="text-muted index-template-list-system">{{ s.status }}</small>
         <div data-href="{% url 'setty.views.service-start' pk=s.pk %}" class="pull-right">
@@ -54,7 +54,7 @@
           <a href="{% url 'setty.views.service-list' %}" class="btn btn-primary btn-xs">
             <i class="fa fa-chevron-circle-right"></i> {% trans "list" %}
           </a>
-          <a href="{% url 'setty.views.service-create' %}" class="btn btn-success btn-xs">
+          <a href="{% url 'setty.views.service-create' %}" class="btn btn-success btn-xs setty-create">
             <i class="fa fa-plus-circle"></i> {% trans "new" %}
           </a>
         </div>

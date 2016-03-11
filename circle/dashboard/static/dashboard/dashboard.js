@@ -52,6 +52,31 @@ $(function () {
     return false;
   });
 
+  // Setty modal dialog (creating service) 
+  $('.setty-create').click(function(e) {
+    $.ajax({
+      type: 'GET',
+      url: $(this).prop('href'),
+      success: function(data) {
+        $('body').append(data);
+        var modal = $('#confirmation-modal');
+        modal.modal('show');
+        modal.on('hidden.bs.modal', function() {
+          modal.remove();
+        });
+
+        // Handling create button event 
+        $("#setty-create-button").click(function() {
+
+          return true;
+        });
+      }
+    });
+    return false;
+  });
+
+
+
   $('.template-choose').click(function(e) {
     $.ajax({
       type: 'GET',

@@ -19,11 +19,9 @@ from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse_lazy
 from django.db.models import Q
 from django.http import JsonResponse
-from django.shortcuts import redirect
 from braces.views import LoginRequiredMixin
 from django.views.generic import TemplateView, DeleteView
 from .models import Element, ElementTemplate, ElementConnection, Service
-from django.utils.translation import ugettext as _
 import json
 
 
@@ -33,28 +31,35 @@ class DetailView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
         context['elementTemplateList'] = ElementTemplate.objects.all()
-        context['actualId'] = kwargs['pk']
-        # context['elementCategoryList'] = ...
         return context
 
     def post(self, request, *args, **kwargs):
         if self.request.POST.get('event') == "saveService":
             data = json.loads(self.request.POST.get('data'))
-            
-            service = Service.objects.get(id=kwargs['pk'])
-            service.name = data['serviceName']
-            service.save()
+            service_name = data['serviceName']
 
-            Element.objects.filter(service=service).delete()
+            if 'pk' in kwargs:
+                service = Service.objects.get(id=kwargs['pk'])
+                service.name = service_name
+                service.save()
+
+                Element.objects.filter(service=service).delete()
+
+            else:
+                service = Service(
+                    name=service_name,
+                    user=self.request.user
+                )
+                service.save()
 
             for element in data['elements']:
                 elementObject = Element(
                     service=service,
                     parameters=element['parameters'],
                     display_id=element['displayId'],
-                    position_left=element['positionLeft'],
-                    position_top=element['positionTop'],
-                    anchor_number=element['anchorNumber']
+                    pos_x=element['posX'],
+                    pos_y=element['posY'],
+                    anchors=element['anchors']
                 )
                 elementObject.save()
 
@@ -97,9 +102,9 @@ class DetailView(LoginRequiredMixin, TemplateView):
                 elements.append({
                     'parameters': item.parameters,
                     'displayId': item.display_id,
-                    'positionLeft': item.position_left,
-                    'positionTop': item.position_top,
-                    'anchorNumber': item.anchor_number})
+                    'posX': item.pos_x,
+                    'posY': item.pos_y,
+                    'anchors': item.anchors})
 
             for item in elementConnectionList:
                 elementConnections.append({
@@ -122,36 +127,16 @@ class DeleteView(LoginRequiredMixin, DeleteView):
 
 
 class CreateView(LoginRequiredMixin, TemplateView):
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/_modal.html']
-        else:
-            return ['dashboard/nojs-wrapper.html']
-
+    template_name = "setty/create-service.html"
 
     def get_context_data(self, *args, **kwargs):
-        context = super(CreateView, self).get_context_data(*args, **kwargs)
-
-        context.update({
-            'box_title': _('Create service'),
+        context = super(hoose, self).get_context_data(*args, **kwargs)        context.update({
+            'box_title': _('Choose template'),
             'ajax_title': True,
             'template': "setty/create-service.html",
+            'templates': "",
         })
         return context
-
-    def post(self, request, *args, **kwargs):
-        service_name = self.request.POST.get('serviceName')
-
-        if not service_name:
-			service_name="Noname"
-
-        service = Service(
-            name=service_name,
-            user=self.request.user
-        )
-        service.save()
-        return redirect('setty.views.service-detail', pk=service.pk)
 
 
 class StartView(LoginRequiredMixin, TemplateView):
@@ -159,8 +144,4 @@ class StartView(LoginRequiredMixin, TemplateView):
 
 
 class StopView(LoginRequiredMixin, TemplateView):
-    pass
-
-
-class ListView(LoginRequiredMixin, TemplateView):
     pass

@@ -1,4 +1,5 @@
 /* Settimng up csrf token, touch event and zoom options. */
+
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -18,7 +19,6 @@ function csrfSafeMethod(method) {
     return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
 }
 
-
 var csrftoken = getCookie('csrftoken');
 
 $.ajaxSetup({
@@ -28,40 +28,6 @@ $.ajaxSetup({
         }
     }
 });
-
-(function($){
-    $.event.special.doubletap = {
-        bindType: 'touchend',
-        delegateType: 'touchend',
-
-        handle: function(event) {
-            var handleObj = event.handleObj,
-                targetData = jQuery.data(event.target),
-                now = new Date().getTime(),
-                delta = targetData.lastTouch ? now - targetData.lastTouch : 0,
-                delay = delay === null ? 300 : delay;
-
-            if (delta < delay && delta > 30) {
-                targetData.lastTouch = null;
-                event.type = handleObj.origType;
-                ['clientX', 'clientY', 'pageX', 'pageY'].forEach(function(property) {
-                    event[property] = event.originalEvent.changedTouches[0][property];
-                });
-
-                handleObj.handler.apply(this, arguments);
-            } else {
-                targetData.lastTouch = now;
-            }
-        }
-    };
-
-    $("#dropContainer").attr('unselectable', 'on').css({
-            'user-select': 'none',
-            'MozUserSelect': 'none'})
-        .on('selectstart', false)
-        .on('mousedown', false);
-
-})(jQuery);
 
 
 /* Setty implementation starts here. */
@@ -106,14 +72,15 @@ jsPlumb.ready(function() {
     var elementIndex = 0;
     var dragContainerScroll = 0;
     var clickEvent = 0;
-    var dragContainer = document.getElementById("dragContainer");
     var workspaceWidth = $("#dropContainer").width();
+    var workspaceHeight = $("#dropContainer").height();
 
     var stackIndexer = 0;
     var stackSize = 0;
     var objectStack = [];
     var undoStack = [];
     var redoStack = [];
+
 
 /* Functions. */
 
@@ -201,9 +168,7 @@ jsPlumb.ready(function() {
 
         $("#infoInput").val(info);
 
-        $("#dragPanel").hide();
-
-        $("#informationPanel").show();
+        $("#changeInformationDialog").modal('show');
         
         sharedObject = object;
     };
@@ -447,47 +412,12 @@ jsPlumb.ready(function() {
         jsPlumbInstance.remove(object.attr("id"));
     };
 
-    scrollContainer = function(direction) {
-        dragContainerScroll += direction;
-
-        if (dragContainerScroll == $(".elementTemplate").length - 2) dragContainerScroll--;
-        if (dragContainerScroll == -1) dragContainerScroll++;
-
-        $("#dragContainer").scrollTop(
-            dragContainerScroll * $("#elementTemplatePanel").height()
-        );
-    };
-
-    mouseScrollContainer = function(event) {
-        var e = window.event || event;
-        var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
-
-        $('body').addClass("noScroll");
-
-        scrollContainer(-delta);
-
-        $('body').removeClass("noScroll");
-    };
-
-
-/* Registering eventlisteners for controlling scroll events. */
-
-    if (dragContainer.addEventListener) {
-        dragContainer.addEventListener("mousewheel", mouseScrollContainer, false);
-        dragContainer.addEventListener("DOMMouseScroll", mouseScrollContainer, false);
-    } else dragContainer.attachEvent("onmousewheel", mouseScrollContainer);
-
 
 /* Registering events using JsPlumb. */
 
     jsPlumbInstance.bind("connection", function(info) {
         updateConnections(info.connection);
         info.connection.parameters = "";
-
-        // For right click on a connection.
-        $("path").on('doubletap', function() {
-            //Todo
-        });
 
         if (clickEvent === 0) {
             undoStack.splice(stackIndexer, 0, disconnectEndpoints);
@@ -530,13 +460,9 @@ jsPlumb.ready(function() {
 
     jsPlumbInstance.bind("contextmenu", function(info) {
         jsPlumbInstance.detach(info);
-        $("#informationPanel").hide();
-        $("#dragPanel").show();
     });
 
     jsPlumbInstance.bind("dblclick", function(info) {
-        $('.element').removeClass('elementSelected');
-        jsPlumbInstance.select().setPaintStyle({strokeStyle:'#9932cc', lineWidth: 8});
         info.setPaintStyle({strokeStyle:"red", lineWidth: 8});
         addInfo($("#" + info.sourceId.split('_')[1]).attr("alt") + ' - ' + $("#" + info.targetId.split('_')[1]).attr("alt"),
             info.parameters,
@@ -552,7 +478,10 @@ jsPlumb.ready(function() {
 /* Registering events using JQuery. */
 
     $('body').on('click', '.elementTemplate', function() {
-        addElement($(this).attr("id"), (++elementIndex) + "_" + $(this).attr("id"), (elementIndex % 21) * 30, 4, "", (elementIndex % 21) * 30);
+        addElement($(this).attr("id"),
+			(++elementIndex) + "_" + $(this).attr("id"),
+			(elementIndex % 21) * 30, 4, "",
+			(elementIndex % 21) * 30);
 
         undoStack.splice(stackIndexer, 0, removeElement);
         redoStack.splice(stackIndexer, 0, addElement);
@@ -560,23 +489,18 @@ jsPlumb.ready(function() {
         stackSize++;
         stackIndexer++;
     });
-
-    $('body').on('dblclick doubletap', '.element', function() {
+    
+    $('body').on('dblclick', '.element', function() {
         element = $(this);
-        $('.element').removeClass('elementSelected');
-        jsPlumbInstance.select().setPaintStyle({strokeStyle:'#9932cc', lineWidth: 8});
         element.addClass("elementSelected");
-        addInfo(element.attr("alt"), element.attr("parameters"), "element", element);
+        addInfo(element.attr("alt"),
+			element.attr("parameters"),
+			"element", element);
         $(document).scrollTop(0);
     });
 
     $('body').on('contextmenu', '.element', function(event) {
         setServiceStatus("unsaved");
-        $("#informationPanel").hide();
-        $("#dragPanel").show();
-
-        $('.element').removeClass('elementSelected');
-        jsPlumbInstance.select().setPaintStyle({strokeStyle:'#9932cc', lineWidth: 8});
 
         removeElement($(this));
 
@@ -590,8 +514,6 @@ jsPlumb.ready(function() {
     $('body').on('click', '#closeInfoPanel', function() {
         $('#informationPanel').hide();
         $('#dragPanel').show();
-        $('.element').removeClass('elementSelected');
-        jsPlumbInstance.select().setPaintStyle({strokeStyle:'#9932cc', lineWidth: 8});
     });
 
     $('body').on('keyUp', '#infoInput', function() {
@@ -621,11 +543,7 @@ jsPlumb.ready(function() {
     });
 
     $('body').on('click', '#removeFromWorkspace', function() {
-        $('.element').removeClass('elementSelected');
         removeElement(sharedObject);
-
-        $("#informationPanel").hide();
-        $("#dragPanel").show();
 
         undoStack.splice(stackIndexer, 0, addElement);
         redoStack.splice(stackIndexer, 0, removeElement);
@@ -636,12 +554,13 @@ jsPlumb.ready(function() {
 
     $('body').on('click', '#removeConnection', function() {
         jsPlumbInstance.detach(sharedObject);
-        $("#informationPanel").hide();
-        $("#dragPanel").show();
     });
 
     $('body').on('click', '#addElementToWorkspace', function() {
-        newInstance = addElement(sharedObject.attr("id"), (++elementIndex) + "_" + sharedObject.attr("id"), (elementIndex % 21) * 30, 4, "", (elementIndex % 21) * 30);
+        newInstance = addElement(sharedObject.attr("id"),
+			(++elementIndex) + "_" + sharedObject.attr("id"),
+			(elementIndex % 21) * 30, 4, "",
+			(elementIndex % 21) * 30);
 
         undoStack.splice(stackIndexer, 0, removeElement);
         redoStack.splice(stackIndexer, 0, addElement);
@@ -659,7 +578,7 @@ jsPlumb.ready(function() {
     });
 
     $('body').on('click', '#undoMovement', function() {
-        if (stackIndexer <= 0) return;
+        if (stackIndexer < 1) return;
         stackIndexer--;
         clickEvent = 1;
         object = objectStack[stackIndexer];
@@ -681,9 +600,16 @@ jsPlumb.ready(function() {
     });
 
     $('body').on('click', '#serviceName', function() {
-        $(this).replaceWith('<input type="text" id="serviceName" class="form-control form-control-sm" style="margin-top: -4px !important; margin-bottom: -4px !important;" value="' + $(this).html() + '" />');
-        document.getElementById("serviceName").select();
+        $('#serviceName').hide();
+        $("#serviceNameEdit").css("display", "inline").val($(this).text()).select();
+        $("#serviceNameSave").css("display", "inline");
         setServiceStatus("unsaved");
+    });
+
+    $('body').on('click', '#serviceNameSave', function() {
+        $('#serviceNameEdit').hide();
+        $(this).hide();
+        $("#serviceName").show().text($('#serviceNameEdit').val());
     });
 
     $('body').on('click', '#dragContainerScrollUp', function() {
@@ -694,6 +620,11 @@ jsPlumb.ready(function() {
         scrollContainer(1);
     });
 
+    $('body').on('hide.bs.modal', '#changeInformationDialog', function () {
+        $('.element').removeClass('elementSelected');
+        jsPlumbInstance.select().setPaintStyle({strokeStyle:'#9932cc', lineWidth: 8});
+    });
+
     $('body').on('keyup', '#searchElementTemplate', function() {
         $(".elementTemplate").each(function() {
             $(this).parent().parent().hide();
@@ -701,11 +632,75 @@ jsPlumb.ready(function() {
                 $(this).parent().parent().show();
         });
     });
+    
+    $('body').on('mousewheel DOMMouseScroll onmousewheel', function(event) {
+        var e = window.event || event;
+        var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+
+        $('body').addClass("noScroll");
+
+        dragContainerScroll -= delta;
+
+        if (dragContainerScroll == $(".elementTemplate").length - 2) dragContainerScroll--;
+        if (dragContainerScroll == -1) dragContainerScroll++;
+
+        $("#dragContainer").scrollTop(
+            dragContainerScroll * $("#elementTemplatePanel").height()
+        );
+
+        $('body').removeClass("noScroll");
+    });
+    
+    $(document).on('keydown', function(e) {
+		var eventObject = window.event ? event : e;
+		
+		// Undo (CTRL + Z)
+		if (eventObject.keyCode == 90 && eventObject.ctrlKey)
+		{
+			eventObject.preventDefault();
+			$('#undoMovement').click();
+		}
+		
+		// Redo (CTRL + Y)
+		if (eventObject.keyCode == 89 && eventObject.ctrlKey)
+		{
+			eventObject.preventDefault();
+			$('#redoMovement').click();
+		}
+		
+		// Add element (CTRL + A)
+		if (eventObject.keyCode == 65 && eventObject.ctrlKey)
+		{
+			eventObject.preventDefault();
+			$('#showAddElementDialog').click();
+		}
+		
+		// Clean (CTRL + C)
+		if (eventObject.keyCode == 67 && eventObject.ctrlKey)
+		{
+			eventObject.preventDefault();
+			$('#clearService').click();
+		}
+		
+		// Save (CTRL + S)
+		if (eventObject.keyCode == 83 && eventObject.ctrlKey)
+		{
+			eventObject.preventDefault();
+			$('#saveService').click();
+		}
+		
+		// Delete (CTRL + D)
+		if (eventObject.keyCode == 68 && eventObject.ctrlKey)
+		{
+			eventObject.preventDefault();
+			$('#deleteService').click();
+		}
+	});
 
     $(window).on('resize', function() {
         $(".element").each(function() {
-            rate = ($(this).position().left)/(workspaceWidth-45.0);
-            left = rate*($("#dropContainer").width()-45.0);
+            rate = ($(this).position().left)/workspaceWidth;
+            left = rate*($("#dropContainer").width());
             $(this).css("left", left);
         });
         workspaceWidth = $("#dropContainer").width();
@@ -716,7 +711,7 @@ jsPlumb.ready(function() {
 /* Registering events concerning persistence. */
 
     $('body').on('click', '#saveService', function() {
-        serviceName = $("#serviceName").val() === ''?$("#serviceName").text():$("#serviceName").val();
+        serviceName = $("#serviceName").text();
         connectionSet = [];
         instanceSet = [];
 
@@ -732,9 +727,9 @@ jsPlumb.ready(function() {
         $.each($(".element"), function() {
             instanceSet.push({
                 "displayId": $(this).prop("id"),
-                "posX": $(this).position().left/(workspaceWidth-45.0),
-                "posY": Math.floor($(this).position().top),
-                "anchors": $(this).attr("anchors"),
+                "positionLeft": $(this).position().left/workspaceWidth,
+                "positionTop": $(this).position().top/workspaceHeight,
+                "anchorNumber": $(this).attr("anchors"),
                 "parameters": $(this).attr("parameters")});
         });
 
@@ -754,17 +749,15 @@ jsPlumb.ready(function() {
         $.post("", {
             event: "loadService"
         }, function(result) {
-            if (result === "") return;
-
             $("#serviceName").text(result.serviceName);
 
             $.each(result.elements, function(i, element) {
                 addElement(element.displayId.split('_')[1],
                     element.displayId,
-                    element.posY + "px",  // Server stores a concrete position.
-                    element.anchors,
+                    (element.positionTop*workspaceHeight) + "px",
+                    element.anchorNumber,
                     element.parameters,
-                    (element.posX*(workspaceWidth-45.0) ) + "px");  // Server stores a rate.
+                    (element.positionLeft*workspaceWidth) + "px");
                 if (elementIndex < element.displayId.split('_')[0])
                     elementIndex = element.displayId.split('_')[0];
                 elementIndex++;
