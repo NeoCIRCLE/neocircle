@@ -41,7 +41,7 @@ from ..forms import (
 )
 from .util import FilterMixin
 import json
-
+from celery.exceptions import TimeoutError
 
 logger = logging.getLogger(__name__)
 
@@ -199,6 +199,13 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
             context['orphan_disks'] = ds.get_orphan_disks()
         except WorkerNotFound:
             messages.error(self.request, _("The DataStore is offline."))
+        except TimeoutError:
+            messages.error(self.request, _("Operation timed out, "
+                                           "some data may insufficient."))
+        except Exception as e:
+             messages.error(self.request, _("Error occured: %s, "
+                                           "some data may insufficient."
+                                           % unicode(e)))
 
         context['disk_table'] = DiskListTable(
             self.get_table_data(), request=self.request,

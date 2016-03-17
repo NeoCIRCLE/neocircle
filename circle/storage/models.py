@@ -106,9 +106,11 @@ class DataStore(Model):
             raise WorkerNotFound()
 
     def get_deletable_disks(self):
-        return [disk.filename for disk in
-                self.disk_set.filter(
-                    destroyed__isnull=False) if disk.is_deletable]
+        deletables = [disk for disk in self.disk_set.filter(
+                      destroyed__isnull=False) if disk.is_deletable]
+        deletables = sorted(deletables, key=lambda disk: disk.destroyed)
+
+        return [disk.filename for disk in deletables]
 
     def get_hosts(self):
 
@@ -127,7 +129,7 @@ class DataStore(Model):
         try:
             return storage_tasks.get_storage_stat.apply_async(
                 args=[self.type, self.path], queue=q).get(timeout=timeout)
-        except TimeoutError:
+        except Exception:
             return {'free_space': -1,
                     'free_percent': -1}
 
@@ -593,11 +595,17 @@ class Disk(TimeStampedModel):
         """
         queue_name = self.datastore.get_remote_queue_name(
             'storage', priority='slow')
-        logger.info("Image: %s at Datastore: %s recovered from trash." %
-                    (self.filename, self.datastore.path))
-        storage_tasks.recover_from_trash.apply_async(
-            args=[self.datastore.path, self.filename],
+        res = storage_tasks.is_exists.apply_async(
+            args=[self.datastore.type,
+                  self.datastore.path,
+                  self.filename],
             queue=queue_name).get(timeout=timeout)
+        if res:
+            logger.info("Image: %s at Datastore: %s recovered." %
+                        (self.filename, self.datastore.path))
+        else:
+            logger.info("Image: %s at Datastore: %s not recovered." %
+                        (self.filename, self.datastore.path))
 
     def save_as(self, task=None, user=None, task_uuid=None, timeout=300):
         """Save VM as template.

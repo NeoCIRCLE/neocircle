@@ -39,12 +39,12 @@ def download(disk_desc, url):
 
 
 @celery.task(name='storagedriver.delete')
-def delete(path):
+def delete(disk_desc):
     pass
 
 
 @celery.task(name='storagedriver.delete_dump')
-def delete_dump(path):
+def delete_dump(data_store_type, path):
     pass
 
 
@@ -54,7 +54,7 @@ def snapshot(disk_desc):
 
 
 @celery.task(name='storagedriver.get')
-def get(json_data):
+def get(disk_desc):
     pass
 
 
@@ -63,18 +63,13 @@ def merge(src_disk_desc, dst_disk_desc):
     pass
 
 
+@celery.task(name='storagedriver.is_exists')
+def is_exists(data_store_type, path, disk_name):
+    pass
+
+
 @celery.task(name='storagedriver.make_free_space')
-def make_free_space(datastore, percent):
-    pass
-
-
-@celery.task(name='storagedriver.move_to_trash')
-def move_to_trash(datastore, disk_path):
-    pass
-
-
-@celery.task(name='storagedriver.recover_from_trash')
-def recover_from_trash(datastore, disk_path):
+def make_free_space(datastore, path, deletable_disks, percent):
     pass
 
 

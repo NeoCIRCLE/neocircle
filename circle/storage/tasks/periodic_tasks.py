@@ -36,17 +36,18 @@ def garbage_collector(timeout=15):
     for ds in DataStore.objects.all():
         queue_name = ds.get_remote_queue_name('storage', priority='fast')
         files = set(storage_tasks.list_files.apply_async(
-            args=[ds.path], queue=queue_name).get(timeout=timeout))
-        disks = set(ds.get_deletable_disks())
+            args=[ds.type, ds.path], queue=queue_name).get(timeout=timeout))
+        disks = ds.get_deletable_disks()
         queue_name = ds.get_remote_queue_name('storage', priority='slow')
-        for i in disks & files:
-            logger.info("Image: %s at Datastore: %s moved to trash folder." %
+
+        deletable_disks = [disk for disk in disks if disk in files]
+        for i in deletable_disks:
+            logger.info("Image: %s at Datastore: %s fetch for destroy." %
                         (i, ds.path))
-            storage_tasks.move_to_trash.apply_async(
-                args=[ds.path, i], queue=queue_name).get(timeout=timeout)
         try:
             storage_tasks.make_free_space.apply_async(
-                args=[ds.path], queue=queue_name).get(timeout=timeout)
+                args=[ds.type, ds.path, deletable_disks],
+                queue=queue_name).get(timeout=timeout)
         except Exception as e:
             logger.warning(str(e))
 
