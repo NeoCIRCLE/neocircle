@@ -910,6 +910,18 @@ class VmDownloadDiskForm(OperationForm):
     name = forms.CharField(max_length=100, label=_("Name"), required=False)
     url = forms.CharField(label=_('URL'), validators=[URLValidator(), ])
 
+    def __init__(self, *args, **kwargs):
+        datastore_choices = kwargs.pop('datastore_choices')
+        super(VmDownloadDiskForm, self).__init__(*args, **kwargs)
+
+        datastore_field = forms.ModelChoiceField(
+            queryset=datastore_choices, required=False, initial=None,
+            label=_('Data store'))
+        if not datastore_choices:
+            datastore_field.widget.attrs['disabled'] = 'disabled'
+            datastore_field.empty_label = _('No more data stores.')
+        self.fields['datastore'] = datastore_field
+
     def clean(self):
         cleaned_data = super(VmDownloadDiskForm, self).clean()
         if not cleaned_data['name']:

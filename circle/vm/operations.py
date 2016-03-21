@@ -333,10 +333,16 @@ class DownloadDiskOperation(InstanceOperation):
     accept_states = ('STOPPED', 'PENDING', 'RUNNING')
     async_queue = "localhost.man.slow"
 
-    def _operation(self, user, url, task, activity, name=None):
-        from storage.models import Disk
+    def _operation(self, user, url, datastore, task, activity, name=None):
+        from storage.models import Disk, DataStore
 
-        disk = Disk.download(url=url, name=name, task=task)
+        if not datastore:
+            datastore = self.instance.get_most_used_datastore()
+            if not datastore:
+                datastore = DataStore.get_default_datastore()
+
+        disk = Disk.download(url=url, name=name, task=task,
+                             datastore=datastore)
         devnums = list(ascii_lowercase)
         for d in self.instance.disks.all():
             devnums.remove(d.dev_num)

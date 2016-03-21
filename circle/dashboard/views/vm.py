@@ -430,6 +430,11 @@ class VmDownloadDiskView(FormOperationMixin, VmOperationView):
     is_disk_operation = True
     with_reload = True
 
+    def get_form_kwargs(self):
+        val = super(VmDownloadDiskView, self).get_form_kwargs()
+        val['datastore_choices'] = DataStore.get_all()
+        return val
+
 
 class VmMigrateView(FormOperationMixin, VmOperationView):
 

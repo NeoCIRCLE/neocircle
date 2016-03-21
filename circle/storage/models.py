@@ -542,7 +542,7 @@ class Disk(TimeStampedModel):
         return disk
 
     @classmethod
-    def download(cls, url, task, user=None, **params):
+    def download(cls, url, datastore, task, user=None, **params):
         """Create disk object and download data from url synchronusly.
 
         :param url: image url to download.
@@ -560,6 +560,7 @@ class Disk(TimeStampedModel):
         params.setdefault('name', url.split('/')[-1])
         params.setdefault('type', 'iso')
         params.setdefault('size', None)
+        params.setdefault('datastore', datastore)
         disk = cls.__create(params=params, user=user)
         queue_name = disk.get_remote_queue_name('storage', priority='slow')
         remote = storage_tasks.download.apply_async(
