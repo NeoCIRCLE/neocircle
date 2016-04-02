@@ -104,7 +104,7 @@ $(function () {
           $.post(form.attr("action"), form.serialize(), function(data){
 
             if(data.status===true){
-              $('#id_other_hostnames')
+              $('#id_hosts_from')
                 .append($('<option>')
                 .text(data.response.text)
                 .attr('value', data.response.val));
@@ -127,10 +127,6 @@ $(function () {
       }
     });
     return false;
-  });
-
-  $('#storage-create-form').submit(function(){
-    $('#id_hostnames option').prop('selected', true);
   });
 
   $('[href=#index-graph-view]').click(function (e) {

@@ -72,16 +72,19 @@ class DataStore(Model):
     type = CharField(max_length=10, verbose_name=_('type'),
                      default='file', choices=TYPES)
     name = CharField(max_length=100, unique=True, verbose_name=_('name'))
-    path = CharField(max_length=200, unique=True, verbose_name=_('path'),
-                     validators=[validate_ascii])
     # path or pool name when use ceph block device storage
+    path = CharField(max_length=200, unique=True,
+                     verbose_name=_('path or poolname'),
+                     validators=[validate_ascii])
+    # hostname of storage driver
     hostname = CharField(max_length=40, verbose_name=_('hostname'))
+    # hostnames of Ceph monitors
     hosts = ManyToManyField('DataStoreHost', blank=True,
                             verbose_name=_('hosts'))
     ceph_user = CharField(max_length=255, null=True, blank=True,
                           verbose_name=_('Ceph username'))
     secret_uuid = CharField(max_length=255, null=True, blank=True,
-                            verbose_name=_('uuid of secret'))
+                            verbose_name=_('uuid of secret key'))
 
     class Meta:
         ordering = ['name']

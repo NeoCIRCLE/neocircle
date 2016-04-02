@@ -90,10 +90,6 @@ class StorageCreate(SuccessMessageMixin, CreateView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(StorageCreate, self).get_context_data(*args, **kwargs)
-        other_hostnames = DataStoreHost.objects.all()
-
-        context["hostnames_of_datastore"] = []
-        context["other_hostnames"] = other_hostnames
         context.update({
             'box_title': _("Create a new data store"),
             'template': "dashboard/_storage-create.html",
@@ -191,7 +187,6 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(StorageDetail, self).get_context_data(**kwargs)
-
         try:
             ds = self.get_object()
             context['stats'] = self._get_stats()
@@ -203,7 +198,7 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
             messages.error(self.request, _("Operation timed out, "
                                            "some data may insufficient."))
         except Exception as e:
-             messages.error(self.request, _("Error occured: %s, "
+            messages.error(self.request, _("Error occured: %s, "
                                            "some data may insufficient."
                                            % unicode(e)))
 
@@ -262,8 +257,16 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
             'total_space': filesizeformat(total_space),
         }
 
+    def get_form_class(self):
+        ds = self.get_object()
+        if ds.type == "ceph_block":
+            return CephDataStoreForm
+        else:
+            return DataStoreForm
+
     def get_success_url(self):
-        return reverse("dashboard.views.storage")
+        ds = self.get_object()
+        return reverse("dashboard.views.storage-detail", kwargs={"pk": ds.id})
 
 
 class DiskDetail(SuperuserRequiredMixin, UpdateView):

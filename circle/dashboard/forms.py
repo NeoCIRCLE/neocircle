@@ -1617,9 +1617,6 @@ class DataStoreForm(ModelForm):
                 'name',
                 'path',
                 'hostname',
-            ),
-            FormActions(
-                Submit('submit', _('Save')),
             )
         )
         return helper
@@ -1631,21 +1628,7 @@ class DataStoreForm(ModelForm):
 
 class CephDataStoreForm(DataStoreForm):
 
-    hostnames = forms.ModelMultipleChoiceField(
-        queryset=None, required=False, label=_("Hostnames"))
-
-    other_hostnames = forms.MultipleChoiceField(
-        required=False, label=_("Other hostnames"))
-
     type = forms.CharField(widget=forms.HiddenInput())
-
-    def __init__(self, *args, **kwargs):
-        super(DataStoreForm, self).__init__(*args, **kwargs)
-        hostnames = self.fields["hosts"].queryset.all()
-        other_hostnames = set(DataStoreHost.objects.all()) - set(hostnames)
-
-        self.fields['hostnames'].queryset = hostnames
-        self.fields['other_hostnames'].initial = other_hostnames
 
     @property
     def helper(self):
@@ -1655,9 +1638,6 @@ class CephDataStoreForm(DataStoreForm):
                 '',
                 'ceph_user',
                 'secret_uuid',
-            ),
-            FormActions(
-                Submit('submit', _('Save')),
             )
         )
         return helper
@@ -1666,6 +1646,8 @@ class CephDataStoreForm(DataStoreForm):
         model = DataStore
         fields = ("type", "name", "path", "hostname",
                   "ceph_user", "secret_uuid", "hosts")
+        widgets = {"hosts": FilteredSelectMultiple(_("Hostnames"),
+                                                   is_stacked=True)}
 
 
 class DataStoreHostForm(ModelForm):
