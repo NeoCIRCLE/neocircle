@@ -861,7 +861,9 @@ class ShutOffOperation(InstanceOperation):
 
     def _operation(self, activity):
         # Shutdown networks
-        with activity.sub_activity('shutdown_net'):
+        with activity.sub_activity('shutdown_net',
+                                   readable_name=ugettext_noop(
+                                       "shutdown network")):
             self.instance.shutdown_net()
 
         self.instance._delete_vm(parent_activity=activity)
