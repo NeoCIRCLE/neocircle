@@ -34,13 +34,11 @@ class DetailView(LoginRequiredMixin, TemplateView):
         context = super(DetailView, self).get_context_data(**kwargs)
         context['elementTemplateList'] = ElementTemplate.objects.all()
         context['actualId'] = kwargs['pk']
-        # context['elementCategoryList'] = ...
         return context
 
     def post(self, request, *args, **kwargs):
         if self.request.POST.get('event') == "saveService":
             data = json.loads(self.request.POST.get('data'))
-            
             service = Service.objects.get(id=kwargs['pk'])
             service.name = data['serviceName']
             service.save()
@@ -129,7 +127,6 @@ class CreateView(LoginRequiredMixin, TemplateView):
         else:
             return ['dashboard/nojs-wrapper.html']
 
-
     def get_context_data(self, *args, **kwargs):
         context = super(CreateView, self).get_context_data(*args, **kwargs)
 
@@ -144,7 +141,7 @@ class CreateView(LoginRequiredMixin, TemplateView):
         service_name = self.request.POST.get('serviceName')
 
         if not service_name:
-			service_name="Noname"
+            service_name = "Noname"
 
         service = Service(
             name=service_name,

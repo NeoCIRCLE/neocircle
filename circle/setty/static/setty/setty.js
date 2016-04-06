@@ -71,7 +71,6 @@ jsPlumb.ready(function() {
     var elementConnections = [];
     var elementIndex = 0;
     var dragContainerScroll = 0;
-    var clickEvent = 0;
     var workspaceWidth = $("#dropContainer").width();
     var workspaceHeight = $("#dropContainer").height();
 
@@ -80,6 +79,8 @@ jsPlumb.ready(function() {
     var objectStack = [];
     var undoStack = [];
     var redoStack = [];
+    var clickEvent = 0;
+    var nextStepConstraint = 0;
 
 
 /* Functions. */
@@ -94,6 +95,7 @@ jsPlumb.ready(function() {
     };
 
     addInfo = function(title, info, type, object) {
+        /*
         $("#informationContainer").empty();
 
         switch(type){
@@ -140,7 +142,7 @@ jsPlumb.ready(function() {
                     '</div>&nbsp;' +
                     '<div class="row">' +
                         '<div class="col-xs-12 text-center">' +
-                            '<button id="removeFromWorkspace" class="btn btn-info">Remove from workspace</button>' +
+                            '<button id="removeElementFromWorkspace" class="btn btn-info">Remove from workspace</button>' +
                         '</div>' +
                     '</div>';
                 break;
@@ -162,7 +164,13 @@ jsPlumb.ready(function() {
                         '</div>' +
                     '</div>';
                 break;
-        }
+        }*/
+        
+        // Here comes the ajax getInformation post.
+        // elementtemplateid vagy hostname
+        
+        
+        div = 0;
 
         $("#informationContainer").append(div);
 
@@ -270,6 +278,21 @@ jsPlumb.ready(function() {
             }
         });
         return returnValue;
+    };
+    
+    elementIsConnected = function(element) {
+        anchors = element.attr("anchors");
+        id = element.attr("id");
+        
+        for(i=0;i<anchors;i++)
+        {
+            if(isConnected(i + "_" + id))
+            {
+                return true;
+            }
+        }
+        
+        return false;
     };
 
     getConnectionparamAndAnchor = function(anchorId) {
@@ -391,11 +414,11 @@ jsPlumb.ready(function() {
         }
 
         $("#dropContainer").append(newInstance);
-
+                
         for (i = 0; i <= endpoints; i++) {
             addEndpoint(newInstance);
         }
-
+        
         jsPlumbInstance.draggable(jsPlumb.getSelector(".element"), {
             containment: $("#dropContainer")
         });
@@ -501,12 +524,13 @@ jsPlumb.ready(function() {
 
     $('body').on('contextmenu', '.element', function(event) {
         setServiceStatus("unsaved");
-
         removeElement($(this));
 
         undoStack.splice(stackIndexer, 0, addElement);
         redoStack.splice(stackIndexer, 0, removeElement);
         objectStack.splice(stackIndexer, 0, $(this));
+        
+        nextStepConstraint = 0;
         stackSize++;
         stackIndexer++;
     });
@@ -542,7 +566,8 @@ jsPlumb.ready(function() {
         stackSize++;
     });
 
-    $('body').on('click', '#removeFromWorkspace', function() {
+    $('body').on('click', '#removeElementFromWorkspace', function() {
+        setServiceStatus("unsaved");
         removeElement(sharedObject);
 
         undoStack.splice(stackIndexer, 0, addElement);
@@ -570,8 +595,7 @@ jsPlumb.ready(function() {
     });
 
     $('body').on('click', '#clearService', function() {
-        jsPlumbInstance.reset();
-        $(".element").remove();
+        jsPlumbInstance.remove("element");
         setServiceStatus("unsaved");
 
         elementIndex = 0;
@@ -590,8 +614,17 @@ jsPlumb.ready(function() {
         if (stackIndexer >= stackSize) return;
         clickEvent = 1;
         object = objectStack[stackIndexer];
-        redoStack[stackIndexer++](object);
+        redoStack[stackIndexer](object);
+        stackIndexer++;
         clickEvent = 0;
+    });
+    
+    $('body').on('click', '#addMachineDialog', function() {
+        // Here comes the ajax post of getMachineAvailableList
+        // posting usedhostnames
+        //
+        //
+        // after it, appending obtained content to addmachinedialogbody
     });
 
     $('body').on('click', '.elementTemplateInfo', function() {
