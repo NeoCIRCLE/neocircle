@@ -44,7 +44,7 @@ def delete(disk_desc):
 
 
 @celery.task(name='storagedriver.delete_dump')
-def delete_dump(data_store_type, path):
+def delete_dump(data_store_type, dir, filename):
     pass
 
 

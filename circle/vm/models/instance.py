@@ -50,6 +50,7 @@ from .activity import (ActivityInProgressError, InstanceActivity)
 from .common import BaseResourceConfigModel, Lease
 from .network import Interface
 from .node import Node, Trait
+from storage.models import DataStore
 
 logger = getLogger(__name__)
 pre_state_changed = Signal(providing_args=["new_state"])
@@ -93,6 +94,7 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
 
     """Abstract base for virtual machine describing models.
     """
+
     access_method = CharField(max_length=10, choices=ACCESS_METHODS,
                               verbose_name=_('access method'),
                               help_text=_('Primary remote access method.'))
@@ -116,6 +118,8 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
                              help_text=_(
                                  'If the machine has agent installed, and '
                                  'the manager should wait for its start.'))
+    datastore = ForeignKey(DataStore, verbose_name=_("Data store"),
+                           help_text=_("The target of VM's dump."))
 
     class Meta:
         abstract = True
@@ -482,16 +486,10 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     def mem_dump(self):
         """Return the path and datastore for the memory dump.
 
-        It is always on the first hard drive storage named cloud-<id>.dump
+        It named cloud-<id>.dump
         """
-        try:
-            datastore = self.disks.all()[0].datastore
-        except IndexError:
-            from storage.models import DataStore
-            datastore = DataStore.get_default_datastore()
-
-        path = datastore.path + '/' + self.vm_name + '.dump'
-        return {'datastore': datastore, 'path': path}
+        filename = self.vm_name + '.dump'
+        return {'datastore': self.datastore, 'filename': filename}
 
     @property
     def primary_host(self):

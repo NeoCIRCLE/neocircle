@@ -1450,6 +1450,25 @@ class RawDataForm(forms.ModelForm):
         return helper
 
 
+class VmDataStoreForm(forms.ModelForm):
+    datastore = forms.ModelChoiceField(queryset=DataStore.objects.all(),
+                                       empty_label=None)
+
+    class Meta:
+        model = Instance
+        fields = ('datastore', )
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = False
+        helper.form_action = reverse_lazy("dashboard.views.vm-data-store",
+                                          kwargs={'pk': self.instance.pk})
+        helper.add_input(Submit("submit", _("Save"),
+                                css_class="btn btn-success", ))
+        return helper
+
+
 class GroupPermissionForm(forms.ModelForm):
     permissions = forms.ModelMultipleChoiceField(
         queryset=None,

@@ -91,6 +91,17 @@
   </div>
 </div>
 
+<hr/>
+
+<div class="row">
+  <div class="col-sm-12">
+    <h3>
+      {% trans "Data store" %}
+    </h3>
+
+    {% crispy data_store_form %}
+  </div>
+</div>
 {% endif %}
 
 {% block extra_js %}

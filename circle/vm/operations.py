@@ -530,7 +530,9 @@ class DestroyOperation(InstanceOperation):
                 "storage", "fast")
 
         def _get_remote_args(self, **kwargs):
-            return [self.instance.mem_dump['path']]
+            return [self.instance.mem_dump['datastore'].type,
+                    self.instance.mem_dump['datastore'].path,
+                    self.instance.mem_dump['filename']]
 
 
 @register_operation
@@ -772,6 +774,7 @@ class SaveAsTemplateOperation(InstanceOperation):
             'ram_size': self.instance.ram_size,
             'raw_data': self.instance.raw_data,
             'system': self.instance.system,
+            'datastore': self.instance.datastore,
         }
         params.update(kwargs)
         params.pop("parent_activity", None)
@@ -923,7 +926,9 @@ class SleepOperation(InstanceOperation):
         def _get_remote_args(self, **kwargs):
             return (super(SleepOperation.SuspendVmOperation, self)
                     ._get_remote_args(**kwargs) +
-                    [self.instance.mem_dump['path']])
+                    [self.instance.mem_dump['datastore'].type,
+                     self.instance.mem_dump['datastore'].path,
+                     self.instance.mem_dump['filename']])
 
 
 @register_operation
@@ -977,7 +982,9 @@ class WakeUpOperation(InstanceOperation):
         def _get_remote_args(self, **kwargs):
             return (super(WakeUpOperation.WakeUpVmOperation, self)
                     ._get_remote_args(**kwargs) +
-                    [self.instance.mem_dump['path']])
+                    [self.instance.mem_dump['datastore'].type,
+                     self.instance.mem_dump['datastore'].path,
+                     self.instance.mem_dump['filename']])
 
 
 @register_operation

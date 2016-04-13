@@ -64,7 +64,7 @@ from ..forms import (
     VmDiskResizeForm, RedeployForm, VmDiskRemoveForm,
     VmMigrateForm, VmDeployForm,
     VmPortRemoveForm, VmPortAddForm,
-    VmRemoveInterfaceForm,
+    VmRemoveInterfaceForm, VmDataStoreForm,
 )
 from request.models import TemplateAccessType, LeaseType
 from request.forms import LeaseRequestForm, TemplateRequestForm
@@ -158,6 +158,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         if self.request.user.is_superuser:
             context['traits_form'] = TraitsForm(instance=instance)
             context['raw_data_form'] = RawDataForm(instance=instance)
+            context['data_store_form'] = VmDataStoreForm(instance=instance)
 
         # resources change perm
         context['can_change_resources'] = self.request.user.has_perm(
@@ -306,6 +307,14 @@ class VmRawDataUpdate(SuperuserRequiredMixin, UpdateView):
     form_class = RawDataForm
     model = Instance
     template_name = 'dashboard/vm-detail/raw_data.html'
+
+    def get_success_url(self):
+        return self.get_object().get_absolute_url() + "#resources"
+
+
+class VmDataStoreUpdate(SuperuserRequiredMixin, UpdateView):
+    form_class = VmDataStoreForm
+    model = Instance
 
     def get_success_url(self):
         return self.get_object().get_absolute_url() + "#resources"
