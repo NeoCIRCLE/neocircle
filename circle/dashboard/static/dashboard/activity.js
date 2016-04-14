@@ -169,6 +169,9 @@ $(function() {
           );
         } else {
           in_progress = false;
+          if(windowHasFocus === false){
+            sendNotification(generateMessageFromLastActivity());
+          }
           if(reload_vm_detail) location.reload();
           if(runs > 1) addConnectText();
         }
@@ -181,6 +184,40 @@ $(function() {
   }
 });
 
+// Notification init
+$(function(){
+  Notification.requestPermission();
+});
+
+// Detect window has focus
+windowHasFocus = true;
+$(window).blur(function(){
+  windowHasFocus = false;
+});
+$(window).focus(function(){
+  windowHasFocus = true;
+});
+
+function generateMessageFromLastActivity(){
+  var ac = $('div.activity').first();
+  if(ac.length === 0) return "";
+  var error = $(ac[0]).children(".timeline-icon-failed").length;
+  var sign = (error === 1) ? "❌ " : "✓ ";
+  return sign + ac[0].innerText.split(",")[0];
+}
+
+function sendNotification(message) {
+  if (Notification.permission === "granted") {
+    var notification = new Notification(message);
+  }
+  else if (Notification.permission !== 'denied') {
+    Notification.requestPermission(function (permission) {
+      if (permission === "granted") {
+        var notification = new Notification(message);
+      }
+    });
+  }
+}
 
 function addConnectText() {
   var activities = $(".timeline .activity");
