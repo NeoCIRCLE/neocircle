@@ -169,7 +169,7 @@ $(function() {
           );
         } else {
           in_progress = false;
-          if(windowHasFocus === false){
+          if(windowHasFocus === false && userWantNotifications()){
             sendNotification(generateMessageFromLastActivity());
           }
           if(reload_vm_detail) location.reload();
@@ -186,7 +186,8 @@ $(function() {
 
 // Notification init
 $(function(){
-  Notification.requestPermission();
+  if(userWantNotifications())
+    Notification.requestPermission();
 });
 
 // Detect window has focus
@@ -200,10 +201,10 @@ $(window).focus(function(){
 
 function generateMessageFromLastActivity(){
   var ac = $('div.activity').first();
-  if(ac.length === 0) return "";
-  var error = $(ac[0]).children(".timeline-icon-failed").length;
+  var error = ac.children(".timeline-icon-failed").length;
   var sign = (error === 1) ? "❌ " : "✓ ";
-  return sign + ac[0].innerText.split(",")[0];
+  var msg = ac.children("strong").text().trim();
+  return sign + msg;
 }
 
 function sendNotification(message) {
@@ -219,6 +220,11 @@ function sendNotification(message) {
   }
 }
 
+function userWantNotifications(){
+  var dn = $("#user-options").data("desktop_notifications");
+  return dn === "True";
+}
+
 function addConnectText() {
   var activities = $(".timeline .activity");
   if(activities.length > 1) {
@@ -228,7 +234,6 @@ function addConnectText() {
     }
   }
 }
-
 
 String.prototype.hashCode = function() {
   var hash = 0, i, chr, len;
