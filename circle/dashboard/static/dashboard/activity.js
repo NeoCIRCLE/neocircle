@@ -203,18 +203,19 @@ function generateMessageFromLastActivity(){
   var ac = $('div.activity').first();
   var error = ac.children(".timeline-icon-failed").length;
   var sign = (error === 1) ? "❌ " : "✓ ";
-  var msg = ac.children("strong").text().trim();
+  var msg = ac.children("strong").text().replace(/\s\s+/g, " ");
   return sign + msg;
 }
 
 function sendNotification(message) {
+  var options = { icon: "/static/dashboard/img/favicon.png"};
   if (Notification.permission === "granted") {
-    var notification = new Notification(message);
+    var notification = new Notification(message, options);
   }
   else if (Notification.permission !== 'denied') {
     Notification.requestPermission(function (permission) {
       if (permission === "granted") {
-        var notification = new Notification(message);
+        var notification = new Notification(message, options);
       }
     });
   }
