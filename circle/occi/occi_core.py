@@ -1,7 +1,7 @@
-def set_optional_attributes(self, optional_attributes, kwargs):
-    for k, v in kwargs.iteritems():
-        if k in optional_attributes:
-            setattr(self, k, v)
+""" Implementation of the OCCI - Core model classes """
+
+
+from occi_utils import set_optional_attributes
 
 
 class Attribute:
