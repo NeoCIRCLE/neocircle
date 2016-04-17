@@ -1643,6 +1643,7 @@ class DataStoreForm(ModelForm):
     class Meta:
         model = DataStore
         fields = ("type", "name", "path", "hostname", )
+        widgets = {"type": HiddenInput()}
 
 
 class CephDataStoreForm(DataStoreForm):

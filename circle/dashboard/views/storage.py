@@ -29,7 +29,7 @@ from django_tables2 import SingleTableView
 from django.http import Http404, HttpResponse
 from django.core.exceptions import PermissionDenied
 
-from braces.views import SuperuserRequiredMixin, LoginRequiredMixin
+from braces.views import SuperuserRequiredMixin
 from sizefield.utils import filesizeformat
 
 from common.models import WorkerNotFound
@@ -46,7 +46,7 @@ from celery.exceptions import TimeoutError
 logger = logging.getLogger(__name__)
 
 
-class StorageChoose(LoginRequiredMixin, TemplateView):
+class StorageChoose(SuperuserRequiredMixin, TemplateView):
 
     def get_template_names(self):
         if self.request.is_ajax():
@@ -139,7 +139,7 @@ class StorageCreate(SuccessMessageMixin, CreateView):
         return fc
 
 
-class StorageList(LoginRequiredMixin, FilterMixin, SingleTableView):
+class StorageList(SuperuserRequiredMixin, FilterMixin, SingleTableView):
     template_name = "dashboard/storage-list.html"
     model = DataStore
     table_class = StorageListTable
@@ -342,4 +342,4 @@ class DataStoreHostCreate(SuccessMessageMixin, CreateView):
         return error_str
 
     def get_success_url(self):
-        return reverse_lazy("dashboard.views.storage-list")  # TODO
+        return reverse_lazy("dashboard.views.storage-list")
