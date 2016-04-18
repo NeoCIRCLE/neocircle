@@ -203,7 +203,7 @@ function generateMessageFromLastActivity(){
   var ac = $('div.activity').first();
   var error = ac.children(".timeline-icon-failed").length;
   var sign = (error === 1) ? "❌ " : "✓ ";
-  var msg = ac.children("strong").text().replace(/\s\s+/g, " ");
+  var msg = ac.children("strong").text().replace(/\s+/g, " ");
   return sign + msg;
 }
 
