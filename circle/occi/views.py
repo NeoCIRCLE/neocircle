@@ -9,14 +9,17 @@ from vm.models.instance import Instance
 from common.models import HumanReadableException
 from forms import OcciAuthForm
 import json
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.utils.decorators import method_decorator
+from occi_core import ENTITY_KIND
 
 
-# TODO: csrf token
 class OcciLoginView(View):
     """ Authentication for the usage of the OCCI api.
         This view responds with 200 and the access token in a Cookie if the
         authentication succeeded, and with 400 if the provided username and
         password is not valid. """
+    @method_decorator(ensure_csrf_cookie)
     def get(self, request, *args, **kwargs):
         """ Returns a response with a cookie to be used for requests other
             than get. """
@@ -45,34 +48,7 @@ class OcciLogoutView(View):
         result = {"result": "OK"}
         return JsonResponse(result)
 
-
-class WakeUpVM(View):
-    """ A test service which gets a VM to wake up """
+class TestView(View):
+    """ TEST VIEW """
     def get(self, request, *args, **kwargs):
-        vm = Instance.objects.get(pk=6)
-        try:
-            vm.wake_up(user=request.user)
-        except HumanReadableException as e:
-            return HttpResponse(e.get_user_text(), status=400)
-        return HttpResponse("Virtual machine waked up")
-
-
-class SleepVM(View):
-    """ A test service which gets a VM to sleep """
-    def get(self, request, *args, **kwargs):
-        vm = Instance.objects.get(pk=6)
-        try:
-            vm.sleep(user=request.user)
-        except HumanReadableException as e:
-            return HttpResponse(e.get_user_text(), status=400)
-        return HttpResponse("Virtual machine fell asleep")
-
-
-class ComputeListView(View):
-    """ OCCI 1.2 - HTTP protocol - Collections - Compute """
-    def get(self, request, *args, **kwargs):
-        pass
-
-
-class ComputeView(View):
-    pass
+        return JsonResponse(ENTITY_KIND.render_as_json())
