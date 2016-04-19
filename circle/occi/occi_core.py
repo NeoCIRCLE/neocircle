@@ -166,7 +166,7 @@ class Link(Entity):
                                 kwargs)
 
     def render_as_json(self):
-        json = {"kind": self.kind, "id": self.id, "source" : self.source,
+        json = {"kind": self.kind, "id": self.id, "source": self.source,
                 "target": self.target}
         if hasattr(self, "mixins"):
             json["mixins"] = self.mixins

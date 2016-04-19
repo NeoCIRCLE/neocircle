@@ -4,9 +4,9 @@
 
 from django.views.generic import View
 from django.contrib.auth import logout
-from django.http import HttpResponse, JsonResponse
-from vm.models.instance import Instance
-from common.models import HumanReadableException
+from django.http import JsonResponse
+# from vm.models.instance import Instance
+# from common.models import HumanReadableException
 from forms import OcciAuthForm
 import json
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -47,6 +47,7 @@ class OcciLogoutView(View):
         logout(request)
         result = {"result": "OK"}
         return JsonResponse(result)
+
 
 class TestView(View):
     """ TEST VIEW """
