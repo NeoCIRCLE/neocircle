@@ -186,8 +186,8 @@ class Profile(Model):
         help_text=_('Whether user wants to get digested email notifications.'))
     desktop_notifications = BooleanField(
         verbose_name=_("Desktop notifications"), default=False,
-        help_text=_('Whether user wants to get desktop notification when '
-                    'an activity has finished and the window not in focus.'))
+        help_text=_('Whether user wants to get desktop notification when an '
+                    'activity has finished and the window is not in focus.'))
     smb_password = CharField(
         max_length=20,
         verbose_name=_('Samba password'),

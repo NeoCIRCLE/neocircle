@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='profile',
             name='desktop_notifications',
-            field=models.BooleanField(default=False, help_text='Whether user wants to get desktop notification when an activity has finished and the window not in focus.', verbose_name='Desktop notifications'),
+            field=models.BooleanField(default=False, help_text='Whether user wants to get desktop notification when an activity has finished and the window is not in focus.', verbose_name='Desktop notifications'),
         ),
     ]
