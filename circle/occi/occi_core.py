@@ -1,7 +1,7 @@
 """ Implementation of the OCCI - Core model classes """
 
 
-from occi_utils import set_optional_attributes
+from occi_utils import set_optional_attributes, serialize_attributes
 
 
 class Attribute:
@@ -35,8 +35,6 @@ class Category(object):
 
     category_optional_attributes = ("title", "attributes")
 
-    attributes = {}
-
     def __init__(self, scheme, term, **kwargs):
         self.scheme = scheme
         self.term = term
@@ -49,23 +47,23 @@ class Kind(Category):
 
     kind_optional_attributes = ("parent", "actions", "enitities")
 
-    actions = ()
-    entities = ()
-
     def __init__(self, *args, **kwargs):
         super(Kind, self).__init__(*args, **kwargs)
         set_optional_attributes(self, self.kind_optional_attributes,
                                 kwargs)
 
     def render_as_json(self):
-        json = {"term": self.term, "scheme": self.scheme,
-                "attributes": self.attributes, "actions": self.actions}
+        json = {"term": self.term, "scheme": self.scheme}
         if hasattr(self, "title"):
             json["title"] = self.title
         if hasattr(self, "parent"):
             json["parent"] = self.parent
         if hasattr(self, "location"):
             json["location"] = self.location
+        if hasattr(self, "attributes"):
+            json["attributes"] = serialize_attributes(self.attributes)
+        if hasattr(self, "actions"):
+            json["actions"] = serialize_attributes(self.actions)
         return json
 
 
@@ -79,7 +77,7 @@ class Action(Category):
         if hasattr(self, "title"):
             json["title"] = self.title
         if hasattr(self, "attributes"):
-            json["attributes"] = self.attributes
+            json["attributes"] = serialize_attributes(self.attributes)
         return json
 
 
@@ -88,11 +86,6 @@ class Mixin(Category):
 
     mixin_optional_attributes = ("depends", "entities", "applies",
                                  "actions")
-
-    depends = ()
-    entities = ()
-    applies = ()
-    actions = ()
 
     def __init__(self, *args, **kwargs):
         super(Mixin, self).__init__(*args, **kwargs)
@@ -118,8 +111,6 @@ class Entity(object):
 
     entity_optional_attributes = ("mixins", "title")
 
-    mixins = ()
-
     def __init__(self, kind, id, **kwargs):
         self.kind = kind
         self.id = id
@@ -132,16 +123,13 @@ class Resource(Entity):
 
     resource_optional_attributes = ("links", "summary")
 
-    links = ()
-
     def __init__(self, *args, **kwargs):
         super(Resource, self).__init__(*args, **kwargs)
         set_optional_attributes(self, self.resource_optional_attributes,
                                 kwargs)
 
     def render_as_json(self):
-        json = {"kind": self.kind, "id": self.id, "links": self.links,
-                "mixins": self.mixins}
+        json = {"kind": self.kind, "id": self.id}
         if hasattr(self, "title"):
             json["title"] = self.title
         if hasattr(self, "summary"):
@@ -150,6 +138,10 @@ class Resource(Entity):
             json["attributes"] = self.attributes
         if hasattr(self, "actions"):
             json["actions"] = self.actions
+        if hasattr(self, "links"):
+            json["links"] = self.links
+        if hasattr(self, "mixins"):
+            json["mixins"] = self.mixins
         return json
 
 

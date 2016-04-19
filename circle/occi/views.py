@@ -2,16 +2,16 @@
     These views handle the http requests of the API. """
 
 
+import json
 from django.views.generic import View
 from django.contrib.auth import logout
-from django.http import JsonResponse
-# from vm.models.instance import Instance
-# from common.models import HumanReadableException
-from forms import OcciAuthForm
-import json
+from django.http import HttpResponse, JsonResponse, Http404
+from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
-from occi_core import ENTITY_KIND
+from vm.models.instance import Instance
+from forms import OcciAuthForm
+from occi_infrastructure import Compute
 
 
 class OcciLoginView(View):
@@ -24,7 +24,7 @@ class OcciLoginView(View):
         """ Returns a response with a cookie to be used for requests other
             than get. """
         result = {"result": "OK"}
-        return JsonResponse(result)
+        return JsonResponse(result, charset="utf-8")
 
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body.decode("utf-8"))
@@ -33,12 +33,12 @@ class OcciLoginView(View):
         form = OcciAuthForm(data=data, request=request)
         if form.is_valid():
             result = {"result": "OK"}
-            return JsonResponse(result)
+            return JsonResponse(result, charset="utf-8")
         else:
             errors = dict([(k, [unicode(e) for e in v])
                            for k, v in form.errors.items()])
             result = {"result": "ERROR", "errors": errors["__all__"]}
-            return JsonResponse(result, status=400)
+            return JsonResponse(result, status=400, charset="utf-8")
 
 
 class OcciLogoutView(View):
@@ -46,10 +46,31 @@ class OcciLogoutView(View):
     def get(self, request, *args, **kwargs):
         logout(request)
         result = {"result": "OK"}
-        return JsonResponse(result)
+        return JsonResponse(result, charset="utf-8")
 
 
-class TestView(View):
-    """ TEST VIEW """
+class OcciComputeCollectionView(View):
     def get(self, request, *args, **kwargs):
-        return JsonResponse(ENTITY_KIND.render_as_json())
+        if not request.user.is_authenticated():
+            return HttpResponse(status=403)
+        vms = (Instance.get_objects_with_level("user", request.user)
+               .filter(destroyed_at=None))
+        json = {"resources": []}
+        for vm in vms:
+            json["resources"].append(Compute(vm).render_as_json())
+        return JsonResponse(json, charset="utf-8")
+
+
+class OcciComputeView(View):
+    """ View of a compute instance """
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated():
+            return HttpResponse(status=403)
+        try:
+            vm = get_object_or_404(Instance.get_objects_with_level("user",
+                                   request.user), pk=kwargs['id'])
+        except Http404:
+            return JsonResponse({"error": "There is no instance with the" +
+                                 " id " + kwargs['id'] + "."}, status=400)
+        compute = Compute(vm)
+        return JsonResponse(compute.render_as_json(), charset="utf-8")
