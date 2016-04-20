@@ -1,52 +1,11 @@
 """ Implementation of the OCCI - Infrastructure extension classes """
 
 
-from occi_core import Action, Attribute, Resource
-from occi_utils import action_list_for_resource
+from occi_core import Resource
+from occi_utils import action_list_for_resource, OcciActionInvocationError
+from occi_instances import COMPUTE_ACTIONS
+from common.models import HumanReadableException
 
-
-COMPUTE_ATTRIBUTES = [
-    Attribute("occi.compute.architecture", "Object", True, False,
-              description="CPU Architecture of the instance."),
-    Attribute("occi.compute.cores", "Object", True, False,
-              description="Number of virtual CPU cores assigned to " +
-              "the instance."),
-    Attribute("occi.compute.hostname", "Object", True, False,
-              description="Fully Qualified DNS hostname for the " +
-              "instance"),
-    Attribute("occi.compute.share", "Object", True, False,
-              description="Relative number of CPU shares for the " +
-              "instance."),
-    Attribute("occi.compute.memory", "Object", True, False,
-              description="Maximum RAM in gigabytes allocated to " +
-              "the instance."),
-    Attribute("occi.compute.state", "Object", False, True,
-              description="Current state of the instance."),
-    Attribute("occi.compute.state.message", "Object", False, False,
-              description="Human-readable explanation of the current " +
-              "instance state"),
-]
-
-COMPUTE_ACTIONS = [
-    Action("http://schemas.ogf.org/occi/infrastructure/compute/action#",
-           "start", title="Start compute instance"),
-    Action("http://schemas.ogf.org/occi/infrastructure/compute/action#",
-           "stop", title="Stop compute instance",
-           attributes=[Attribute("method", "Object", True, False), ]),
-    Action("http://schemas.ogf.org/occi/infrastructure/compute/action#",
-           "restart", title="Restart compute instance",
-           attributes=[Attribute("method", "Object",
-                                 True, False), ]),
-    Action("http://schemas.ogf.org/occi/infrastructure/compute/action#",
-           "suspend", title="Suspend compute instance",
-           attributes=[Attribute("method", "Object",
-                                 True, False), ]),
-    Action("http://schemas.ogf.org/occi/infrastructure/compute/action#",
-           "save", title="Create a template of compute instance",
-           attributes=[Attribute("method", "Object", True,
-                                 False),
-                       Attribute("name", "Object", True, True), ]),
-]
 
 COMPUTE_STATES = {
     "NOSTATE": "inactive",
@@ -82,7 +41,6 @@ class Compute(Resource):
             "http://schemas.ogf.org/occi/infrastructure#compute", vm.pk)
         self.vm = vm
         self.attributes = self.set_attributes()
-
         self.actions = action_list_for_resource(COMPUTE_ACTIONS)
 
     def set_attributes(self):
@@ -99,3 +57,91 @@ class Compute(Resource):
         attributes["occi.compute.state.message"] = (COMPUTE_STATE_MESSAGES
                                                     .get(self.vm.state))
         return attributes
+
+    def invoke_action(self, user, action, attributes):
+        base = "http://schemas.ogf.org/occi/infrastructure/compute/action#"
+        if action == (base + "start"):
+            self.start(user)
+        elif action == (base + "stop"):
+            self.stop(user, attributes)
+        elif action == (base + "restart"):
+            self.restart(user, attributes)
+        elif action == (base + "suspend"):
+            self.suspend(user, attributes)
+        elif action == (base + "save"):
+            self.save(user, attributes)
+        else:
+            raise OcciActionInvocationError(message="Undefined action.")
+        self.__init__(self.vm)
+
+    def start(self, user):
+        """ Start action on a compute instance """
+        try:
+            if self.vm.status == "SUSPENDED":
+                self.vm.wake_up(user=user)
+            else:
+                self.vm.deploy(user=user)
+        except HumanReadableException as e:
+            raise OcciActionInvocationError(message=e.get_user_text())
+
+    def stop(self, user, attributes):
+        """ Stop action on a compute instance """
+        if "method" not in attributes:
+            raise OcciActionInvocationError(message="No method given.")
+        if attributes["method"] in ("graceful", "acpioff",):
+            try:
+                # TODO: call shutdown properly
+                self.vm.shutdown(user=user)
+            except HumanReadableException as e:
+                raise OcciActionInvocationError(message=e.get_user_text())
+        elif attributes["method"] in ("poweroff",):
+            try:
+                self.vm.shut_off(user=user)
+            except HumanReadableException as e:
+                raise OcciActionInvocationError(message=e.get_user_text())
+        else:
+            raise OcciActionInvocationError(
+                message="Given method is not valid")
+
+    def restart(self, user, attributes):
+        """ Restart action on a compute instance """
+        if "method" not in attributes:
+            raise OcciActionInvocationError(message="No method given.")
+        if attributes["method"] in ("graceful", "warm",):
+            try:
+                # TODO: not working for some reason
+                self.vm.restart(user=user)
+            except HumanReadableException as e:
+                raise OcciActionInvocationError(message=e.get_user_text())
+        elif attributes["method"] in ("cold",):
+            try:
+                self.vm.reset(user=user)
+            except HumanReadableException as e:
+                raise OcciActionInvocationError(message=e.get_user_text())
+        else:
+            raise OcciActionInvocationError(
+                message="Given method is not valid")
+
+    def suspend(self, user, attributes):
+        """ Suspend action on a compute instance """
+        if "method" not in attributes:
+            raise OcciActionInvocationError(message="No method given.")
+        if attributes["method"] in ("hibernate", "suspend",):
+            try:
+                self.vm.sleep(user=user)
+            except HumanReadableException as e:
+                raise OcciActionInvocationError(message=e.get_user_text())
+        else:
+            raise OcciActionInvocationError(
+                message="Given method is not valid")
+
+    def save(self, user, attributes):
+        """ Save action on a compute instance """
+        # TODO: save template
+        raise OcciActionInvocationError(
+            message="Save action not implemented")
+
+
+class Network(Resource):
+    # TODO: network
+    pass

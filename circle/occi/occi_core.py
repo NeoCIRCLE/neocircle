@@ -1,7 +1,7 @@
 """ Implementation of the OCCI - Core model classes """
 
 
-from occi_utils import set_optional_attributes, serialize_attributes
+from occi_utils import set_optional_attributes
 
 
 class Attribute:
@@ -45,7 +45,8 @@ class Category(object):
 class Kind(Category):
     """ OCCI 1.2 - CORE - Classification - Kind """
 
-    kind_optional_attributes = ("parent", "actions", "enitities")
+    kind_optional_attributes = ("parent", "actions", "enitities",
+                                "location",)
 
     def __init__(self, *args, **kwargs):
         super(Kind, self).__init__(*args, **kwargs)
@@ -61,9 +62,14 @@ class Kind(Category):
         if hasattr(self, "location"):
             json["location"] = self.location
         if hasattr(self, "attributes"):
-            json["attributes"] = serialize_attributes(self.attributes)
+            json["attributes"] = {}
+            for attribute in self.attributes:
+                json["attributes"][attribute.name] = (attribute
+                                                      .render_as_json())
         if hasattr(self, "actions"):
-            json["actions"] = serialize_attributes(self.actions)
+            json["actions"] = []
+            for action in self.actions:
+                json["actions"].append(action.scheme + action.term)
         return json
 
 
@@ -77,7 +83,10 @@ class Action(Category):
         if hasattr(self, "title"):
             json["title"] = self.title
         if hasattr(self, "attributes"):
-            json["attributes"] = serialize_attributes(self.attributes)
+            json["attributes"] = {}
+            for attribute in self.attributes:
+                json["attributes"][attribute.name] = (attribute
+                                                      .render_as_json())
         return json
 
 
@@ -93,8 +102,7 @@ class Mixin(Category):
                                 kwargs)
 
     def render_as_json(self):
-        json = {"term": self.term, "scheme": self.scheme,
-                "attributes": self.attributes, "actions": self.actions}
+        json = {"term": self.term, "scheme": self.scheme}
         if hasattr(self, "title"):
             json["title"] = self.title
         if hasattr(self, "location"):
@@ -103,6 +111,15 @@ class Mixin(Category):
             json["depends"] = self.depends
         if hasattr(self, "applies"):
             json["applies"] = self.applies
+        if hasattr(self, "attributes"):
+            json["attributes"] = {}
+            for attribute in self.attributes:
+                json["attributes"][attribute.name] = (attribute
+                                                      .render_as_json())
+        if hasattr(self, "actions"):
+            json["actions"] = []
+            for action in self.actions:
+                json["actions"].append(action.scheme + action.term)
         return json
 
 
@@ -169,11 +186,3 @@ class Link(Entity):
         if hasattr(self, "title"):
             json["title"] = self.title
         return json
-
-
-ENTITY_KIND = Kind("http://schemas.ogf.org/occi/core#", "entity",
-                   title="Entity")
-
-RESOURCE_KIND = Kind("http://schemas.ogf.org/occi/core#", "resource",
-                     title="Resource",
-                     parent="http://schemas.ogf.org/occi/core#entity")

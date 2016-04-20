@@ -1,5 +1,38 @@
 """" Utilities for the OCCI implementation of CIRCLE """
 
+from django.http import JsonResponse, HttpResponse
+import json
+
+
+class OcciResourceInstanceNotExist(Exception):
+    def __init__(self):
+        message = "The resource instance does not exist."
+        super(OcciResourceInstanceNotExist, self).__init__(message)
+        self.response = JsonResponse({"error": message}, status=404,
+                                     charset="utf-8")
+
+
+class OcciActionInvocationError(Exception):
+    def __init__(self, *args, **kwargs):
+        message = kwargs.get("message", "Could not invoke action.")
+        super(OcciActionInvocationError, self).__init__(message)
+        self.response = JsonResponse({"error": message}, status=400,
+                                     charset="utf-8")
+
+
+class OcciResponse(HttpResponse):
+    """ A response class with its occi headers set """
+    # TODO: setting occi specific headers
+    def init(self, data, response_type, *args, **kwargs):
+        if response_type == "json":
+            data = json.dumps(data)
+        super(OcciResponse, self).__init__(data, status=418)
+        if response_type == "json":
+            self["Content-Type"] = "application/json"
+        else:
+            self["Content-Type"] = "text/plain"
+        self["Server"] = "OCCI/1.2"
+
 
 def set_optional_attributes(self, optional_attributes, kwargs):
     """ Sets the optional arguments of an instance.

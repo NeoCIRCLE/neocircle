@@ -47,6 +47,14 @@ with requests.Session() as session:
                 print(error)
         print
 
+        # query interface
+        req = session.get(server + "occi/-/", headers=headers, verify=False)
+        print("query-interface")
+        print("---------------")
+        print("status_code: " + str(req.status_code))
+        print(req.text)
+        print
+
         # osszes vm collectionkent
         req = session.get(server + "occi/compute/", headers=headers,
                           verify=False)
@@ -58,10 +66,59 @@ with requests.Session() as session:
 
         # az elso vm a listabol
         vmid = json.loads(req.text)["resources"][0]["id"]
-        req = session.get(server + "occi/compute/" + str(vmid),
+        req = session.get(server + "occi/compute/" + str(vmid) + "/",
                           headers=headers, verify=False)
         print("compute-"+str(vmid))
         print("------------")
+        print("status_code: " + str(req.status_code))
+        print(req.text)
+        print
+
+        # ha nem active, akkor azza tesszuk
+        state = json.loads(req.text)["attributes"]["occi.compute.state"]
+        action = "http://schemas.ogf.org/occi/infrastructure/compute/action#"
+        if state != "active":
+            try:
+                headers["X-CSRFToken"] = req.cookies['csrftoken']
+            except:
+                pass
+            req = session.post(server + "occi/compute/" + str(vmid) + "/",
+                               headers=headers, verify=False,
+                               data=json.dumps({"action": action + "start"}))
+            print("compute-" + str(vmid) + "-start")
+            print("---------------")
+            print("status_code: " + str(req.status_code))
+            print(req.text)
+            print
+
+        # restart
+        try:
+            headers["X-CSRFToken"] = req.cookies['csrftoken']
+        except:
+            pass
+        actionatrs = {"method": "cold"}
+        actioninv = {"action": action + "restart", "attributes": actionatrs}
+        req = session.post(server + "occi/compute/" + str(vmid) + "/",
+                           headers=headers, verify=False,
+                           data=json.dumps(actioninv))
+        print("compute-"+str(vmid) + "-restart")
+        print("-----------------")
+        print("status_code: " + str(req.status_code))
+        print(req.text)
+        print
+
+        # suspend
+        try:
+            headers["X-CSRFToken"] = req.cookies['csrftoken']
+        except:
+            pass
+        actioninv["action"] = action + "suspend"
+        actioninv["attributes"]["method"] = "suspend"
+        req = session.post(server + "occi/compute/" + str(vmid) + "/",
+                           headers=headers, verify=False,
+                           data=json.dumps(actioninv))
+        print("compute-" + str(vmid) + "-suspend")
+        print("-----------------")
         print("status_code: " + str(req.status_code))
         print(req.text)
         print
