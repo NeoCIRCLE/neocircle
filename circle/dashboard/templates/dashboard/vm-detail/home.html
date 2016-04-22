@@ -59,8 +59,8 @@
         {% if instance.is_expiring %}<i class="fa fa-warning-sign text-danger"></i>{% endif %}
         <span id="vm-details-renew-op">
           {% with op=op.renew %}{% if op %}
-            <a href="{{op.get_url}}" class="btn btn-{{op.effect}} btn-xs
-                    operation operation-{{op.op}}">
+            <a href="{{op.get_url}}" class="btn btn-xs operation operation-{{ op.op }}
+              {% if op.disabled %}btn-default disabled{% else %}btn-{{op.effect}}{% endif %}">
               <i class="fa fa-{{op.icon}}"></i>
               {{op.name}}
             </a>
