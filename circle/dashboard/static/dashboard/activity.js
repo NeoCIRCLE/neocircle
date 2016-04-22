@@ -169,7 +169,7 @@ $(function() {
           );
         } else {
           in_progress = false;
-          if(windowHasFocus === false && userWantNotifications()){
+          if(document.hasFocus() === false && userWantNotifications()){
             sendNotification(generateMessageFromLastActivity());
           }
           if(reload_vm_detail) location.reload();
@@ -190,17 +190,8 @@ $(function(){
     Notification.requestPermission();
 });
 
-// Detect window has focus
-windowHasFocus = true;
-$(window).blur(function(){
-  windowHasFocus = false;
-});
-$(window).focus(function(){
-  windowHasFocus = true;
-});
-
 function generateMessageFromLastActivity(){
-  var ac = $('div.activity').first();
+  var ac = $("div.activity").first();
   var error = ac.children(".timeline-icon-failed").length;
   var sign = (error === 1) ? "❌ " : "✓ ";
   var msg = ac.children("strong").text().replace(/\s+/g, " ");
@@ -212,7 +203,7 @@ function sendNotification(message) {
   if (Notification.permission === "granted") {
     var notification = new Notification(message, options);
   }
-  else if (Notification.permission !== 'denied') {
+  else if (Notification.permission !== "denied") {
     Notification.requestPermission(function (permission) {
       if (permission === "granted") {
         var notification = new Notification(message, options);
