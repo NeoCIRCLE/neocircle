@@ -253,7 +253,7 @@ $(function() {
   });
 
   $("#id_boot_menu").change(function(){
-    $("#id_boot_menu").parents("form").submit();
+    $(this).parents("form").submit();
   });
 
 });
