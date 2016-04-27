@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 @celery.task
-def garbage_collector(timeout=15):
+def garbage_collector(timeout=15, percent=10):
     """ Garbage collector for disk images.
 
     If there is not enough free space on datastore (default 10%)
@@ -45,9 +45,11 @@ def garbage_collector(timeout=15):
             logger.info("Image: %s at Datastore: %s fetch for destroy." %
                         (i, ds.path))
         try:
-            storage_tasks.make_free_space.apply_async(
-                args=[ds.type, ds.path, deletable_disks],
+            success = storage_tasks.make_free_space.apply_async(
+                args=[ds.type, ds.path, deletable_disks, percent],
                 queue=queue_name).get(timeout=timeout)
+            if not success:
+                logger.warning("Has no deletable disk.")
         except Exception as e:
             logger.warning(str(e))
 
@@ -59,15 +61,11 @@ def list_orphan_disks(timeout=15):
     Exclude cloud-xxxxxxxx.dump format images.
 
     :param timeout: Seconds before TimeOut exception
-    :type timeoit: int
+    :type timeout: int
     """
     import re
     for ds in DataStore.objects.all():
-        queue_name = ds.get_remote_queue_name('storage', "slow")
-        files = set(storage_tasks.list_files.apply_async(
-            args=[ds.type, ds.path], queue=queue_name).get(timeout=timeout))
-        disks = set([disk.filename for disk in ds.disk_set.all()])
-        for i in files - disks:
+        for i in ds.get_orphan_disks(timeout=timeout):
             if not re.match('cloud-[0-9]*\.dump', i):
                 logging.warning("Orphan disk: %s" % i)
 
@@ -77,14 +75,9 @@ def list_missing_disks(timeout=15):
     """List Disk objects without disk image files.
 
     :param timeout: Seconds before TimeOut exception
-    :type timeoit: int
+    :type timeout: int
     """
     for ds in DataStore.objects.all():
-        queue_name = ds.get_remote_queue_name('storage', "slow")
-        files = set(storage_tasks.list_files.apply_async(
-            args=[ds.type, ds.path], queue=queue_name).get(timeout=timeout))
-        disks = set([disk.filename for disk in
-                     ds.disk_set.filter(destroyed__isnull=True)])
-        for i in disks - files:
+        for i in ds.get_missing_disks(timeout=timeout):
             logging.critical("Image: %s is missing from %s datastore."
                              % (i, ds.path))

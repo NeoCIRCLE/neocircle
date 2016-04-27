@@ -63,8 +63,8 @@ def merge(src_disk_desc, dst_disk_desc):
     pass
 
 
-@celery.task(name='storagedriver.is_exists')
-def is_exists(data_store_type, path, disk_name):
+@celery.task(name='storagedriver.exists')
+def exists(data_store_type, path, disk_name):
     pass
 
 

@@ -139,6 +139,11 @@ class DataStore(Model):
     @method_cache(30)
     def get_orphan_disks(self, timeout=15):
         """Disk image files without Disk object in the database.
+
+        Exclude cloud-xxxxxxxx.dump format images.
+
+        :param timeout: Seconds before TimeOut exception
+        :type timeout: int
         """
         queue_name = self.get_remote_queue_name('storage', "slow")
         files = set(storage_tasks.list_files.apply_async(
@@ -155,6 +160,9 @@ class DataStore(Model):
     @method_cache(30)
     def get_missing_disks(self, timeout=15):
         """Disk objects without disk image files.
+
+        :param timeout: Seconds before TimeOut exception
+        :type timeout: int
         """
         queue_name = self.get_remote_queue_name('storage', "slow")
         files = set(storage_tasks.list_files.apply_async(
@@ -599,7 +607,7 @@ class Disk(TimeStampedModel):
         """
         queue_name = self.datastore.get_remote_queue_name(
             'storage', priority='slow')
-        res = storage_tasks.is_exists.apply_async(
+        res = storage_tasks.exists.apply_async(
             args=[self.datastore.type,
                   self.datastore.path,
                   self.filename],
