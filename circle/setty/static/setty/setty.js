@@ -779,6 +779,7 @@ jsPlumb.ready(function() {
     });
 
     $(document).ready(function() {
+		if(!$("#dropContainer").length) return;  // Protection for not posting sites that differ from setty sites.
         $.post("", {
             event: "loadService"
         }, function(result) {

@@ -102,9 +102,13 @@ class IndexView(LoginRequiredMixin, TemplateView):
                 'operator', user, disregard_superuser=True).all()[:5]
 
         # setty services
-        if user.has_perm('vm.create_template'):
-            context['services'] = Service.objects.filter(
-                user=user).order_by('-pk')[:5]
+        if user.has_perm('setty.add_service'):
+            if user.is_superuser:
+                context['services'] = Service.objects.all().order_by(
+                    '-pk')[:5]
+            else:
+                context['services'] = Service.objects.filter(
+                    user=user).order_by('-pk')[:5]
 
         # toplist
         if settings.STORE_URL:

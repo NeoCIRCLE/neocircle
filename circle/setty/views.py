@@ -15,16 +15,26 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.contrib import messages  # NOTE: ezt tettem ide
 from django.core.exceptions import PermissionDenied
-from django.core.urlresolvers import reverse_lazy
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from braces.views import LoginRequiredMixin
 from django.views.generic import TemplateView, DeleteView
+from django_tables2 import SingleTableView
 from .models import Element, ElementTemplate, ElementConnection, Service
+from dashboard.views.util import FilterMixin
 from django.utils.translation import ugettext as _
 import json
+import logging
+
+
+from tables import ServiceListTable
+from forms import ServiceListSearchForm
+
+logger = logging.getLogger(__name__)
 
 
 class DetailView(LoginRequiredMixin, TemplateView):
@@ -145,6 +155,7 @@ class CreateView(LoginRequiredMixin, TemplateView):
 
         service = Service(
             name=service_name,
+            status="stopped",
             user=self.request.user
         )
         service.save()
@@ -159,5 +170,49 @@ class StopView(LoginRequiredMixin, TemplateView):
     pass
 
 
-class ListView(LoginRequiredMixin, TemplateView):
-    pass
+class ListView(LoginRequiredMixin, FilterMixin, SingleTableView):
+    template_name = "setty/tables/service-list.html"
+    model = Service
+    table_class = ServiceListTable
+    table_pagination = False
+
+    allowed_filters = {
+        'name': "name__icontains",
+    }
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(ListView, self).get_context_data(*args, **kwargs)
+        context['search_form'] = self.search_form
+        return context
+
+    def get(self, *args, **kwargs):
+        self.search_form = ServiceListSearchForm(self.request.GET)
+        self.search_form.full_clean()
+
+        if self.request.is_ajax():
+            services = [{
+                'url': reverse("setty.views.service-detail",
+                               kwargs={'pk': i.pk}),
+                'status': i.status,
+                'name': i.name} for i in self.get_queryset()]
+            return HttpResponse(
+                json.dumps(services),
+                content_type="application/json",
+            )
+        else:
+            return super(ListView, self).get(*args, **kwargs)
+
+    def get_queryset(self):
+        logger.debug('ListView.get  _queryset() called. User: %s',
+                     unicode(self.request.user))
+        qs = self.model.objects.all()
+        self.create_fake_get()  # NOTE: ezt tettem ide
+        try:
+            filters, excludes = self.get_queryset_filters()
+            if not self.request.user.is_superuser:
+                filters['user'] = self.request.user  # NOTE: ezt visszairtam
+            qs = qs.filter(**filters).exclude(**excludes).distinct()
+        except ValueError:
+            messages.error(self.request, _("Error during filtering."))
+
+        return qs
