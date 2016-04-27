@@ -29,6 +29,7 @@ from celery.contrib.abortable import AbortableAsyncResult
 from django.db.models import (Model, BooleanField, CharField, DateTimeField,
                               ForeignKey, IntegerField, ManyToManyField)
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from model_utils.models import TimeStampedModel
@@ -679,3 +680,10 @@ class Disk(TimeStampedModel):
         disk.is_ready = True
         disk.save()
         return disk
+
+    def get_absolute_url(self):
+        return reverse('dashboard.views.disk-detail', kwargs={'pk': self.pk})
+
+    @property
+    def is_resizable(self):
+        return self.type in ('qcow2-norm', 'raw-rw', 'qcow2-snap', )

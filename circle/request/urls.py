@@ -23,7 +23,7 @@ from .views import (
     LeaseTypeCreate, LeaseTypeDetail,
     TemplateAccessTypeCreate, TemplateAccessTypeDetail,
     TemplateRequestView, LeaseRequestView, ResourceRequestView,
-    LeaseTypeDelete, TemplateAccessTypeDelete,
+    LeaseTypeDelete, TemplateAccessTypeDelete, ResizeRequestView,
 )
 
 urlpatterns = patterns(
@@ -60,4 +60,6 @@ urlpatterns = patterns(
         name="request.views.request-lease"),
     url(r'resource/(?P<vm_pk>\d+)/$', ResourceRequestView.as_view(),
         name="request.views.request-resource"),
+    url(r'resize/(?P<vm_pk>\d+)/(?P<disk_pk>\d+)/$',
+        ResizeRequestView.as_view(), name="request.views.request-resize"),
 )

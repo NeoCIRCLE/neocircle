@@ -314,6 +314,9 @@ class ResizeDiskOperation(RemoteInstanceOperation):
             size=filesizeformat(kwargs['size']), name=kwargs['disk'].name)
 
     def _operation(self, disk, size):
+        if not disk.is_resizable:
+            raise HumanReadableException.create(ugettext_noop(
+                'Disk type "%(type)s" is not resizable.'), type=disk.type)
         super(ResizeDiskOperation, self)._operation(disk=disk, size=size)
         disk.size = size
         disk.save()
@@ -642,6 +645,7 @@ class RemovePortOperation(InstanceOperation):
     name = _("close port")
     description = _("Close the specified port.")
     concurrency_check = False
+    acl_level = "operator"
     required_perms = ('vm.config_ports', )
 
     def _operation(self, activity, rule):
@@ -660,6 +664,7 @@ class AddPortOperation(InstanceOperation):
     name = _("open port")
     description = _("Open the specified port.")
     concurrency_check = False
+    acl_level = "operator"
     required_perms = ('vm.config_ports', )
 
     def _operation(self, activity, host, proto, port):
@@ -873,7 +878,9 @@ class ShutOffOperation(InstanceOperation):
 
     def _operation(self, activity):
         # Shutdown networks
-        with activity.sub_activity('shutdown_net'):
+        with activity.sub_activity('shutdown_net',
+                                   readable_name=ugettext_noop(
+                                       "shutdown network")):
             self.instance.shutdown_net()
 
         self.instance._delete_vm(parent_activity=activity)

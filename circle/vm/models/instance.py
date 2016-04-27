@@ -708,7 +708,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
     def _is_suspend_expiring(self, threshold=0.1):
         interval = self.lease.suspend_interval
-        if self.time_of_suspend is not None and interval is not None:
+        if (self.status != "SUSPENDED" and
+                self.time_of_suspend is not None and interval is not None):
             limit = timezone.now() + timedelta(seconds=(
                 threshold * self.lease.suspend_interval.total_seconds()))
             return limit > self.time_of_suspend

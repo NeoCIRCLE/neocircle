@@ -1,0 +1,534 @@
+{% extends "dashboard/base.html" %}
+
+{% load staticfiles %}
+{% load i18n %}
+
+{% block title-page %}{% trans "Resize how-to" %}{% endblock %}
+{% block content %}
+<div class="row" id="resize-help">
+  <div class="col-lg-12">
+    <div class="page-header">
+      <h1 id="disk-linux">
+        <i class="fa fa-linux"></i>
+        {% trans "Expanding disk on Linux" %}
+      </h1>
+    </div>
+
+    <p>
+      {% blocktrans %}
+      If you don't have enogh space on your virtual machine you can ask for more.
+      After a request has been made an administrator can extend your HDD.
+      If the request is granted you have to manually rescan
+      and extend a logical volume on your machine to acquire the extra space.
+      To do so you need root access/administrator rights.
+      {% endblocktrans %}
+    </p>
+
+    <ol>
+      <li>
+        {% trans "Ask the administrator for more space. After it has been granted do the following steps." %}
+      </li>
+      <li>
+        {% blocktrans %}
+        You can check how much free space is left on your machine
+        (on Debian based distributions like Ubuntu) with the
+        <strong><code>df -h</code></strong> command.
+        As you can see below we need more space on
+        <strong>/</strong> so we will extend
+        <strong>/dev/mapper/cloud–x–vg-root</strong>.
+        {% endblocktrans %}
+
+        <div class="panel panel-default table-responsive">
+          <table class="table">
+            <thead>
+            <tr>
+              <th>Filesystem</th>
+              <th>Size</th>
+              <th>Used</th>
+              <th>Avail</th>
+              <th>Use%</th>
+              <th>Mounted on</th>
+            </tr>
+            </thead>
+            <tbody><tr>
+              <td><strong>/dev/mapper/cloud–x–vg-root</strong></td>
+              <td>39G</td>
+              <td>37G</td>
+              <td>65M</td>
+              <td>100%</td>
+              <td><strong>/</strong></td>
+            </tr>
+            <tr>
+              <td>none</td>
+              <td>4.0K</td>
+              <td>0</td>
+              <td>4.0K</td>
+              <td>0%</td>
+              <td>/sys/fs/cgroup</td>
+            </tr>
+            <tr>
+              <td>udev</td>
+              <td>487M</td>
+              <td>4.0K</td>
+              <td>487M</td>
+              <td>1%</td>
+              <td>/dev</td>
+            </tr>
+            <tr>
+              <td>tmpfs</td>
+              <td>100M</td>
+              <td>368K</td>
+              <td>100M</td>
+              <td>1%</td>
+              <td>/run</td>
+            </tr>
+            <tr>
+              <td>none</td>
+              <td>5.0M</td>
+              <td>0</td>
+              <td>5.0M</td>
+              <td>0%</td>
+              <td>/run/lock</td>
+            </tr>
+            <tr>
+              <td>none</td>
+              <td>498M</td>
+              <td>0</td>
+              <td>498M</td>
+              <td>0%</td>
+              <td>/run/shm</td>
+            </tr>
+            <tr>
+              <td>none</td>
+              <td>100M</td>
+              <td>0</td>
+              <td>100M</td>
+              <td>0%</td>
+              <td>/run/user</td>
+            </tr>
+            <tr>
+              <td>/dev/vda1</td>
+              <td>236M</td>
+              <td>37M</td>
+              <td>187M</td>
+              <td>17%</td>
+              <td>/boot</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </li>
+      <li>
+        {% blocktrans %}
+        List logical volumes and find the
+        <strong>VG Name</strong>
+        (volume group name) of
+        <strong>/dev/mapper/cloud–x–vg-root</strong>:
+        <code>lvdisplay</code></p>
+        {% endblocktrans %}
+
+  <pre>
+  — Logical volume —
+  <em>LV Path                /dev/cloud-x-vg/root</em>
+  LV Name                root
+  <strong>VG Name                cloud-x-vg</strong>
+  LV UUID                xlGizo-eVyj-aqRn-Us7d-BRzj-dsKW-U6kp0F
+  LV Write Access        read/write
+  LV Creation host, time cloud-x, 2014-07-31 13:17:53 +0200
+  LV Status              available
+  <code>#</code> open                 1
+  LV Size                38.76 GiB
+  Current LE             9923
+  Segments               2
+  Allocation             inherit
+  Read ahead sectors     auto
+  <code>-</code> currently set to     256
+  Block device           252:0</pre>
+
+    </li>
+      <li>
+        {% blocktrans %}
+        List physical volumes to get the
+        <strong>PV Name</strong> (partition name) of the
+        <strong>cloud-x-vg</strong> volume group:
+        <code>pvdisplay</code>
+        {% endblocktrans %}
+
+  <pre>
+  — Physical volume —
+  <strong>PV Name               /dev/vda5</strong>
+  <em>VG Name               cloud-x-vg</em>
+  PV Size               39.76 GiB / not usable 2.00 MiB
+  Allocatable           yes (but full)
+  PE Size               4.00 MiB
+  Total PE              10178
+  Free PE               0
+  Allocated PE          10178
+  PV UUID               JDp5TP-PHjT-Cgwk-MN4h-iAnk-9dfT-lYoldd</pre>
+
+      </li>
+      <li>
+        {% blocktrans %}
+        List the partitions with fdisk:
+        <strong><code>fdisk /dev/vda</code></strong>
+        and press <strong>p</strong>.
+        This will show something similar:
+        {% endblocktrans %}
+
+        <div class="panel panel-default table-responsive">
+          <table class="table">
+            <thead>
+            <tr>
+              <th>Device</th>
+              <th>Boot</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Blocks</th>
+              <th>Id</th>
+              <th>System</th>
+            </tr>
+            </thead>
+            <tbody><tr>
+              <td>/dev/vda1</td>
+              <td>*</td>
+              <td>2048</td>
+              <td>499711</td>
+              <td>248832</td>
+              <td>83</td>
+              <td>Linux</td>
+            </tr>
+            <tr>
+              <td>/dev/vda2</td>
+              <td></td>
+              <td>501758</td>
+              <td>83884031</td>
+              <td>41691137</td>
+              <td>5</td>
+              <td>Extended</td>
+            </tr>
+            <tr>
+              <td>/dev/vda5</td>
+              <td></td>
+              <td>501760</td>
+              <td>83884031</td>
+              <td>41691136</td>
+              <td>8e</td>
+              <td>Linux LVM</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+        {% blocktrans %}
+        As you can see, the <strong>/dev/vda5</strong> is in the
+        <strong>/dev/vda2</strong> Extended partition.
+        To resize it we have to recreate the Extended partition.
+        {% endblocktrans %}
+       </p>
+      </li>
+      <li>
+        <p>{% trans "Delete the Extended partition:" %}</p>
+        <p>
+          {% blocktrans %}
+          Press <strong>d</strong> and the number of the partition.
+          In the example above the extended partition name is
+          <strong>vda2</strong> so press <strong>2</strong>.
+          {% endblocktrans %}
+        </p>
+      </li>
+      <li>
+        <p>{% trans "Create extended partition:" %}</p>
+        <p>
+          {% blocktrans %}
+          Press <strong>n</strong> to create new partition.
+          Type <strong>e</strong> to choose extended type.
+          Set partition number - the same as you deleted above:
+          <strong>2</strong>.
+          You can use the default starting and ending sector.
+          {% endblocktrans %}
+        </p>
+      </li>
+      <li>
+        <p>{% trans "Create logical partition:" %}</p>
+        <p>
+          {% blocktrans %}
+          Press <strong>n</strong> to create new partition.
+          Type <strong>l</strong> to choose logical type.
+          Set partition number - the same as the Linux LVM (vda5) has above: <strong>5</strong>.
+          You can use the default starting and ending sector.
+          {% endblocktrans %}
+        </p>
+      </li>
+      <li>
+        <p>{% trans "Change the logical partition’s type:" %}</p>
+        <p>
+          {% blocktrans %}
+          Press <strong>t</strong> to change type.
+          Set the logical partition’s number: <strong>5</strong> (vda5).
+          Type <strong>8e</strong> to choose Linux LVM type.
+          (to show the full list, press L).
+          {% endblocktrans %}
+        </p>
+      </li>
+      <li>
+        <p>{% trans "Save and exit: Press <strong>w</strong>." %}</p>
+        <p>{% trans "If you list the partitions again, you will see the difference:" %}</p>
+
+        <div class="panel panel-default table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Device</th>
+                <th>Boot</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Blocks</th>
+                <th>Id</th>
+                <th>System</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>/dev/vda1</td>
+                <td>*</td>
+                <td>2048</td>
+                <td>499711</td>
+                <td>248832</td>
+                <td>83</td>
+                <td>Linux</td>
+              </tr>
+              <tr>
+                <td>/dev/vda2</td>
+                <td></td>
+                <td>499712</td>
+                <td>89338673</td>
+                <td><strong>44419481</strong></td>
+                <td>5</td>
+                <td>Extended</td>
+              </tr>
+              <tr>
+                <td>/dev/vda5</td>
+                <td></td>
+                <td>501760</td>
+                <td>89338673</td>
+                <td><strong>44418457</strong></td>
+                <td>8e</td>
+                <td>Linux LVM</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </li>
+      <li>
+        <p>
+          {% trans "Reread partition table:" %}
+          <code>partprobe  -s /dev/vda</code>
+        </p>
+
+  <pre>
+  /dev/vda: msdos partitions 1 2 <5></pre>
+
+      </li>
+      <li>
+        <p>
+          {% trans "Resize logical partition:" %}
+          <code>pvresize /dev/vda5</code>
+        </p>
+
+  <pre>
+  Physical volume “/dev/vda5” changed
+  1 physical volume(s) resized / 0 physical volume(s) not resized</pre>
+
+      </li>
+      <li>
+        <p>
+          {% trans "Check Free PE / Size:" %}
+          <code>vgdisplay</code>
+        </p>
+
+  <pre>
+  ...
+  Free  PE / Size           666 / <strong>2.60 GiB</strong>
+  ...</pre>
+
+      </li>
+      <li>
+        <p>
+          {% trans "Extend LVM:" %}
+          <code>lvextend -L</code>+<strong>2.6G</strong>
+          <code>/dev/mapper/cloud--x--vg-root</code>
+        </p>
+
+  <pre>
+  Rounding size to boundary between physical extents: 2.60 GiB
+  Extending logical volume root to 41.36 GiB
+  Logical volume root successfully resized</pre>
+
+      </li>
+      <li>
+        <p>
+          {% trans "Finally, resize filesystem:" %}
+          <code>resize2fs /dev/mapper/cloud--x--vg-root</code>
+        </p>
+
+  <pre>
+  resize2fs 1.42.9 (4-Feb-2014)
+  Filesystem at /dev/mapper/cloud–x–vg-root is mounted on /; on-line resizing required
+  old_desc_blocks = 3, new_desc_blocks = 3
+  The filesystem on /dev/mapper/cloud–x–vg-root is now 10843136 blocks long.</pre>
+
+      </li>
+    </ol>
+
+    <p>
+      {% blocktrans %}
+      The <strong><code>df -h</code></strong> will show now some free space on your <strong>/</strong>:
+      {% endblocktrans %}
+    </p>
+
+    <div class="panel panel-default table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Filesystem</th>
+            <th>Size</th>
+            <th>Used</th>
+            <th>Avail</th>
+            <th>Use%</th>
+            <th>Mounted on</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>/dev/mapper/cloud–x–vg-root</strong></td>
+            <td><strong>41G</strong></td>
+            <td>37G</td>
+            <td><strong>2.6G</strong></td>
+            <td><strong>94%</strong></td>
+            <td><strong>/</strong></td>
+          </tr>
+          <tr>
+            <td>none</td>
+            <td>4.0K</td>
+            <td>0</td>
+            <td>4.0K</td>
+            <td>0%</td>
+            <td>/sys/fs/cgroup</td>
+          </tr>
+          <tr>
+            <td>udev</td>
+            <td>487M</td>
+            <td>4.0K</td>
+            <td>487M</td>
+            <td>1%</td>
+            <td>/dev</td>
+          </tr>
+          <tr>
+            <td>tmpfs</td>
+            <td>100M</td>
+            <td>368K</td>
+            <td>100M</td>
+            <td>1%</td>
+            <td>/run</td>
+          </tr>
+          <tr>
+            <td>none</td>
+            <td>5.0M</td>
+            <td>0</td>
+            <td>5.0M</td>
+            <td>0%</td>
+            <td>/run/lock</td>
+          </tr>
+          <tr>
+            <td>none</td>
+            <td>498M</td>
+            <td>0</td>
+            <td>498M</td>
+            <td>0%</td>
+            <td>/run/shm</td>
+          </tr>
+          <tr>
+            <td>none</td>
+            <td>100M</td>
+            <td>0</td>
+            <td>100M</td>
+            <td>0%</td>
+            <td>/run/user</td>
+          </tr>
+          <tr>
+            <td>/dev/vda1</td>
+            <td>236M</td>
+            <td>37M</td>
+            <td>187M</td>
+            <td>17%</td>
+            <td>/boot</td>
+          </tr>
+        </tbody>
+      </table>
+    </div><!-- .panel panel-default -->
+
+    <hr />
+
+    <h1 id="disk-win7">
+      <i class="fa fa-windows"></i>
+      {% trans "Expanding disk on Windows 7" %}
+    </h1>
+
+    <p>
+      {% blocktrans %}
+      If we don’t have enogh space on our virtual machine, we can ask more.
+      After the request, the administrator will extend your HDD, but you have
+      to rescan and extend it manually on your machine.
+      {% endblocktrans %}
+    </p>
+
+    <ol>
+      <li>
+        {% trans "Ask the administrator for more space. After they had given more, do the following steps." %}
+        <img src="{% static "dashboard/img/resize/1.png" %}"
+             alt="Sometimes we don't have enough space"/>
+      </li>
+      <li>
+        {% blocktrans %}
+        Click on the Start menu, and type: <code>disk management</code>.
+        Click the <code>Create and format hard disk partitions</code>
+        {% endblocktrans %}
+        <img src="{% static "dashboard/img/resize/2.png" %}" alt="{% trans "Start menu" %}" class="img-responsive">
+      </li>
+      <li>
+        {% trans "Currently you can’t see the extended size." %}
+        <img src="{% static "dashboard/img/resize/3.png" %}" alt="{% trans "Disk Management" %}" class="img-responsive">
+      </li>
+      <li>
+        {% blocktrans %}
+        To update the disk information, click <code>Rescan Disks</code> on the <code>Action</code> menu.
+        {% endblocktrans %}
+        <img src="{% static "dashboard/img/resize/4.png" %}" alt="{% trans "Rescan Disks" %}" class="img-responsive">
+      </li>
+      <li>
+        {% trans "After scanning Unallocated space appeared." %}
+        <img src="{% static "dashboard/img/resize/5.png" %}" alt="{% trans "New unallocated space" %}" class="img-responsive">
+      </li>
+      <li>
+        {% trans "To extend the C drive, right click on it, and select <code>Extend Volume</code>." %}
+        <img src="{% static "dashboard/img/resize/6.png" %}" alt="{% trans "Extend Volume..." %}" class="img-responsive">
+        <pre>{% trans "You can also create a new partition from the unallocated space." %}</pre>
+      </li>
+      <li>
+        {% blocktrans %}
+        In the wizard you can change, how much space will you using from the unallocated space.
+        The default is to use all, so press <kbd>Next</kbd>,<kbd>Next</kbd>,<kbd>Finish</kbd>.
+        {% endblocktrans %}
+        <img src="{% static "dashboard/img/resize/7_1.png" %}" alt="{% trans "Extend Volume Wizard" %}" class="img-responsive">
+        <img src="{% static "dashboard/img/resize/7_2.png" %}" alt="{% trans "Next" %}" class="img-responsive">
+        <img src="{% static "dashboard/img/resize/7_3.png" %}" alt="{% trans "Finish" %}" class="img-responsive">
+      </li>
+      <li>
+        {% trans "Your partition is now bigger." %}
+        <img src="{% static "dashboard/img/resize/8_1.png" %}" alt="{% trans "Bigger partition" %}" class="img-responsive">
+        <img src="{% static "dashboard/img/resize/8_2.png" %}" alt="{% trans "More free space" %}" class="img-responsive">
+      </li>
+    </ol>
+  </div><!-- .col-lg-12 -->
+</div><!-- .row -->
+{% endblock %}

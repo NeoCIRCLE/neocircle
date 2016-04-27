@@ -1244,7 +1244,7 @@ class MyProfileForm(forms.ModelForm):
 
     class Meta:
         fields = ('preferred_language', 'email_notifications',
-                  'use_gravatar', )
+                  'desktop_notifications', 'use_gravatar', )
         model = Profile
 
     @property
