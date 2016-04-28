@@ -175,7 +175,8 @@
     "priority": 10, 
     "template": null, 
     "access_method": "nx", 
-    "lease": 1, 
+    "lease": 1,
+    "datastore": 1,
     "node": null, 
     "description": "", 
     "arch": "x86_64", 
@@ -205,7 +206,8 @@
     "priority": 10, 
     "template": null, 
     "access_method": "nx", 
-    "lease": 1, 
+    "lease": 1,
+    "datastore": 1,
     "node": null, 
     "description": "", 
     "arch": "x86_64", 
@@ -313,6 +315,7 @@
     "arch": "x86_64", 
     "max_ram_size": 1024, 
     "lease": 1,
+    "datastore": 1,
     "owner": 1
   }
 }
