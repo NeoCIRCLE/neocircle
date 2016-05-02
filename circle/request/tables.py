@@ -38,6 +38,7 @@ class RequestTable(Table):
         template_name="request/columns/user.html",
         verbose_name=_("User"),
     )
+    created = Column(verbose_name=_("Date"))
     type = TemplateColumn(
         template_name="request/columns/type.html",
         verbose_name=_("Type"),
@@ -48,7 +49,7 @@ class RequestTable(Table):
         template = "django_tables2/with_pagination.html"
         attrs = {'class': ('table table-bordered table-striped table-hover'),
                  'id': "request-list-table"}
-        fields = ("pk", "status", "type", "user", )
+        fields = ("pk", "status", "type", "created", "user", )
         order_by = ("-pk", )
         empty_text = _("No more requests.")
         per_page = 10

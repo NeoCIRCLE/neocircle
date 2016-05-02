@@ -38,6 +38,9 @@
           <pre>{{ object.message }}</pre>
         </p>
         <hr />
+        <div class="pull-right">
+          <strong>{% trans "Submitted" %}:</strong> {{ object.created }}
+        </div>
         {% if object.type == "lease" %}
           <dl>
             <dt>{% trans "VM name" %}</dt>
