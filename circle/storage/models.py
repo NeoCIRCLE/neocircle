@@ -441,14 +441,7 @@ class Disk(TimeStampedModel):
         }
 
     def get_disk_desc_for_ceph_block_device(self):
-
-        desc = self.get_disk_desc_for_filesystem()
-        # TODO: remove or use them
-        # desc["hosts"] = self.datastore.get_hosts()
-        # desc["ceph_user"] = self.datastore.ceph_user
-        # desc["secret_uuid"] = self.datastore.secret_uuid
-
-        return desc
+        return self.get_disk_desc_for_filesystem()
 
     def get_vmdisk_desc_for_filesystem(self):
 
@@ -487,6 +480,11 @@ class Disk(TimeStampedModel):
     def clean(self, *args, **kwargs):
         if (self.size is None or "") and self.base:
             self.size = self.base.size
+
+        if self.base is not None and\
+           self.datastore.type != self.base.datastore.type:
+            raise ValidationError(_("Forbidden inheritance of disks "
+                                    "from different type of data stores."))
         super(Disk, self).clean(*args, **kwargs)
 
     def deploy(self, user=None, task_uuid=None, timeout=15):
