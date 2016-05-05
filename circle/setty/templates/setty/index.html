@@ -118,14 +118,14 @@
           </div>
           <div class="panel-body container-fluid" id="dragContainer">
             {% for element in elementTemplateList %}
-            <div class="col-md-12 col-sm-4" id="elementTemplatePanel">
+            <div class="col-md-6 col-sm-4" id="elementTemplatePanel">
               <div class="panel panel-default">
                 <div class="panel-heading">
                   <div class="row text-center">
-                    <div class="col-xs-10 col-xs-push-1 text-center">
+                    <div class="col-xs-8 col-xs-push-2 text-center">
                       <label class="no-margin">{{ element.name }}</label>
                     </div>
-                    <div class="col-xs-1 col-xs-push-1 text-right">
+                    <div class="col-xs-2 col-xs-push-2 text-left">
                       <button class="btn btn-primary btn-xs elementTemplateInfo" element="{{ element.id }}">
                         <i class="fa fa-info"></i>
                       </button>
