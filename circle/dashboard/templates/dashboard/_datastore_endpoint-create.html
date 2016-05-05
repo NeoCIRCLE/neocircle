@@ -2,8 +2,8 @@
 {% load crispy_forms_tags %}
 
 
-<form id="data_store_host_form" action="{% url "dashboard.views.storage-host-create" %}" method="POST">
-<div class="alert alert-danger" style="display: none;"  id="data_store_host-create-alert">
+<form id="datastore_endpoint_form" action="{% url "dashboard.views.storage-endpoint-create" %}" method="POST">
+<div class="alert alert-danger" style="display: none;"  id="datastore_endpoint-create-alert">
 </div>
 {% with form=form %}
   {% include "display-form-errors.html" %}
@@ -22,7 +22,7 @@
     {{ form.port|as_crispy_field }}
   </div>
 </div>
-<input type="submit" value="{% trans "Create new hostname" %}" class="btn btn-success" id="data_store_host_host-create-btn">
+<input type="submit" value="{% trans "Create new endpoint" %}" class="btn btn-success" id="datastore_endpoint_host-create-btn">
 </form>
 
 

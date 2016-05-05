@@ -20,17 +20,17 @@
     {{ form.secret_uuid|as_crispy_field }}
 </fieldset>
 <fieldset>
-  <legend>{% trans "Select or add new Ceph monitor hostname(s)" %}</legend>
-  <a href="{% url "dashboard.views.storage-host-create" %}" class="btn btn-success data_store_host-create">
+  <legend>{% trans "Select or add new Ceph monitor endpoints(s)" %}</legend>
+  <a href="{% url "dashboard.views.storage-endpoint-create" %}" class="btn btn-success datastore_endpoint-create">
     <i class="fa fa-plus"></i>
-    {% trans "new hostname" %}
+    {% trans "new endpoint" %}
   </a> 
 
   <script type="text/javascript" src="/static/admin/js/jquery.min.js"></script>
   <script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
   {{ form.media }}
   <div id="group-detail-permissions">
-  {{ form.hosts }}
+  {{ form.endpoints }}
   </div>
   <link rel="stylesheet" type="text/css" href="/static/admin/css/widgets.css" />
 </fieldset>

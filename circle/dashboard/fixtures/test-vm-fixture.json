@@ -20,7 +20,7 @@
   "pk": 1, 
   "model": "storage.datastore", 
   "fields": {
-    "hosts": [],
+    "endpoints": [],
     "type": "file",
     "ceph_user": null,
     "secret_uuid": null,

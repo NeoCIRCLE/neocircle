@@ -54,7 +54,7 @@ from firewall.models import Vlan, Host
 from vm.models import (
     InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
-from storage.models import DataStore, Disk, DataStoreHost
+from storage.models import DataStore, Disk, Endpoint
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.models import Permission
 from .models import Profile, GroupProfile, Message
@@ -1665,12 +1665,12 @@ class CephDataStoreForm(DataStoreForm):
     class Meta:
         model = DataStore
         fields = ("type", "name", "path", "hostname",
-                  "ceph_user", "secret_uuid", "hosts")
-        widgets = {"hosts": FilteredSelectMultiple(_("Hostnames"),
-                                                   is_stacked=True)}
+                  "ceph_user", "secret_uuid", "endpoints")
+        widgets = {"endpoints": FilteredSelectMultiple(_("Endpoints"),
+                                                       is_stacked=True)}
 
 
-class DataStoreHostForm(ModelForm):
+class EndpointForm(ModelForm):
 
     @property
     def helper(self):
@@ -1689,12 +1689,12 @@ class DataStoreHostForm(ModelForm):
         return helper
 
     def __init__(self, *args, **kwargs):
-        super(DataStoreHostForm, self).__init__(*args, **kwargs)
+        super(EndpointForm, self).__init__(*args, **kwargs)
 
         self.fields['port'].initial = 6789
 
     class Meta:
-        model = DataStoreHost
+        model = Endpoint
         fields = ("name", "address", "port")
 
 

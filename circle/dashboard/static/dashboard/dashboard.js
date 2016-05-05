@@ -87,7 +87,7 @@ $(function () {
     return false;
   });
 
-  $('.data_store_host-create').click(function(e) {
+  $('.datastore_endpoint-create').click(function(e) {
     $.ajax({
       type: 'GET',
       url: $(this).prop('href'),
@@ -99,12 +99,12 @@ $(function () {
           modal.remove();
         });
 
-        $("#data_store_host_host-create-btn").click(function(){
-          var form = $("#data_store_host_form");
+        $("#datastore_endpoint_host-create-btn").click(function(){
+          var form = $("#datastore_endpoint_form");
           $.post(form.attr("action"), form.serialize(), function(data){
 
             if(data.status===true){
-              $('#id_hosts_from')
+              $('#id_endpoints_from')
                 .append($('<option>')
                 .text(data.response.text)
                 .attr('value', data.response.val));
@@ -114,7 +114,7 @@ $(function () {
               $('.modal-backdrop').remove();
             }
             else{
-              var error_msg = $("#data_store_host-create-alert");
+              var error_msg = $("#datastore_endpoint-create-alert");
               error_msg.empty();
               error_msg.append(data.response);
               error_msg.show();

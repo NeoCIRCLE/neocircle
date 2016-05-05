@@ -33,11 +33,11 @@ from braces.views import SuperuserRequiredMixin
 from sizefield.utils import filesizeformat
 
 from common.models import WorkerNotFound
-from storage.models import DataStore, Disk, DataStoreHost
+from storage.models import DataStore, Disk, Endpoint
 from ..tables import DiskListTable, StorageListTable
 from ..forms import (
     DataStoreForm, CephDataStoreForm, DiskForm, StorageListSearchForm,
-    DataStoreHostForm
+    EndpointForm
 )
 from .util import FilterMixin
 import json
@@ -151,7 +151,7 @@ class StorageList(SuperuserRequiredMixin, FilterMixin, SingleTableView):
         'path': "path__icontains",
         'poolname': "path__icontains",
         'hostname': "hostname__iexact",
-        'address': "hosts__address__in"
+        'address': "endpoints__address__in"
     }
 
     def get_context_data(self, *args, **kwargs):
@@ -278,9 +278,9 @@ class DiskDetail(SuperuserRequiredMixin, UpdateView):
         pass
 
 
-class DataStoreHostCreate(SuccessMessageMixin, CreateView):
-    model = DataStoreHost
-    form_class = DataStoreHostForm
+class EndpointCreate(SuccessMessageMixin, CreateView):
+    model = Endpoint
+    form_class = EndpointForm
 
     def get_template_names(self):
         if self.request.is_ajax():
@@ -289,24 +289,24 @@ class DataStoreHostCreate(SuccessMessageMixin, CreateView):
             return ['dashboard/nojs-wrapper.html']
 
     def get_context_data(self, *args, **kwargs):
-        context = super(DataStoreHostCreate, self).get_context_data(
+        context = super(EndpointCreate, self).get_context_data(
             *args, **kwargs)
 
         context.update({
-            'box_title': _("Create a new hostname"),
+            'box_title': _("Create a new endpoint"),
             'ajax_title': True,
-            'template': "dashboard/_data_store_host-create.html",
+            'template': "dashboard/_datastore_endpoint-create.html",
         })
         return context
 
     def get(self, *args, **kwargs):
-        if not self.request.user.has_perm('vm.add_datastorehost'):
+        if not self.request.user.has_perm('storage.add_endpoint'):
             raise PermissionDenied()
 
-        return super(DataStoreHostCreate, self).get(*args, **kwargs)
+        return super(EndpointCreate, self).get(*args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        if not self.request.user.has_perm('vm.add_datastorehost'):
+        if not self.request.user.has_perm('storage.add_endpoint'):
             raise PermissionDenied()
 
         form = self.form_class(request.POST)

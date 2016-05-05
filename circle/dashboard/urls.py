@@ -54,7 +54,7 @@ from .views import (
     NodeActivityView,
     UserList,
     StorageDetail, StorageList, StorageChoose, StorageCreate, DiskDetail,
-    DataStoreHostCreate,
+    EndpointCreate,
     MessageList, MessageDetail, MessageCreate, MessageDelete,
 )
 from .views.vm import vm_ops, vm_mass_ops
@@ -245,8 +245,8 @@ urlpatterns = patterns(
     url(r'^storage/choose/$', StorageChoose.as_view(),
         name="dashboard.views.storage-choose"),
 
-    url(r'^storage/host/create/$', DataStoreHostCreate.as_view(),
-        name="dashboard.views.storage-host-create"),
+    url(r'^storage/endpoint/create/$', EndpointCreate.as_view(),
+        name="dashboard.views.storage-endpoint-create"),
 
     url(r'^disk/(?P<pk>\d+)/$', DiskDetail.as_view(),
         name="dashboard.views.disk-detail"),

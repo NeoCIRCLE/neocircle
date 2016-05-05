@@ -52,7 +52,7 @@ def validate_ascii(value):
         raise ValidationError("%s is not 'ascii' string" % value)
 
 
-class DataStoreHost(Model):
+class Endpoint(Model):
 
     """ Address and port of a data store.
     """
@@ -79,9 +79,9 @@ class DataStore(Model):
                      validators=[validate_ascii])
     # hostname of storage driver
     hostname = CharField(max_length=40, verbose_name=_('hostname'))
-    # hostnames of Ceph monitors
-    hosts = ManyToManyField('DataStoreHost', blank=True,
-                            verbose_name=_('hosts'))
+    # endpoints of Ceph monitors
+    endpoints = ManyToManyField(Endpoint, blank=True,
+                                verbose_name=_('endpoints'))
     ceph_user = CharField(max_length=255, null=True, blank=True,
                           verbose_name=_('Ceph username'))
     secret_uuid = CharField(max_length=255, null=True, blank=True,
@@ -116,9 +116,9 @@ class DataStore(Model):
 
         return [disk.filename for disk in deletables]
 
-    def get_hosts(self):
+    def get_endpoints(self):
 
-        return [(host.address, host.port) for host in self.hosts.all()]
+        return [(ep.address, ep.port) for ep in self.endpoints.all()]
 
     @property
     def used_percent(self):
@@ -458,7 +458,7 @@ class Disk(TimeStampedModel):
     def get_vmdisk_desc_for_ceph_block_device(self):
 
         desc = self.get_vmdisk_desc_for_filesystem()
-        desc["hosts"] = self.datastore.get_hosts()
+        desc["endpoints"] = self.datastore.get_endpoints()
         desc["ceph_user"] = self.datastore.ceph_user
         desc["secret_uuid"] = self.datastore.secret_uuid
 
