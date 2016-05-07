@@ -38,24 +38,43 @@ class Compute(Resource):
     def __init__(self, vm):
         """ Creates a Compute instance of a VM instance object """
         super(Compute, self).__init__(
-            "http://schemas.ogf.org/occi/infrastructure#compute", vm.pk)
+            "http://schemas.ogf.org/occi/infrastructure#compute",
+            str(vm.pk))
         self.vm = vm
         self.attributes = self.set_attributes()
         self.actions = action_list_for_resource(COMPUTE_ACTIONS)
+        self.mixins = [
+            "http://circlecloud.org/occi/infrastructure#credentials",
+        ]
+        if vm.template:
+            self.mixins.append(
+                "http://circlecloud.org/occi/templates/os#os_template_" +
+                str(vm.template.pk))
 
     def set_attributes(self):
         """ Sets the attributes of the Compute object based on the VM
             instance. """
         attributes = {}
-        attributes["occi.compute.architecture"] = (COMPUTE_ARCHITECTURES
-                                                   .get(self.vm.arch))
+        attributes["occi.compute.architecture"] = (
+            COMPUTE_ARCHITECTURES.get(self.vm.arch))
         attributes["occi.compute.cores"] = self.vm.num_cores
         attributes["occi.compute.hostname"] = self.vm.short_hostname
         attributes["occi.compute.share"] = self.vm.priority
         attributes["occi.compute.memory"] = self.vm.ram_size / 1024.0
         attributes["occi.compute.state"] = COMPUTE_STATES.get(self.vm.state)
-        attributes["occi.compute.state.message"] = (COMPUTE_STATE_MESSAGES
-                                                    .get(self.vm.state))
+        attributes["occi.compute.state.message"] = (
+            COMPUTE_STATE_MESSAGES.get(self.vm.state))
+        attributes["org.circlecloud.occi.credentials.protocol"] = (
+            self.vm.access_method)
+        attributes["org.circlecloud.occi.credentials.host"] = (
+            self.vm.get_connect_host())
+        attributes["org.circlecloud.occi.credentials.port"] = (
+            self.vm.get_connect_port())
+        attributes["org.circlecloud.occi.credentials.username"] = "cloud"
+        attributes["org.circlecloud.occi.credentials.password"] = (
+            self.vm.pw)
+        attributes["org.circlecloud.occi.credentials.command"] = (
+            self.vm.get_connect_command())
         return attributes
 
     def invoke_action(self, user, action, attributes):
@@ -140,8 +159,3 @@ class Compute(Resource):
         # TODO: save template
         raise OcciActionInvocationError(
             message="Save action not implemented")
-
-
-class Network(Resource):
-    # TODO: network
-    pass

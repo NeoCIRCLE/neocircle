@@ -25,7 +25,9 @@ with requests.Session() as session:
         print("csrf-token")
         print("----------")
         print("status_code: " + str(req.status_code))
-        print(json.loads(req.text)["result"])
+        print
+        print(json.dumps(json.loads(req.text), sort_keys=True,
+                         indent=4, separators=(",", ": ")))
         print
 
         # Bejelentkezes
@@ -38,13 +40,9 @@ with requests.Session() as session:
         print("login")
         print("-----")
         print("status_code: " + str(req.status_code))
-        if req.status_code == 200:
-            print(json.loads(req.text)["result"])
-        else:
-            print(json.loads(req.text)["result"])
-            errors = json.loads(req.text)["errors"]
-            for error in errors:
-                print(error)
+        print
+        print(json.dumps(json.loads(req.text), sort_keys=True,
+                         indent=4, separators=(",", ": ")))
         print
 
         # query interface
@@ -52,7 +50,9 @@ with requests.Session() as session:
         print("query-interface")
         print("---------------")
         print("status_code: " + str(req.status_code))
-        print(req.text)
+        print
+        print(json.dumps(json.loads(req.text), sort_keys=True,
+                         indent=4, separators=(",", ": ")))
         print
 
         # osszes vm collectionkent
@@ -61,17 +61,21 @@ with requests.Session() as session:
         print("compute-collection")
         print("------------------")
         print("status_code: " + str(req.status_code))
-        print(req.text)
+        print
+        print(json.dumps(json.loads(req.text), sort_keys=True,
+                         indent=4, separators=(",", ": ")))
         print
 
         # az elso vm a listabol
         vmid = json.loads(req.text)["resources"][0]["id"]
-        req = session.get(server + "occi/compute/" + str(vmid) + "/",
+        req = session.get(server + "occi/compute/" + vmid + "/",
                           headers=headers, verify=False)
         print("compute-"+str(vmid))
         print("------------")
         print("status_code: " + str(req.status_code))
-        print(req.text)
+        print
+        print(json.dumps(json.loads(req.text), sort_keys=True,
+                         indent=4, separators=(",", ": ")))
         print
 
         # ha nem active, akkor azza tesszuk
@@ -82,13 +86,15 @@ with requests.Session() as session:
                 headers["X-CSRFToken"] = req.cookies['csrftoken']
             except:
                 pass
-            req = session.post(server + "occi/compute/" + str(vmid) + "/",
+            req = session.post(server + "occi/compute/" + vmid + "/",
                                headers=headers, verify=False,
                                data=json.dumps({"action": action + "start"}))
             print("compute-" + str(vmid) + "-start")
             print("---------------")
             print("status_code: " + str(req.status_code))
-            print(req.text)
+            print
+            print(json.dumps(json.loads(req.text), sort_keys=True,
+                             indent=4, separators=(",", ": ")))
             print
 
         # restart
@@ -98,13 +104,15 @@ with requests.Session() as session:
             pass
         actionatrs = {"method": "cold"}
         actioninv = {"action": action + "restart", "attributes": actionatrs}
-        req = session.post(server + "occi/compute/" + str(vmid) + "/",
+        req = session.post(server + "occi/compute/" + vmid + "/",
                            headers=headers, verify=False,
                            data=json.dumps(actioninv))
         print("compute-"+str(vmid) + "-restart")
         print("-----------------")
         print("status_code: " + str(req.status_code))
-        print(req.text)
+        print
+        print(json.dumps(json.loads(req.text), sort_keys=True,
+                         indent=4, separators=(",", ": ")))
         print
 
         # suspend
@@ -114,14 +122,73 @@ with requests.Session() as session:
             pass
         actioninv["action"] = action + "suspend"
         actioninv["attributes"]["method"] = "suspend"
-        req = session.post(server + "occi/compute/" + str(vmid) + "/",
+        req = session.post(server + "occi/compute/" + vmid + "/",
                            headers=headers, verify=False,
                            data=json.dumps(actioninv))
         print("compute-" + str(vmid) + "-suspend")
         print("-----------------")
         print("status_code: " + str(req.status_code))
-        print(req.text)
         print
+        print(json.dumps(json.loads(req.text), sort_keys=True,
+                         indent=4, separators=(",", ": ")))
+        print
+
+        # nem letezo action
+        try:
+            headers["X-CSRFToken"] = req.cookies["csrftoken"]
+        except:
+            pass
+        actioninv["action"] = action + "noaction"
+        req = session.post(server + "occi/compute/" + vmid + "/",
+                           headers=headers, verify=False,
+                           data=json.dumps(actioninv))
+        print("compute-" + str(vmid) + "-noaction")
+        print("-------------------")
+        print("status_code: " + str(req.status_code))
+        print
+        print(json.dumps(json.loads(req.text), sort_keys=True,
+                         indent=4, separators=(",", ": ")))
+        print
+
+        # vm krealas
+        try:
+            headers["X-CSRFToken"] = req.cookies["csrftoken"]
+        except:
+            pass
+        # a template mixinje benne kell legyen az adatokban
+        # az osszes template a query interfacen megjelenik mint mixin
+        # azok a mixinek templatek amik az os_tpl mixintol fuggnek
+        putdata = {"mixins": [
+            "http://circlecloud.org/occi/templates/os#os_template_1"],
+            "other_occi_compute_data": "may be provided"}
+        req = session.put(server + "occi/compute/1/",
+                          headers=headers, verify=False,
+                          data=json.dumps(putdata))
+        print("create_compute")
+        print("--------------")
+        print("status_code: " + str(req.status_code))
+        print
+        print(json.dumps(json.loads(req.text), sort_keys=True,
+                          indent=4, separators=(",", ": ")))
+        print
+
+        # vm torles
+        try:
+            headers["X-CSRFToken"] = req.cookies["csrftoken"]
+        except:
+            pass
+        vmid = json.loads(req.text)["id"]
+        req = session.delete(server + "occi/compute/" + vmid + "/",
+                             headers=headers, verify=False,
+                             data=json.dumps(putdata))
+        print("delete_compute")
+        print("--------------")
+        print("status_code: " + str(req.status_code))
+        print
+        print(json.dumps(json.loads(req.text), sort_keys=True,
+                          indent=4, separators=(",", ": ")))
+        print
+
 
         # Kijelentkezes
         req = session.get(server + "occi/logout/", headers=headers,
@@ -129,6 +196,8 @@ with requests.Session() as session:
         print("logout")
         print("------")
         print("status_code: " + str(req.status_code))
-        print(json.loads(req.text)["result"])
+        print
+        print(json.dumps(json.loads(req.text), sort_keys=True,
+                         indent=4, separators=(",", ": ")))
     except ConnectionError as e:
         print(e)

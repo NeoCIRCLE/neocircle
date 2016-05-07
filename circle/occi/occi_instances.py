@@ -1,5 +1,6 @@
 """ Required instances of the OCCI classes """
 
+from vm.models.instance import InstanceTemplate
 from occi_core import Kind, Mixin, Attribute, Action
 
 
@@ -103,7 +104,6 @@ IPNETWORK_ATTRIBUTES = [
 
 IPNETWORK_MIXIN = Mixin("http://schemas.ogf.org/occi/infrastructure/network#",
                         "ipnetwork", title="IP Network Mixin",
-                        location="/network/ipnetwork",
                         applies=("http://shemas.ogf.org/occi/infrastructure" +
                                  "#network"))
 
@@ -166,8 +166,6 @@ IPNETWORKINTERFACE_MIXIN = Mixin("http://schemas.ogf.org/occi/" +
                                  "infrastructure/networkinterface#",
                                  "ipnetworkinterface",
                                  title="IP Network Interface Mixin",
-                                 location="/networkinterface" +
-                                          "/ipnetworkinterface/",
                                  applies="http://schemas.ogf.org/occi/" +
                                  "infrastructure#networkinterface")
 
@@ -191,18 +189,81 @@ STORAGELINK_KIND = Kind("http://schemas.ogf.org/occi/infrastructure#",
                         parent="http://schemas.ogf.org/occi/core#link",
                         atrributes=STORAGELINK_ATTRIBUTES)
 
-# TODO: OS Templates and Credentials
 
-ACTION_ARRAYS = [COMPUTE_ACTIONS, NETWORK_ACTIONS, STORAGE_ACTIONS]
+CREDENTIALS_ATTRIBUTES = [
+    Attribute("org.circlecloud.occi.credentials.protocol", "String", False,
+              False, description="The protocol to be used to access the "
+              "compute instance."),
+    Attribute("org.circlecloud.occi.credentials.host", "String", False,
+              False, description="The host to be used to access the compute " +
+              "instance."),
+    Attribute("org.circlecloud.occi.credentials.port", "Integer", False,
+              False, description="The port to be used to access the compute " +
+              "instance."),
+    Attribute("org.circlecloud.occi.credentials.username", "String", False,
+              False, description="The username to be used to access the " +
+              "compute instance."),
+    Attribute("org.circlecloud.occi.credentials.password", "String", False,
+              False, description="The password to be used to acces the " +
+              "compute instance."),
+    Attribute("org.circlecloud.occi.credentials.command", "String", False,
+              False, description="The full command that may be used to " +
+              "connect to the compute instance."),
+]
+
+CREDENTIALS_MIXIN = Mixin("http://circlecloud.org/occi/infrastructure#",
+                          "credentials",
+                          title="Credentials Mixin",
+                          attributes=CREDENTIALS_ATTRIBUTES,
+                          applies="http://schemas.ogf.org/occi/infrastructure" +
+                          "#compute")
+
+OS_TPL_MIXIN = Mixin("http://schemas.ogf.org/occi/infrastructure#",
+                     "os_tpl",
+                     title="OS Template")
+
+ACTION_ARRAYS = [
+    COMPUTE_ACTIONS,
+    # NETWORK_ACTIONS,
+    # STORAGE_ACTIONS,
+]
 
 
 def ALL_KINDS():
-    return [ENTITY_KIND, RESOURCE_KIND, LINK_KIND, COMPUTE_KIND, NETWORK_KIND,
-            STORAGE_KIND, NETWORKINTERFACE_KIND]
+    return [
+        ENTITY_KIND,
+        RESOURCE_KIND,
+        LINK_KIND,
+        COMPUTE_KIND,
+        # NETWORK_KIND,
+        # STORAGE_KIND,
+        # NETWORKINTERFACE_KIND
+    ]
 
 
-def ALL_MIXINS():
-    return [IPNETWORK_MIXIN, IPNETWORKINTERFACE_MIXIN]
+def os_tpl_mixins(user):
+    """ Returns an array of all the templates the user has access to. """
+    templates = InstanceTemplate.get_objects_with_level("user", user)
+    result = []
+    for template in templates:
+        result.append(Mixin("http://circlecloud.org/occi/templates/os#",
+                            "os_template_" + str(template.pk),
+                            title=template.name,
+                            depends=(OS_TPL_MIXIN.scheme + OS_TPL_MIXIN.term)))
+    return result
+
+
+def ALL_MIXINS(user):
+    mixins = [
+        # IPNETWORK_MIXIN,
+        # IPNETWORKINTERFACE_MIXIN,
+        CREDENTIALS_MIXIN,
+        OS_TPL_MIXIN,
+    ]
+    template_mixins = os_tpl_mixins(user)
+    for template in template_mixins:
+        mixins.append(template)
+    return mixins
 
 
 def ALL_ACTIONS():

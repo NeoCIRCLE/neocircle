@@ -1,37 +1,108 @@
 """" Utilities for the OCCI implementation of CIRCLE """
 
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse
 import json
 
 
-class OcciResourceInstanceNotExist(Exception):
-    def __init__(self):
-        message = "The resource instance does not exist."
-        super(OcciResourceInstanceNotExist, self).__init__(message)
-        self.response = JsonResponse({"error": message}, status=404,
-                                     charset="utf-8")
-
-
-class OcciActionInvocationError(Exception):
+class OcciException(Exception):
+    """ The superclass for OCCI exceptions. It creates a response to be
+        returned when an error occures. """
     def __init__(self, *args, **kwargs):
-        message = kwargs.get("message", "Could not invoke action.")
-        super(OcciActionInvocationError, self).__init__(message)
-        self.response = JsonResponse({"error": message}, status=400,
-                                     charset="utf-8")
+        message = kwargs.get("message", "An error occured.")
+        status = kwargs.get("status", 400)
+        super(OcciException, self).__init__(message)
+        self.response = occi_response({"error": message}, status=status)
 
 
-class OcciResponse(HttpResponse):
-    """ A response class with its occi headers set """
-    # TODO: setting occi specific headers
-    def init(self, data, response_type, *args, **kwargs):
-        if response_type == "json":
-            data = json.dumps(data)
-        super(OcciResponse, self).__init__(data, status=418)
-        if response_type == "json":
-            self["Content-Type"] = "application/json"
-        else:
-            self["Content-Type"] = "text/plain"
-        self["Server"] = "OCCI/1.2"
+class OcciResourceInstanceNotExist(OcciException):
+    """ An exception to be raised when a resource instance which has been
+        asked for does not exist. """
+    def __init__(self, *args, **kwargs):
+        if "message" not in kwargs:
+            kwargs["message"] = "The resource instance does not exist."
+        super(OcciResourceInstanceNotExist, self).__init__(self, **kwargs)
+
+
+class OcciActionInvocationError(OcciException):
+    """ An exception to be raised when an action could not be invoked on
+        an entity instance for some reason """
+    def __init__(self, *args, **kwargs):
+        if "message" not in kwargs:
+            kwargs["message"] = "Could not invoke action."
+        super(OcciActionInvocationError, self).__init__(self, **kwargs)
+
+
+class OcciResourceCreationError(OcciException):
+    """ An exception to be raised when a resource instance could not be
+        created for a reason. """
+    def __init__(self, *args, **kwargs):
+        if "message" not in kwargs:
+            kwargs["message"] = "Could not create resource instance."
+        super(OcciResourceCreationError, self).__init__(self, **kwargs)
+
+
+class OcciResourceDeletionError(OcciException):
+    """ An exception to be raised when a resource instance could not be
+        deleted for some reason. """
+    def __init__(self, *args, **kwargs):
+        if "message" not in kwargs:
+            kwargs["message"] = "Could not delete resource instance."
+        super(OcciResourceDeletionError, self).__init__(self, **kwargs)
+
+
+class OcciRequestNotValid(OcciException):
+    """ An exception to be raised when the request sent by the client is
+        not valid for a reason. (e.g, wrong content type, etc.) """
+    def __init__(self, *args, **kwargs):
+        if "message" not in kwargs:
+            kwargs["message"] = "The request is not valid."
+        super(OcciRequestNotValid, self).__init__(self, **kwargs)
+
+
+def occi_response(data, *args, **kwargs):
+    """ This function returns a response with its headers set, like occi
+        server. The content_type of the response is application/json
+        by default. """
+    status = kwargs.get("status", 200)
+    # TODO: support for renderings other than json (e.g., text/plain)
+    data = json.dumps(data)
+    response = HttpResponse(data, charset="utf-8", status=status,
+                            content_type="application/json; charset=utf-8")
+    # TODO: use Server header instead of OCCI-Server
+    response["OCCI-Server"] = "OCCI/1.2"
+    response["Accept"] = "application/json"
+    return response
+
+
+def validate_request(request, authentication_required=True,
+                     has_data=False, **kwargs):
+    """ This function checks if the request's content type is
+        application/json and if the data is a valid json object. If the
+        authentication_required parameter is True, it will also check if
+        the user is authenticated. """
+    # checking if the user is authenticated
+    if authentication_required:
+        if not request.user.is_authenticated():
+            raise OcciRequestNotValid("Authentication required.", status=403)
+    if has_data:
+        # checking content type
+        if request.META.get("CONTENT_TYPE") != "application/json":
+            raise OcciRequestNotValid("Only application/json content type is " +
+                                      "allowed.")
+        # checking if the data is a valid json
+        try:
+            data = json.loads(request.body.decode("utf-8"))
+        except KeyError:
+            raise OcciRequestNotValid("The json provided in the request is " +
+                                      "not valid.")
+        # checking if provided keys are in the json
+        if "data_keys" in kwargs:
+            for key in kwargs["data_keys"]:
+                if key not in data:
+                    raise OcciRequestNotValid(key + " key is required.")
+        # if validation was successful, the function returns the parsed
+        # json data
+        return data
 
 
 def set_optional_attributes(self, optional_attributes, kwargs):
@@ -41,15 +112,6 @@ def set_optional_attributes(self, optional_attributes, kwargs):
     for k, v in kwargs.iteritems():
         if k in optional_attributes:
             setattr(self, k, v)
-
-
-def serialize_attributes(attributes):
-    """ Creates a list of attributes, that are serializable to json from
-        a list of Attribute class objects. """
-    atrs = []
-    for attribute in attributes:
-        atrs.append(attribute.render_as_json())
-    return atrs
 
 
 def action_list_for_resource(actions):
