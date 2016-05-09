@@ -169,7 +169,7 @@ with requests.Session() as session:
         print("status_code: " + str(req.status_code))
         print
         print(json.dumps(json.loads(req.text), sort_keys=True,
-                          indent=4, separators=(",", ": ")))
+                         indent=4, separators=(",", ": ")))
         print
 
         # vm torles
@@ -186,9 +186,8 @@ with requests.Session() as session:
         print("status_code: " + str(req.status_code))
         print
         print(json.dumps(json.loads(req.text), sort_keys=True,
-                          indent=4, separators=(",", ": ")))
+                         indent=4, separators=(",", ": ")))
         print
-
 
         # Kijelentkezes
         req = session.get(server + "occi/logout/", headers=headers,

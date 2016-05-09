@@ -5,6 +5,7 @@ from occi_core import Resource
 from occi_utils import action_list_for_resource, OcciActionInvocationError
 from occi_instances import COMPUTE_ACTIONS
 from common.models import HumanReadableException
+from vm.models import InstanceActivity
 
 
 COMPUTE_STATES = {
@@ -91,7 +92,22 @@ class Compute(Resource):
             self.save(user, attributes)
         else:
             raise OcciActionInvocationError(message="Undefined action.")
+        # to refresh Compute attribute
         self.__init__(self.vm)
+
+    def has_agent(self):
+        last_boot_time = self.vm.activity_log.filter(
+            succeeded=True, activity_code__in=(
+                "vm.Instance.deploy", "vm.Instance.reset",
+                "vm.Instance.reboot")).latest("finished").finished
+        try:
+            InstanceActivity.objects.filter(
+                activity_code="vm.Instance.agent.starting",
+                started__gt=last_boot_time, instance=self.vm
+            ).latest("started")
+        except InstanceActivity.DoesNotExist:  # no agent since last boot
+            return False
+        return True
 
     def start(self, user):
         """ Start action on a compute instance """
@@ -108,9 +124,11 @@ class Compute(Resource):
         if "method" not in attributes:
             raise OcciActionInvocationError(message="No method given.")
         if attributes["method"] in ("graceful", "acpioff",):
+            if not self.has_agent():
+                raise OcciActionInvocationError(
+                    message="User agent is required.")
             try:
-                # TODO: call shutdown properly
-                self.vm.shutdown(user=user)
+                self.vm.shutdown(task=None, user=user)
             except HumanReadableException as e:
                 raise OcciActionInvocationError(message=e.get_user_text())
         elif attributes["method"] in ("poweroff",):
@@ -127,9 +145,11 @@ class Compute(Resource):
         if "method" not in attributes:
             raise OcciActionInvocationError(message="No method given.")
         if attributes["method"] in ("graceful", "warm",):
+            if not self.has_agent():
+                raise OcciActionInvocationError(
+                    message="User agent is required.")
             try:
-                # TODO: not working for some reason
-                self.vm.restart(user=user)
+                self.vm.reboot(user=user)
             except HumanReadableException as e:
                 raise OcciActionInvocationError(message=e.get_user_text())
         elif attributes["method"] in ("cold",):
