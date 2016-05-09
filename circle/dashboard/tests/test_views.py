@@ -615,13 +615,12 @@ class NodeDetailTest(LoginMixin, MockCeleryMixin, TestCase):
         node = Node.objects.get(pk=1)
         trait, created = Trait.objects.get_or_create(name='testtrait')
         node.traits.add(trait)
-        self.patcher = patch("vm.tasks.vm_tasks.get_queues")
-        self.mock_check_queue = self.patcher.start()
-        self.mock_check_queue.return_value = {
+        self.patcher = patch("vm.tasks.vm_tasks.get_queues", return_value={
             'x': [{'name': "devenv.vm.fast"}],
             'y': [{'name': "devenv.vm.slow"}],
             'z': [{'name': "devenv.net.fast"}],
-        }
+        })
+        self.patcher.start()
 
     def tearDown(self):
         super(NodeDetailTest, self).tearDown()
