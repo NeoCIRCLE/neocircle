@@ -215,8 +215,8 @@ CREDENTIALS_MIXIN = Mixin("http://circlecloud.org/occi/infrastructure#",
                           "credentials",
                           title="Credentials Mixin",
                           attributes=CREDENTIALS_ATTRIBUTES,
-                          applies="http://schemas.ogf.org/occi/infrastructure" +
-                          "#compute")
+                          applies="http://schemas.ogf.org/occi/" +
+                          "infrastructure#compute")
 
 OS_TPL_MIXIN = Mixin("http://schemas.ogf.org/occi/infrastructure#",
                      "os_tpl",

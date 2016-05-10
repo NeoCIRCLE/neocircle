@@ -87,8 +87,8 @@ def validate_request(request, authentication_required=True,
     if has_data:
         # checking content type
         if request.META.get("CONTENT_TYPE") != "application/json":
-            raise OcciRequestNotValid("Only application/json content type is " +
-                                      "allowed.")
+            raise OcciRequestNotValid("Only application/json content type" +
+                                      " is allowed.")
         # checking if the data is a valid json
         try:
             data = json.loads(request.body.decode("utf-8"))
