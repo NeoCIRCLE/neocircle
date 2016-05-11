@@ -187,7 +187,7 @@ function addConnectText() {
   if(activities.length > 1) {
     if(activities.eq(0).data("activity-code") == "vm.Instance.wake_up" ||
        activities.eq(0).data("activity-code") == "vm.Instance.agent") {
-      $("#vm-detail-successfull-boot").slideDown(500);
+      $("#vm-detail-successful-boot").slideDown(500);
     }
   }
 }

@@ -192,11 +192,11 @@
       {% endif %}
     </div>
     <div class="col-md-8" id="vm-detail-pane">
-      <div class="big" id="vm-detail-successfull-boot">
-        <span class="label label-info" data-status="{{ instance.status }}">
+      <div class="big" id="vm-detail-successful-boot">
+        <div class="label label-info" data-status="{{ instance.status }}">
           <i class="fa fa-check"></i>
           {% trans "The virtual machine successfully started, you can connect now." %}
-        </span>
+        </div>
       </div>
       <div class="panel panel-default" id="vm-detail-panel">
         <ul class="nav nav-pills panel-heading">
