@@ -37,6 +37,7 @@ from django_tables2 import SingleTableView
 
 from firewall.models import Host
 from vm.models import Node, NodeActivity, Trait
+from vm.tasks.vm_tasks import check_queue
 
 from ..forms import TraitForm, HostForm, NodeForm
 from ..tables import NodeListTable
@@ -107,6 +108,13 @@ class NodeDetailView(LoginRequiredMixin,
         context['trait_form'] = form
         context['graphite_enabled'] = (
             settings.GRAPHITE_URL is not None)
+
+        node_hostname = self.object.host.hostname
+        context['queues'] = {
+            'vmcelery.fast': check_queue(node_hostname, "vm", "fast"),
+            'vmcelery.slow': check_queue(node_hostname, "vm", "slow"),
+            'netcelery.fast': check_queue(node_hostname, "net", "fast"),
+        }
         return context
 
     def post(self, request, *args, **kwargs):

@@ -588,6 +588,12 @@ class NodeDetailTest(LoginMixin, MockCeleryMixin, TestCase):
         node = Node.objects.get(pk=1)
         trait, created = Trait.objects.get_or_create(name='testtrait')
         node.traits.add(trait)
+        self.patcher = patch("vm.tasks.vm_tasks.get_queues", return_value={
+            'x': [{'name': "devenv.vm.fast"}],
+            'y': [{'name': "devenv.vm.slow"}],
+            'z': [{'name': "devenv.net.fast"}],
+        })
+        self.patcher.start()
 
     def tearDown(self):
         super(NodeDetailTest, self).tearDown()
@@ -595,12 +601,19 @@ class NodeDetailTest(LoginMixin, MockCeleryMixin, TestCase):
         self.u2.delete()
         self.us.delete()
         self.g1.delete()
+        self.patcher.stop()
 
     def test_404_superuser_node_page(self):
         c = Client()
         self.login(c, 'superuser')
         response = c.get('/dashboard/node/25555/')
         self.assertEqual(response.status_code, 404)
+
+    def test_200_superuser_node_page(self):
+        c = Client()
+        self.login(c, 'superuser')
+        response = c.get('/dashboard/node/1/')
+        self.assertEqual(response.status_code, 200)
 
     def test_302_user_node_page(self):
         c = Client()

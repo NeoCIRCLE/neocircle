@@ -57,7 +57,7 @@ def get_queues():
         inspect = celery.control.inspect()
         inspect.timeout = 0.5
         result = inspect.active_queues()
-        logger.debug('Queue list of length %d cached.', len(result))
+        logger.debug('Queue list of length %d cached.', result and len(result))
         cache.set(key, result, 10)
     return result
 
