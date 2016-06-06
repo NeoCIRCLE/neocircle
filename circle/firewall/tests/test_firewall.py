@@ -102,6 +102,15 @@ class GetNewAddressTestCase(MockCeleryMixin, TestCase):
                  owner=self.u1).save()
         self.assertRaises(ValidationError, self.vlan.get_new_address)
 
+    def test_all_addr_in_use2(self):
+        Host(hostname='h-xd', mac='01:02:03:04:05:06',
+             ipv4='10.0.0.6', vlan=self.vlan,
+             owner=self.u1).save()
+        Host(hostname='h-arni', mac='01:02:03:04:05:02',
+             ipv4='100.0.0.1', vlan=self.vlan, external_ipv4='10.0.0.2',
+             owner=self.u1).save()
+        self.assertRaises(ValidationError, self.vlan.get_new_address)
+
     def test_new_addr(self):
         used_v4 = IPSet(self.vlan.host_set.values_list('ipv4', flat=True))
         assert self.vlan.get_new_address()['ipv4'] not in used_v4

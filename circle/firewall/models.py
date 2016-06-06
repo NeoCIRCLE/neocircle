@@ -36,7 +36,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.urlresolvers import reverse
 import django.conf
 from django.db.models.signals import post_save, post_delete
-from django.db.models import Q
 from celery.exceptions import TimeoutError
 from netaddr import IPSet, EUI, IPNetwork, IPAddress, ipv6_full
 
@@ -500,12 +499,11 @@ class Vlan(AclBase, models.Model):
 
     def get_new_address(self):
         hosts = self.host_set
-        query = Q(shared_ip=False)\
-            | Q(external_ipv4__isnull=False)\
-            | Q(vlan=self)
-        ipv4_hosts = Host.objects.filter(query)
-
-        used_v4 = IPSet(ipv4_hosts.values_list('ipv4', flat=True))
+        used_ext_addrs = Host.objects.filter(
+            external_ipv4__isnull=False).values_list(
+            'external_ipv4', flat=True)
+        used_v4 = IPSet(hosts.values_list('ipv4', flat=True)).union(
+            used_ext_addrs).union([self.network4.ip])
         used_v6 = IPSet(hosts.exclude(ipv6__isnull=True)
                         .values_list('ipv6', flat=True))
 
