@@ -77,13 +77,13 @@ class GetNewAddressTestCase(MockCeleryMixin, TestCase):
         d = Domain(name='example.org', owner=self.u1)
         d.save()
         # /29 = .1-.6 =  6 hosts/subnet + broadcast + network id
-        self.vlan = Vlan(vid=1, name='test', network4='10.0.0.0/29',
+        self.vlan = Vlan(vid=1, name='test', network4='10.0.0.1/29',
                          network6='2001:738:2001:4031::/80', domain=d,
                          owner=self.u1)
         self.vlan.clean()
         self.vlan.save()
         self.vlan.host_set.all().delete()
-        for i in [1] + range(3, 6):
+        for i in range(3, 6):
             Host(hostname='h-%d' % i, mac='01:02:03:04:05:%02d' % i,
                  ipv4='10.0.0.%d' % i, vlan=self.vlan,
                  owner=self.u1).save()
@@ -114,7 +114,7 @@ class HostGetHostnameTestCase(MockCeleryMixin, TestCase):
         self.d = Domain(name='example.org', owner=self.u1)
         self.d.save()
         Record.objects.all().delete()
-        self.vlan = Vlan(vid=1, name='test', network4='10.0.0.0/24',
+        self.vlan = Vlan(vid=1, name='test', network4='10.0.0.1/24',
                          network6='2001:738:2001:4031::/80', domain=self.d,
                          owner=self.u1, network_type='portforward',
                          snat_ip='10.1.1.1')
@@ -194,13 +194,13 @@ class ReloadTestCase(MockCeleryMixin, TestCase):
         self.u1 = User.objects.create(username='user1')
         self.u1.save()
         d = Domain.objects.create(name='example.org', owner=self.u1)
-        self.vlan = Vlan(vid=1, name='test', network4='10.0.0.0/29',
+        self.vlan = Vlan(vid=1, name='test', network4='10.0.0.1/29',
                          snat_ip='152.66.243.99',
                          network6='2001:738:2001:4031::/80', domain=d,
                          owner=self.u1, network_type='portforward',
                          dhcp_pool='manual')
         self.vlan.save()
-        self.vlan2 = Vlan(vid=2, name='pub', network4='10.1.0.0/29',
+        self.vlan2 = Vlan(vid=2, name='pub', network4='10.1.0.1/29',
                           network6='2001:738:2001:4032::/80', domain=d,
                           owner=self.u1, network_type='public')
         self.vlan2.save()
