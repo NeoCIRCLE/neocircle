@@ -21,12 +21,16 @@ import logging
 from django.contrib import messages
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Q
-from django.utils.translation import ugettext_lazy as _
-from django.views.generic import UpdateView, TemplateView, CreateView
+from django.utils.translation import ugettext_lazy as _, ugettext
+from django.views.generic import (
+    UpdateView, TemplateView, CreateView, DeleteView
+)
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import redirect
 from django_tables2 import SingleTableView
-from django.http import Http404, HttpResponse
+from django.http import (
+    Http404, HttpResponse, HttpResponseRedirect, JsonResponse
+)
 from django.core.exceptions import PermissionDenied
 
 from braces.views import SuperuserRequiredMixin
@@ -389,5 +393,53 @@ class EndpointEdit(SuperuserRequiredMixin, UpdateView):
 
     def get_success_url(self):
         ds = self.get_object()
-        return reverse("dashboard.views.storage-endpoint-edit",
-                       kwargs={"pk": ds.id})
+        return reverse_lazy("dashboard.views.storage-endpoint-edit",
+                            kwargs={"pk": ds.id})
+
+
+class EndpointDelete(SuperuserRequiredMixin, DeleteView):
+    model = Endpoint
+    success_message = _("Endpoint successfully deleted.")
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def check_reference(self):
+        object = self.get_object()
+        if object.datastore_set.count() != 0:
+            raise PermissionDenied()
+
+    def get(self, request, *args, **kwargs):
+        try:
+            self.check_reference()
+        except PermissionDenied:
+            message = ugettext("Another object references"
+                               " to the selected object.")
+            if request.is_ajax():
+                return JsonResponse({"error": message})
+            else:
+                messages.warning(request, message)
+                return redirect(self.get_success_url())
+        return super(EndpointDelete, self).get(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy("dashboard.views.storage-endpoint-list")
+
+    def delete_obj(self, request, *args, **kwargs):
+        self.get_object().delete()
+
+    def delete(self, request, *args, **kwargs):
+        self.check_reference()
+        self.delete_obj(request, *args, **kwargs)
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': self.success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, self.success_message)
+            return HttpResponseRedirect(self.get_success_url())

@@ -41,4 +41,14 @@
   </div><!-- .panel-body -->
 </div>
 
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <a href="{% url "dashboard.views.storage-endpoint-delete" pk=object.pk %}"
+     class="btn btn-xs btn-danger pull-right endpoint-delete">
+      {% trans "Delete" %}
+    </a>
+    <h4 class="no-margin"><i class="fa fa-times"></i> {% trans "Delete endpoint"  %}</h4>
+  </div>
+</div>
+
 {% endblock %} 

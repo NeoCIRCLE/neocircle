@@ -54,7 +54,7 @@ from .views import (
     NodeActivityView,
     UserList,
     StorageDetail, StorageList, StorageChoose, StorageCreate, DiskDetail,
-    EndpointCreate, EndpointList, EndpointEdit,
+    EndpointCreate, EndpointList, EndpointEdit, EndpointDelete,
     MessageList, MessageDetail, MessageCreate, MessageDelete,
 )
 from .views.vm import vm_ops, vm_mass_ops
@@ -251,6 +251,8 @@ urlpatterns = patterns(
         name="dashboard.views.storage-endpoint-list"),
     url(r'^storage/endpoint/(?P<pk>\d+)/$', EndpointEdit.as_view(),
         name='dashboard.views.storage-endpoint-edit'),
+    url(r"^storage/endpoint/delete/(?P<pk>\d+)/$", EndpointDelete.as_view(),
+        name="dashboard.views.storage-endpoint-delete"),
 
     url(r'^disk/(?P<pk>\d+)/$', DiskDetail.as_view(),
         name="dashboard.views.disk-detail"),

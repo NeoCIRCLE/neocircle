@@ -430,6 +430,13 @@ class EndpointListTable(Table):
         attrs={'th': {'data-sort': "string"}}
     )
 
+    actions = TemplateColumn(
+        verbose_name=_("Actions"),
+        template_name="dashboard/endpoint-list/column-endpoint-actions.html",
+        attrs={'th': {'class': 'endpoint-list-table-thin'}},
+        orderable=False,
+    )
+
     class Meta:
         model = DataStore
         attrs = {'class': ('table table-bordered table-striped table-hover'
