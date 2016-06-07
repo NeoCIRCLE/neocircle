@@ -1670,6 +1670,16 @@ class CephDataStoreForm(DataStoreForm):
                                                        is_stacked=True)}
 
 
+class StorageListSearchForm(forms.Form):
+    s = forms.CharField(widget=forms.TextInput(attrs={
+        'class': "form-control input-tags",
+        'placeholder': _("Search...")
+    }))
+
+    def __init__(self, *args, **kwargs):
+        super(StorageListSearchForm, self).__init__(*args, **kwargs)
+
+
 class EndpointForm(ModelForm):
 
     @property
@@ -1691,6 +1701,8 @@ class EndpointForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(EndpointForm, self).__init__(*args, **kwargs)
 
+        # NOTE: may this is not necessary, this is the default value in
+        #       libvirt's ceph backend
         self.fields['port'].initial = 6789
 
     class Meta:
@@ -1698,14 +1710,14 @@ class EndpointForm(ModelForm):
         fields = ("name", "address", "port")
 
 
-class StorageListSearchForm(forms.Form):
+class EndpointListSearchForm(forms.Form):
     s = forms.CharField(widget=forms.TextInput(attrs={
         'class': "form-control input-tags",
         'placeholder': _("Search...")
     }))
 
     def __init__(self, *args, **kwargs):
-        super(StorageListSearchForm, self).__init__(*args, **kwargs)
+        super(EndpointListSearchForm, self).__init__(*args, **kwargs)
 
 
 class DiskForm(ModelForm):

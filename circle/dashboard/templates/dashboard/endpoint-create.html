@@ -23,6 +23,10 @@
   </div>
 </div>
 <input type="submit" value="{% trans "Create new endpoint" %}" class="btn btn-success" id="datastore_endpoint_host-create-btn">
+<a href="{% url "dashboard.views.storage-endpoint-list" %}" class="btn btn-primary">
+  {% trans "Back" %}
+</a>
+
 </form>
 
 

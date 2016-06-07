@@ -3,7 +3,7 @@
 {% load i18n %}
 {% load render_table from django_tables2 %}
 
-{% block title-page %}{% trans "Data stores" %}{% endblock %}
+{% block title-page %}{% trans "Endpoints" %}{% endblock %}
 
 {% block content %}
 
@@ -11,19 +11,14 @@
   <div class="col-md-12">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <div class="pull-right">
-          <a href="{% url "dashboard.views.storage-endpoint-list" %}" class="btn btn-success btn-xs" id="endpoint-list-btn">
-            {% trans "endpoint list" %}
-          </a>
-          <a href="{% url "dashboard.views.storage-choose" %}" class="btn btn-success btn-xs storage-choose">
-            <i class="fa fa-plus"></i> {% trans "new data store" %}
-          </a>
-        </div>
-        <h3 class="no-margin"><i class="fa fa-database"></i> {% trans "Data stores" %}</h3>
+        <a href="{% url "dashboard.views.storage-endpoint-create" %}" class="pull-right btn btn-success btn-xs">
+          <i class="fa fa-plus"></i> {% trans "new endpoint" %}
+        </a>
+        <h3 class="no-margin"><i class="fa fa-database"></i> {% trans "Endpoints" %}</h3>
       </div>
       <div class="panel-body">
         <div class="row">
-          <div class="col-md-offset-8 col-md-4" id="storage-list-search">
+          <div class="col-md-offset-8 col-md-4" id="endpoint-list-search">
             <form action="" method="GET">
               <div class="input-group">
                 {{ search_form.s }}

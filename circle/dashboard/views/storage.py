@@ -34,10 +34,10 @@ from sizefield.utils import filesizeformat
 
 from common.models import WorkerNotFound
 from storage.models import DataStore, Disk, Endpoint
-from ..tables import DiskListTable, StorageListTable
+from ..tables import DiskListTable, StorageListTable, EndpointListTable
 from ..forms import (
     DataStoreForm, CephDataStoreForm, DiskForm, StorageListSearchForm,
-    EndpointForm
+    EndpointForm, EndpointListSearchForm
 )
 from .util import FilterMixin
 import json
@@ -295,7 +295,7 @@ class EndpointCreate(SuccessMessageMixin, CreateView):
         context.update({
             'box_title': _("Create a new endpoint"),
             'ajax_title': True,
-            'template': "dashboard/_datastore_endpoint-create.html",
+            'template': "dashboard/endpoint-create.html",
         })
         return context
 
@@ -342,4 +342,52 @@ class EndpointCreate(SuccessMessageMixin, CreateView):
         return error_str
 
     def get_success_url(self):
-        return reverse_lazy("dashboard.views.storage-list")
+        return reverse_lazy("dashboard.views.storage-endpoint-list")
+
+
+class EndpointList(SuperuserRequiredMixin, FilterMixin, SingleTableView):
+    template_name = "dashboard/endpoint-list.html"
+    model = Endpoint
+    table_class = EndpointListTable
+    table_pagination = False
+
+    allowed_filters = {
+        'name': "name__icontains",
+        'address': "address__icontains",
+    }
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(EndpointList, self).get_context_data(*args, **kwargs)
+        context['search_form'] = self.search_form
+        return context
+
+    def get(self, *args, **kwargs):
+        self.search_form = EndpointListSearchForm(self.request.GET)
+        self.search_form.full_clean()
+
+        return super(EndpointList, self).get(*args, **kwargs)
+
+    def get_queryset(self):
+        logger.debug('StorageList.get_queryset() called. User: %s',
+                     unicode(self.request.user))
+        qs = Endpoint.objects.all()
+        self.create_fake_get()
+
+        try:
+            filters, excludes = self.get_queryset_filters()
+            qs = qs.filter(**filters).exclude(**excludes).distinct()
+        except ValueError:
+            messages.error(self.request, _("Error during filtering."))
+
+        return qs
+
+
+class EndpointEdit(SuperuserRequiredMixin, UpdateView):
+    model = Endpoint
+    fields = ("name", "address", "port")
+    template_name = "dashboard/endpoint-edit.html"
+
+    def get_success_url(self):
+        ds = self.get_object()
+        return reverse("dashboard.views.storage-endpoint-edit",
+                       kwargs={"pk": ds.id})

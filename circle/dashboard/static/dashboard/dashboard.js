@@ -87,6 +87,7 @@ $(function () {
     return false;
   });
 
+  // NOTE: modal for create endpoint, might use in future
   $('.datastore_endpoint-create').click(function(e) {
     $.ajax({
       type: 'GET',
