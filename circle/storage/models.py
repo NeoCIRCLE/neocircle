@@ -63,6 +63,10 @@ class Endpoint(Model):
     def __unicode__(self):
         return u"%s | %s:%d" % (self.name, self.address, self.port)
 
+    @property
+    def is_deletable(self):
+        return self.datastore_set.filter(destroyed__isnull=True).count() == 0
+
 
 class DataStore(Model):
 
@@ -86,6 +90,7 @@ class DataStore(Model):
                           verbose_name=_('Ceph username'))
     secret_uuid = CharField(max_length=255, null=True, blank=True,
                             verbose_name=_('uuid of secret key'))
+    destroyed = DateTimeField(blank=True, default=None, null=True)
 
     class Meta:
         ordering = ['name']
@@ -120,12 +125,27 @@ class DataStore(Model):
 
         return [(ep.address, ep.port) for ep in self.endpoints.all()]
 
+    def destroy(self):
+        if self.destroyed:
+            return False
+
+        self.destroyed = timezone.now()
+        self.save()
+        return True
+
     @property
     def used_percent(self):
         stats = self.get_statistics()
         free_percent = float(stats['free_percent'])
 
         return int(100 - free_percent)
+
+    @property
+    def is_destroyable(self):
+        disk_count = self.disk_set.filter(destroyed__isnull=True).count()
+        template_count = self.instancetemplate_set.count()
+        vm_count = self.instance_set.filter(destroyed_at__isnull=True).count()
+        return 0 == disk_count + vm_count + template_count
 
     @method_cache(30)
     def get_statistics(self, timeout=15):

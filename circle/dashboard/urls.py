@@ -54,6 +54,7 @@ from .views import (
     NodeActivityView,
     UserList,
     StorageDetail, StorageList, StorageChoose, StorageCreate, DiskDetail,
+    StorageDelete, StorageRestore,
     EndpointCreate, EndpointList, EndpointEdit, EndpointDelete,
     MessageList, MessageDetail, MessageCreate, MessageDelete,
 )
@@ -244,6 +245,10 @@ urlpatterns = patterns(
         name="dashboard.views.storage-list"),
     url(r'^storage/choose/$', StorageChoose.as_view(),
         name="dashboard.views.storage-choose"),
+    url(r"^storage/delete/(?P<pk>\d+)/$", StorageDelete.as_view(),
+        name="dashboard.views.storage-delete"),
+    url(r"^storage/restore/(?P<pk>\d+)/$", StorageRestore.as_view(),
+        name="dashboard.views.storage-restore"),
 
     url(r'^storage/endpoint/create/$', EndpointCreate.as_view(),
         name="dashboard.views.storage-endpoint-create"),

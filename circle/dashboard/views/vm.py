@@ -437,7 +437,8 @@ class VmCreateDiskView(FormOperationMixin, VmOperationView):
         val = super(VmCreateDiskView, self).get_form_kwargs()
         num = op.instance.disks.count() + 1
         val['default'] = "%s %d" % (op.instance.name, num)
-        val['datastore_choices'] = DataStore.get_all()
+        val['datastore_choices'] = DataStore.objects.filter(
+            destroyed__isnull=True)
         return val
 
 
@@ -453,7 +454,8 @@ class VmDownloadDiskView(FormOperationMixin, VmOperationView):
 
     def get_form_kwargs(self):
         val = super(VmDownloadDiskView, self).get_form_kwargs()
-        val['datastore_choices'] = DataStore.get_all()
+        val['datastore_choices'] = DataStore.objects.filter(
+            destroyed__isnull=True)
         return val
 
 

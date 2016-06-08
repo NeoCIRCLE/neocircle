@@ -29,7 +29,9 @@ $(function () {
     return false;
   });
 
-  $('.group-create, .node-create, .tx-tpl-ownership, .group-delete, .node-delete, .disk-remove, .template-delete, .delete-from-group, .lease-delete, .endpoint-delete').click(function(e) {
+  $('.group-create, .node-create, .tx-tpl-ownership, .group-delete, .node-delete, ' +
+    '.disk-remove, .template-delete, .delete-from-group, .lease-delete, .endpoint-delete, ' +
+    '.storage-delete, .storage-restore').click(function(e) {
     $.ajax({
       type: 'GET',
       url: $(this).prop('href'),

@@ -460,6 +460,9 @@ class NodeForm(forms.ModelForm):
 class TemplateForm(forms.ModelForm):
     networks = forms.ModelMultipleChoiceField(
         queryset=None, required=False, label=_("Networks"))
+    datastore = forms.ModelChoiceField(
+        queryset=DataStore.objects.filter(destroyed__isnull=True),
+        empty_label=None)
 
     num_cores = forms.IntegerField(widget=forms.NumberInput(attrs={
         'class': "form-control input-tags cpu-count-input",
@@ -1451,8 +1454,9 @@ class RawDataForm(forms.ModelForm):
 
 
 class VmDataStoreForm(forms.ModelForm):
-    datastore = forms.ModelChoiceField(queryset=DataStore.objects.all(),
-                                       empty_label=None)
+    datastore = forms.ModelChoiceField(
+        queryset=DataStore.objects.filter(destroyed__isnull=True),
+        empty_label=None)
 
     class Meta:
         model = Instance
@@ -1671,13 +1675,29 @@ class CephDataStoreForm(DataStoreForm):
 
 
 class StorageListSearchForm(forms.Form):
+
+    CHOICES = (
+        ("active", _("active")),
+        ("destroyed", _("destroyed")),
+        (("all"), _("all")),
+    )
+
     s = forms.CharField(widget=forms.TextInput(attrs={
         'class': "form-control input-tags",
         'placeholder': _("Search...")
     }))
 
+    stype = forms.ChoiceField(CHOICES, widget=forms.Select(attrs={
+        'class': "btn btn-default input-tags",
+    }))
+
     def __init__(self, *args, **kwargs):
         super(StorageListSearchForm, self).__init__(*args, **kwargs)
+        # set initial value, otherwise it would be overwritten by request.GET
+        if not self.data.get("stype"):
+            data = self.data.copy()
+            data['stype'] = "active"
+            self.data = data
 
 
 class EndpointForm(ModelForm):
