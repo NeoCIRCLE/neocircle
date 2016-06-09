@@ -680,7 +680,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         with self.activity('notification_about_expiration',
                            readable_name=ugettext_noop(
                                "notify owner about expiration"),
-                           on_commit=on_commit):
+                           on_commit=on_commit, concurrency_check=False):
             from dashboard.views import VmRenewView, absolute_url
             level = self.get_level_object("owner")
             for u, ulevel in self.get_users_with_level(level__pk=level.pk):
