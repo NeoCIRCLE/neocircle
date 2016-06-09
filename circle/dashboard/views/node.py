@@ -330,3 +330,18 @@ class NodeActivityView(LoginRequiredMixin, SuperuserRequiredMixin, View):
             json.dumps(response),
             content_type="application/json"
         )
+
+
+class NodeActivityDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+                         DetailView):
+    model = NodeActivity
+    context_object_name = 'nodeactivity'  # much simpler to mock object
+    template_name = 'dashboard/nodeactivity_detail.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super(NodeActivityDetail, self).get_context_data(**kwargs)
+        ctx['activities'] = _format_activities(NodeActivity.objects.filter(
+            node=self.object.node, parent=None
+        ).order_by('-started').select_related())
+        ctx['icon'] = _get_activity_icon(self.object)
+        return ctx

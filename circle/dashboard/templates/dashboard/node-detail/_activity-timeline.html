@@ -8,7 +8,8 @@
         <i class="fa {% if not a.finished %}fa-refresh fa-spin {% else %}fa-{{a.icon}}{% endif %}"></i>
       </span>
       <strong title="{{ a.result.get_admin_text }}">
-        {{ a.readable_name.get_admin_text|capfirst }}
+        <a href="{{ a.get_absolute_url }}">
+          {{ a.readable_name.get_admin_text|capfirst }}</a>
       </strong>
 
     <span title="{{ a.started }}">{{ a.started|arrowfilter:LANGUAGE_CODE }}</span>{% if a.user %}, {{ a.user }}{% endif %}
@@ -19,7 +20,8 @@
           <div data-activity-id="{{ s.pk }}"
                class="sub-activity{% if s.has_failed %} sub-activity-failed{% endif %}">
             <span title="{{ s.result.get_admin_text }}">
-              {{ s.readable_name|get_text:user }}
+              <a href="{{ s.get_absolute_url }}">
+                {{ s.readable_name|get_text:user }}</a>
             </span>
             &ndash;
             {% if s.finished %}

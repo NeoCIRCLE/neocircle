@@ -1,0 +1,83 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+{% load hro %}
+
+{% block content %}
+<div class="body-content">
+  <div class="page-header">
+    <h1>
+      <div class="pull-right" id="vm-activity-state">
+        <span class="label label-{% if object.get_status_id == 'wait' %}info{% else %}{% if object.succeeded %}success{% else %}danger{% endif %}{% endif %}">
+          <span>{{ object.get_status_id|upper }}</span>
+        </span>
+      </div>
+      <i class="fa fa-{{icon}}"></i>
+      {{ object.node.name }}: {{object.readable_name|get_text:user}}
+    </h1>
+  </div>
+  <div class="row">
+    <div class="col-md-6" id="vm-info-pane">
+      {% include "dashboard/vm-detail/_activity-timeline.html" with active=object %}
+    </div>
+    <div class="col-md-6">
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <dl>
+            <dt>{% trans "activity code" %}</dt>
+            <dd>{{object.activity_code}}</dd>
+
+            <dt>{% trans "node" %}</dt>
+            <dd><a href="{{object.node.get_absolute_url}}">{{object.node}}</a></dd>
+
+            <dt>{% trans "time" %}</dt>
+            <dd>{{object.started|default:'n/a'}} → {{object.finished|default:'n/a'}}</dd>
+
+            <dt>{% trans "user" %}</dt>
+            <dd>
+            <a href="{{ object.user.profile.get_absolute_url }}">
+              {{object.user|default:'(system)'}}</a></dd>
+            <dt>{% trans "type" %}</dt>
+            <dd>
+            {% if object.parent %}
+              {% blocktrans with url=object.parent.get_absolute_url name=object.parent %}
+                subactivity of <a href="{{url}}">{{name}}</a>
+              {% endblocktrans %}
+            {% else %}{% trans "top level activity" %}{% endif %}
+            </dd>
+
+            <dt>{% trans "task uuid" %}</dt>
+            <dd>{{ object.task_uuid|default:'n/a' }}</dd>
+
+            <dt>{% trans "status" %}</dt>
+            <dd id="activity_status">{{ object.get_status_id }}</dd>
+
+
+            <dt>{% trans "result" %}</dt>
+            <dd><textarea class="form-control" id="activity_result_text">{{object.result|get_text:user}}</textarea></dd>
+
+            <dt>{% trans "subactivities" %}</dt>
+            {% for s in object.children.all %}
+              <dd>
+                <span{% if s.result %} title="{{ s.result|get_text:user }}"{% endif %}>
+                  <a href="{{ s.get_absolute_url }}">
+                      {{ s.readable_name|get_text:user|capfirst }}</a></span> &ndash;
+                {% if s.finished %}
+                  {{ s.finished|time:"H:i:s" }}
+                {% else %}
+                  <i class="fa fa-refresh fa-spin" class="sub-activity-loading-icon"></i>
+                {% endif %}
+                {% if s.has_failed %}
+                  <div class="label label-danger">{% trans "failed" %}</div>
+                {% endif %}
+              </dd>
+            {% empty %}
+              <dd>{% trans "none" %}</dd>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
