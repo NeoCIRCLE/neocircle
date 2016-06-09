@@ -81,6 +81,20 @@ node_ops = OrderedDict([
 ])
 
 
+def _get_activity_icon(act):
+    op = act.get_operation()
+    if op and op.id in node_ops:
+        return node_ops[op.id].icon
+    else:
+        return "cog"
+
+
+def _format_activities(acts):
+    for i in acts:
+        i.icon = _get_activity_icon(i)
+    return acts
+
+
 class NodeDetailView(LoginRequiredMixin,
                      GraphMixin, DetailView):
     template_name = "dashboard/node-detail.html"
@@ -103,7 +117,7 @@ class NodeDetailView(LoginRequiredMixin,
         context['ops'] = get_operations(self.object, self.request.user)
         context['op'] = {i.op: i for i in context['ops']}
         context['show_show_all'] = len(na) > 10
-        context['activities'] = na[:10]
+        context['activities'] = _format_activities(na[:10])
         context['trait_form'] = form
         context['graphite_enabled'] = (
             settings.GRAPHITE_URL is not None)
@@ -298,8 +312,8 @@ class NodeActivityView(LoginRequiredMixin, SuperuserRequiredMixin, View):
         show_all = request.GET.get("show_all", "false") == "true"
         node = Node.objects.get(pk=pk)
 
-        activities = NodeActivity.objects.filter(
-            node=node, parent=None).order_by('-started').select_related()
+        activities = _format_activities(NodeActivity.objects.filter(
+            node=node, parent=None).order_by('-started').select_related())
 
         show_show_all = len(activities) > 10
         if not show_all:

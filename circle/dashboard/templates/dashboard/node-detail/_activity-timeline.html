@@ -5,7 +5,7 @@
   {% for a in activities %}
     <div class="activity" data-activity-id="{{ a.pk }}">
       <span class="timeline-icon{% if a.has_failed %} timeline-icon-failed{% endif %}">
-        <i class="fa {% if not a.finished %}fa-refresh fa-spin {% else %}fa-plus{% endif %}"></i>
+        <i class="fa {% if not a.finished %}fa-refresh fa-spin {% else %}fa-{{a.icon}}{% endif %}"></i>
       </span>
       <strong title="{{ a.result.get_admin_text }}">
         {{ a.readable_name.get_admin_text|capfirst }}

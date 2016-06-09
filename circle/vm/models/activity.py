@@ -215,6 +215,10 @@ class NodeActivity(ActivityModel):
         app_label = 'vm'
         db_table = 'vm_nodeactivity'
 
+    def get_operation(self):
+        return self.node.get_operation_from_activity_code(
+            self.activity_code)
+
     def __unicode__(self):
         if self.parent:
             return '{}({})->{}'.format(self.parent.activity_code,
