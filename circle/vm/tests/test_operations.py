@@ -25,6 +25,7 @@ from vm.operations import (
     RebootOperation, ResetOperation, SaveAsTemplateOperation,
     ShutdownOperation, ShutOffOperation, SleepOperation, WakeUpOperation,
 )
+from test_models import DiskQuerySet
 
 
 class DeployOperationTestCase(TestCase):
@@ -55,9 +56,10 @@ class MigrateOperationTestCase(TestCase):
         op = MigrateOperation(inst)
         op._get_remote_args = MagicMock(side_effect=MigrateException())
         inst.select_node = MagicMock(return_value='test')
+        inst.disks = DiskQuerySet()
         self.assertRaises(
             MigrateException, op._operation,
-            act, to_node=None)
+            act, user=None, to_node=None)
         assert inst.select_node.called
         op._get_remote_args.assert_called_once_with(
             to_node='test', live_migration=True)

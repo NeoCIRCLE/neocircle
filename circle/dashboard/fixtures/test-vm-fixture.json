@@ -23,7 +23,7 @@
     "endpoints": [],
     "type": "file",
     "ceph_user": null,
-    "secret_uuid": null,
+    "secret": null,
     "path": "/disks", 
     "hostname": "wut", 
     "name": "diszkek"

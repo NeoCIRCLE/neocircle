@@ -33,6 +33,7 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from model_utils.models import TimeStampedModel
+from model_utils import FieldTracker
 from sizefield.models import FileSizeField
 
 from .tasks import local_tasks, storage_tasks
@@ -88,9 +89,11 @@ class DataStore(Model):
                                 verbose_name=_('endpoints'))
     ceph_user = CharField(max_length=255, null=True, blank=True,
                           verbose_name=_('Ceph username'))
-    secret_uuid = CharField(max_length=255, null=True, blank=True,
-                            verbose_name=_('uuid of secret key'))
+    secret = CharField(max_length=255, null=True, blank=True,
+                       verbose_name=_('secret key'))
     destroyed = DateTimeField(blank=True, default=None, null=True)
+
+    tracker = FieldTracker(fields=["ceph_user", "secret"])
 
     class Meta:
         ordering = ['name']
@@ -480,7 +483,7 @@ class Disk(TimeStampedModel):
         desc = self.get_vmdisk_desc_for_filesystem()
         desc["endpoints"] = self.datastore.get_endpoints()
         desc["ceph_user"] = self.datastore.ceph_user
-        desc["secret_uuid"] = self.datastore.secret_uuid
+        desc["secret"] = self.datastore.secret
 
         return desc
 

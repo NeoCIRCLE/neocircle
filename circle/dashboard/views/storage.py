@@ -47,6 +47,8 @@ from .util import FilterMixin
 import json
 from celery.exceptions import TimeoutError
 
+from vm.models import Node
+
 logger = logging.getLogger(__name__)
 
 
@@ -281,6 +283,23 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
     def get_success_url(self):
         ds = self.get_object()
         return reverse("dashboard.views.storage-detail", kwargs={"pk": ds.id})
+
+    def form_valid(self, form):
+        # automatic credential refresh
+        changed = False
+        if self.object.type == "ceph_block":
+            changed = (self.object.tracker.has_changed("secret")
+                       or self.object.tracker.has_changed("ceph_user"))
+        response = super(StorageDetail, self).form_valid(form)
+        if changed:
+            nodes = Node.objects.all()
+            for node in nodes:
+                if node.get_online():
+                    node.refresh_credential(
+                        user=self.request.user,
+                        username=self.object.ceph_user,
+                        secret=self.object.secret)
+        return response
 
 
 class StorageDelete(SuperuserRequiredMixin, DeleteView):

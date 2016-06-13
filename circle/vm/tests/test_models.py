@@ -36,6 +36,15 @@ from ..operations import (
 )
 
 
+class DiskQuerySet(list):
+
+    def filter(self, *args, **kwargs):
+        return DiskQuerySet()
+
+    def exists(self):
+        return False
+
+
 class PortFinderTestCase(TestCase):
 
     def test_find_unused_port_without_used_ports(self):
@@ -106,6 +115,7 @@ class InstanceTestCase(TestCase):
         inst = Mock(destroyed_at=None, spec=Instance)
         inst.interface_set.all.return_value = []
         inst.node = MagicMock(spec=Node)
+        inst.disks = DiskQuerySet()
         inst.status = 'RUNNING'
         migrate_op = MigrateOperation(inst)
         with patch('vm.operations.vm_tasks.migrate') as migr, \
@@ -124,6 +134,7 @@ class InstanceTestCase(TestCase):
         inst.interface_set.all.return_value = []
         inst.node = MagicMock(spec=Node)
         inst.status = 'RUNNING'
+        inst.disks = DiskQuerySet()
         migrate_op = MigrateOperation(inst)
         with patch('vm.operations.vm_tasks.migrate') as migr, \
                 patch.object(RemoteOperationMixin, "_operation"):

@@ -562,7 +562,7 @@ class MigrateOperation(RemoteInstanceOperation):
                 "redeploy network (rollback)")):
             self.instance.deploy_net()
 
-    def _operation(self, activity, to_node=None, live_migration=True):
+    def _operation(self, activity, user, to_node=None, live_migration=True):
         if not to_node:
             with activity.sub_activity('scheduling',
                                        readable_name=ugettext_noop(
@@ -571,6 +571,17 @@ class MigrateOperation(RemoteInstanceOperation):
                 sa.result = to_node
 
         try:
+            with activity.sub_activity(
+                'refresh_credential', readable_name=create_readable(
+                    ugettext_noop("refresh credential on %(node)s"),
+                    node=to_node)):
+                ceph_blocks = self.instance.disks.filter(
+                    datastore__type="ceph_block")
+                if ceph_blocks.exists():
+                    ds = ceph_blocks[0].datastore
+                    to_node.refresh_credential(user=user,
+                                               username=ds.ceph_user,
+                                               secret=ds.secret)
             with activity.sub_activity(
                 'migrate_vm', readable_name=create_readable(
                     ugettext_noop("migrate to %(node)s"), node=to_node)):
@@ -1143,6 +1154,14 @@ class NodeOperation(Operation):
                 user=user, readable_name=name)
 
 
+class RemoteNodeOperation(RemoteOperationMixin, NodeOperation):
+
+    remote_queue = ('vm', 'fast')
+
+    def _get_remote_queue(self):
+        return self.node.get_remote_queue_name(*self.remote_queue)
+
+
 @register_operation
 class ResetNodeOperation(NodeOperation):
     id = 'reset'
@@ -1330,6 +1349,22 @@ class UpdateNodeOperation(NodeOperation):
         if failed:
             raise HumanReadableException.create(ugettext_noop(
                 "Failed: %(failed)s"), failed=failed)
+
+
+@register_operation
+class RefreshCredentialOperation(RemoteNodeOperation):
+    id = 'refresh_credential'
+    name = _("refresh credential")
+    description = _("Refresh credential.")
+    required_perms = ()
+    task = vm_tasks.refresh_credential
+
+    def _get_remote_args(self, **kwargs):
+        return [kwargs["username"], kwargs["secret"]]
+
+    def _operation(self, activity, username, secret):
+        super(RefreshCredentialOperation, self)._operation(
+            username=username, secret=secret)
 
 
 @register_operation

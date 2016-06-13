@@ -17,7 +17,7 @@
 <fieldset>
   <legend>{% trans "Ceph block storage authentication settings" %}</legend>
     {{ form.ceph_user|as_crispy_field }}
-    {{ form.secret_uuid|as_crispy_field }}
+    {{ form.secret|as_crispy_field }}
 </fieldset>
 <fieldset>
   <legend>{% trans "Select or add new Ceph monitor endpoints(s)" %}</legend>

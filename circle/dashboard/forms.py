@@ -1661,7 +1661,7 @@ class CephDataStoreForm(DataStoreForm):
             Fieldset(
                 '',
                 'ceph_user',
-                'secret_uuid',
+                'secret',
             )
         )
         return helper
@@ -1669,7 +1669,7 @@ class CephDataStoreForm(DataStoreForm):
     class Meta:
         model = DataStore
         fields = ("type", "name", "path", "hostname",
-                  "ceph_user", "secret_uuid", "endpoints")
+                  "ceph_user", "secret", "endpoints")
         widgets = {"endpoints": FilteredSelectMultiple(_("Endpoints"),
                                                        is_stacked=True)}
 
