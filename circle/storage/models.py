@@ -53,22 +53,6 @@ def validate_ascii(value):
         raise ValidationError("%s is not 'ascii' string" % value)
 
 
-class Endpoint(Model):
-
-    """ Address and port of a data store.
-    """
-    name = CharField(max_length=255, unique=True, verbose_name=_('name'))
-    address = CharField(max_length=1024, verbose_name=_('address'))
-    port = IntegerField(null=True, blank=True, verbose_name=_('port'))
-
-    def __unicode__(self):
-        return u"%s | %s:%d" % (self.name, self.address, self.port)
-
-    @property
-    def is_deletable(self):
-        return self.datastore_set.filter(destroyed__isnull=True).count() == 0
-
-
 class DataStore(Model):
 
     """Collection of virtual disks.
@@ -84,9 +68,7 @@ class DataStore(Model):
                      validators=[validate_ascii])
     # hostname of storage driver
     hostname = CharField(max_length=40, verbose_name=_('hostname'))
-    # endpoints of Ceph monitors
-    endpoints = ManyToManyField(Endpoint, blank=True,
-                                verbose_name=_('endpoints'))
+
     ceph_user = CharField(max_length=255, null=True, blank=True,
                           verbose_name=_('Ceph username'))
     secret = CharField(max_length=255, null=True, blank=True,
@@ -123,10 +105,6 @@ class DataStore(Model):
         deletables = sorted(deletables, key=lambda disk: disk.destroyed)
 
         return [disk.filename for disk in deletables]
-
-    def get_endpoints(self):
-
-        return [(ep.address, ep.port) for ep in self.endpoints.all()]
 
     def destroy(self):
         if self.destroyed:
@@ -481,7 +459,6 @@ class Disk(TimeStampedModel):
     def get_vmdisk_desc_for_ceph_block_device(self):
 
         desc = self.get_vmdisk_desc_for_filesystem()
-        desc["endpoints"] = self.datastore.get_endpoints()
         desc["ceph_user"] = self.datastore.ceph_user
         desc["secret"] = self.datastore.secret
 

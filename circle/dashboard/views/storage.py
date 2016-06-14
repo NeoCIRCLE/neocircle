@@ -37,11 +37,10 @@ from braces.views import SuperuserRequiredMixin
 from sizefield.utils import filesizeformat
 
 from common.models import WorkerNotFound
-from storage.models import DataStore, Disk, Endpoint
-from ..tables import DiskListTable, StorageListTable, EndpointListTable
+from storage.models import DataStore, Disk
+from ..tables import DiskListTable, StorageListTable
 from ..forms import (
-    DataStoreForm, CephDataStoreForm, DiskForm, StorageListSearchForm,
-    EndpointForm, EndpointListSearchForm
+    DataStoreForm, CephDataStoreForm, DiskForm, StorageListSearchForm
 )
 from .util import FilterMixin
 import json
@@ -157,7 +156,6 @@ class StorageList(SuperuserRequiredMixin, FilterMixin, SingleTableView):
         'path': "path__icontains",
         'poolname': "path__icontains",
         'hostname': "hostname__iexact",
-        'address': "endpoints__address__in"
     }
 
     def get_context_data(self, *args, **kwargs):
@@ -304,7 +302,7 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
 
 class StorageDelete(SuperuserRequiredMixin, DeleteView):
     model = DataStore
-    success_message = _("Endpoint successfully deleted.")
+    success_message = _("Storage successfully destroyed.")
 
     def get_template_names(self):
         if self.request.is_ajax():
@@ -387,165 +385,3 @@ class DiskDetail(SuperuserRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         pass
-
-
-class EndpointCreate(SuccessMessageMixin, CreateView):
-    model = Endpoint
-    form_class = EndpointForm
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/_modal.html']
-        else:
-            return ['dashboard/nojs-wrapper.html']
-
-    def get_context_data(self, *args, **kwargs):
-        context = super(EndpointCreate, self).get_context_data(
-            *args, **kwargs)
-
-        context.update({
-            'box_title': _("Create a new endpoint"),
-            'ajax_title': True,
-            'template': "dashboard/endpoint-create.html",
-        })
-        return context
-
-    def get(self, *args, **kwargs):
-        if not self.request.user.has_perm('storage.add_endpoint'):
-            raise PermissionDenied()
-
-        return super(EndpointCreate, self).get(*args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        if not self.request.user.has_perm('storage.add_endpoint'):
-            raise PermissionDenied()
-
-        form = self.form_class(request.POST)
-        if not form.is_valid():
-            if self.request.is_ajax():
-                errors = self.errors_to_string(form)
-                return self.json_response(False, errors)
-            else:
-                return self.get(request, form, *args, **kwargs)
-        else:
-            instance = form.save()
-            if self.request.is_ajax():
-                resp = {"val": instance.id, "text": unicode(instance)}
-                return self.json_response(True, resp)
-            else:
-                return redirect(self.get_success_url())
-
-    def json_response(self, status, response):
-        resp = {
-            "status": status,
-            "response": response
-        }
-        return HttpResponse(json.dumps(resp), content_type="application/json")
-
-    def errors_to_string(self, form):
-        error_str = ""
-        if form.errors:
-            for field, error in form.errors.iteritems():
-                    error_str += "%s: %s<br />" % (field, error)
-            for error in form.non_field_errors():
-                error_str += "%s<br />" % error
-
-        return error_str
-
-    def get_success_url(self):
-        return reverse_lazy("dashboard.views.storage-endpoint-list")
-
-
-class EndpointList(SuperuserRequiredMixin, FilterMixin, SingleTableView):
-    template_name = "dashboard/endpoint-list.html"
-    model = Endpoint
-    table_class = EndpointListTable
-    table_pagination = False
-
-    allowed_filters = {
-        'name': "name__icontains",
-        'address': "address__icontains",
-    }
-
-    def get_context_data(self, *args, **kwargs):
-        context = super(EndpointList, self).get_context_data(*args, **kwargs)
-        context['search_form'] = self.search_form
-        return context
-
-    def get(self, *args, **kwargs):
-        self.search_form = EndpointListSearchForm(self.request.GET)
-        self.search_form.full_clean()
-
-        return super(EndpointList, self).get(*args, **kwargs)
-
-    def get_queryset(self):
-        logger.debug('StorageList.get_queryset() called. User: %s',
-                     unicode(self.request.user))
-        qs = Endpoint.objects.all()
-        self.create_fake_get()
-
-        try:
-            filters, excludes = self.get_queryset_filters()
-            qs = qs.filter(**filters).exclude(**excludes).distinct()
-        except ValueError:
-            messages.error(self.request, _("Error during filtering."))
-
-        return qs
-
-
-class EndpointEdit(SuperuserRequiredMixin, UpdateView):
-    model = Endpoint
-    fields = ("name", "address", "port")
-    template_name = "dashboard/endpoint-edit.html"
-
-    def get_success_url(self):
-        ds = self.get_object()
-        return reverse_lazy("dashboard.views.storage-endpoint-edit",
-                            kwargs={"pk": ds.id})
-
-
-class EndpointDelete(SuperuserRequiredMixin, DeleteView):
-    model = Endpoint
-    success_message = _("Endpoint successfully deleted.")
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def check_deletable(self):
-        object = self.get_object()
-        if not object.is_deletable:
-            raise PermissionDenied()
-
-    def get(self, request, *args, **kwargs):
-        try:
-            self.check_deletable()
-        except PermissionDenied:
-            message = ugettext("Another object references"
-                               " to the selected object.")
-            if request.is_ajax():
-                return JsonResponse({"error": message})
-            else:
-                messages.warning(request, message)
-                return redirect(self.get_success_url())
-        return super(EndpointDelete, self).get(request, *args, **kwargs)
-
-    def get_success_url(self):
-        return reverse_lazy("dashboard.views.storage-endpoint-list")
-
-    def delete_obj(self, request, *args, **kwargs):
-        self.get_object().delete()
-
-    def delete(self, request, *args, **kwargs):
-        self.check_deletable()
-        self.delete_obj(request, *args, **kwargs)
-
-        if request.is_ajax():
-            return JsonResponse(
-                json.dumps({'message': self.success_message}),
-            )
-        else:
-            messages.success(request, self.success_message)
-            return HttpResponseRedirect(self.get_success_url())

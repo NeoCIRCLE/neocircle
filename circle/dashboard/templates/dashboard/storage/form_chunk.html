@@ -19,21 +19,6 @@
     {{ form.ceph_user|as_crispy_field }}
     {{ form.secret|as_crispy_field }}
 </fieldset>
-<fieldset>
-  <legend>{% trans "Select or add new Ceph monitor endpoints(s)" %}</legend>
-  <a href="{% url "dashboard.views.storage-endpoint-create" %}" class="btn btn-success">
-    <i class="fa fa-plus"></i>
-    {% trans "new endpoint" %}
-  </a> 
-
-  <script type="text/javascript" src="/static/admin/js/jquery.min.js"></script>
-  <script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
-  {{ form.media }}
-  <div id="group-detail-permissions">
-  {{ form.endpoints }}
-  </div>
-  <link rel="stylesheet" type="text/css" href="/static/admin/css/widgets.css" />
-</fieldset>
 {% endif %}
 
 <style>
@@ -43,8 +28,5 @@
   }
   fieldset legend {
     font-weight: bold;
-  }
-  #group-detail-permissions {
-    margin-top: 20px;
   }
 </style>

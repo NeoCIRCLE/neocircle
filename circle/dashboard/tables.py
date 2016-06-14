@@ -410,37 +410,3 @@ class StorageListTable(Table):
         fields = ('name', 'type', 'path', 'hostname', 'used_percent')
 
         prefix = "storage-"
-
-
-class EndpointListTable(Table):
-
-    name = TemplateColumn(
-        verbose_name=_("Name"),
-        template_name="dashboard/endpoint-list/column-endpoint-name.html",
-        attrs={'th': {'data-sort': "string"}}
-    )
-
-    address = Column(
-        verbose_name=_("Address"),
-        attrs={'th': {'data-sort': "string"}}
-    )
-
-    port = Column(
-        verbose_name=_("Port"),
-        attrs={'th': {'data-sort': "string"}}
-    )
-
-    actions = TemplateColumn(
-        verbose_name=_("Actions"),
-        template_name="dashboard/endpoint-list/column-endpoint-actions.html",
-        attrs={'th': {'class': 'endpoint-list-table-thin'}},
-        orderable=False,
-    )
-
-    class Meta:
-        model = DataStore
-        attrs = {'class': ('table table-bordered table-striped table-hover'
-                           'endpoint-list-table')}
-        fields = ('name', 'address', 'port',)
-
-        prefix = "endpoint-"

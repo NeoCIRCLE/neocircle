@@ -1,7 +1,0 @@
-{% load i18n %}
-<a href="{% url "dashboard.views.storage-endpoint-edit" pk=record.pk%}" id="endpoint-list-edit-button" class="btn btn-default btn-xs" title="{% trans "Edit" %}">
-  <i class="fa fa-edit"></i>
-</a>
-<a href="{% url "dashboard.views.storage-endpoint-delete" pk=record.pk %}" class="btn btn-danger btn-xs endpoint-delete" title="{% trans "Delete" %}">
-  <i class="fa fa-times"></i>
-</a>

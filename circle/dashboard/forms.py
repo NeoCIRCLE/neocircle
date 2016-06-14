@@ -54,7 +54,7 @@ from firewall.models import Vlan, Host
 from vm.models import (
     InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
-from storage.models import DataStore, Disk, Endpoint
+from storage.models import DataStore, Disk
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.models import Permission
 from .models import Profile, GroupProfile, Message
@@ -1669,9 +1669,7 @@ class CephDataStoreForm(DataStoreForm):
     class Meta:
         model = DataStore
         fields = ("type", "name", "path", "hostname",
-                  "ceph_user", "secret", "endpoints")
-        widgets = {"endpoints": FilteredSelectMultiple(_("Endpoints"),
-                                                       is_stacked=True)}
+                  "ceph_user", "secret",)
 
 
 class StorageListSearchForm(forms.Form):
@@ -1698,46 +1696,6 @@ class StorageListSearchForm(forms.Form):
             data = self.data.copy()
             data['stype'] = "active"
             self.data = data
-
-
-class EndpointForm(ModelForm):
-
-    @property
-    def helper(self):
-        helper = FormHelper()
-        helper.layout = Layout(
-            Fieldset(
-                '',
-                'name',
-                'address',
-                'port',
-            ),
-            FormActions(
-                Submit('submit', _('Save')),
-            )
-        )
-        return helper
-
-    def __init__(self, *args, **kwargs):
-        super(EndpointForm, self).__init__(*args, **kwargs)
-
-        # NOTE: may this is not necessary, this is the default value in
-        #       libvirt's ceph backend
-        self.fields['port'].initial = 6789
-
-    class Meta:
-        model = Endpoint
-        fields = ("name", "address", "port")
-
-
-class EndpointListSearchForm(forms.Form):
-    s = forms.CharField(widget=forms.TextInput(attrs={
-        'class': "form-control input-tags",
-        'placeholder': _("Search...")
-    }))
-
-    def __init__(self, *args, **kwargs):
-        super(EndpointListSearchForm, self).__init__(*args, **kwargs)
 
 
 class DiskForm(ModelForm):

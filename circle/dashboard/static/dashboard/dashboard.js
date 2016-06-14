@@ -30,7 +30,7 @@ $(function () {
   });
 
   $('.group-create, .node-create, .tx-tpl-ownership, .group-delete, .node-delete, ' +
-    '.disk-remove, .template-delete, .delete-from-group, .lease-delete, .endpoint-delete, ' +
+    '.disk-remove, .template-delete, .delete-from-group, .lease-delete, ' +
     '.storage-delete, .storage-restore').click(function(e) {
     $.ajax({
       type: 'GET',
@@ -90,49 +90,6 @@ $(function () {
             return false;
           }
           return true;
-        });
-      }
-    });
-    return false;
-  });
-
-  // NOTE: modal for create endpoint, might use in future
-  $('.datastore_endpoint-create').click(function(e) {
-    $.ajax({
-      type: 'GET',
-      url: $(this).prop('href'),
-      success: function(data) {
-        $('body').append(data);
-        var modal = $('#confirmation-modal');
-        modal.modal('show');
-        modal.on('hidden.bs.modal', function() {
-          modal.remove();
-        });
-
-        $("#datastore_endpoint_host-create-btn").click(function(){
-          var form = $("#datastore_endpoint_form");
-          $.post(form.attr("action"), form.serialize(), function(data){
-
-            if(data.status===true){
-              $('#id_endpoints_from')
-                .append($('<option>')
-                .text(data.response.text)
-                .attr('value', data.response.val));
-
-              modal.modal("hide");
-              $('body').removeClass('modal-open');
-              $('.modal-backdrop').remove();
-            }
-            else{
-              var error_msg = $("#datastore_endpoint-create-alert");
-              error_msg.empty();
-              error_msg.append(data.response);
-              error_msg.show();
-            }
-
-          }, "json");
-
-          return false;
         });
       }
     });
