@@ -36,7 +36,6 @@ from crispy_forms.layout import (
 )
 
 from crispy_forms.utils import render_field
-from crispy_forms.bootstrap import FormActions
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
@@ -1661,7 +1660,6 @@ class CephDataStoreForm(DataStoreForm):
             Fieldset(
                 '',
                 'ceph_user',
-                'secret',
             )
         )
         return helper
@@ -1669,7 +1667,7 @@ class CephDataStoreForm(DataStoreForm):
     class Meta:
         model = DataStore
         fields = ("type", "name", "path", "hostname",
-                  "ceph_user", "secret",)
+                  "ceph_user",)
 
 
 class StorageListSearchForm(forms.Form):

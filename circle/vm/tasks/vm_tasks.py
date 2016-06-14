@@ -188,5 +188,5 @@ def screenshot(params):
 
 
 @celery.task(name='vmdriver.refresh_secret')
-def refresh_credential(user, secret):
+def refresh_credential(user):
     pass

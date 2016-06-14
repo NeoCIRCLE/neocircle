@@ -580,8 +580,7 @@ class MigrateOperation(RemoteInstanceOperation):
                 if ceph_blocks.exists():
                     ds = ceph_blocks[0].datastore
                     to_node.refresh_credential(user=user,
-                                               username=ds.ceph_user,
-                                               secret=ds.secret)
+                                               username=ds.ceph_user)
             with activity.sub_activity(
                 'migrate_vm', readable_name=create_readable(
                     ugettext_noop("migrate to %(node)s"), node=to_node)):
@@ -1360,11 +1359,11 @@ class RefreshCredentialOperation(RemoteNodeOperation):
     task = vm_tasks.refresh_credential
 
     def _get_remote_args(self, **kwargs):
-        return [kwargs["username"], kwargs["secret"]]
+        return [kwargs["username"]]
 
-    def _operation(self, activity, username, secret):
+    def _operation(self, activity, username):
         super(RefreshCredentialOperation, self)._operation(
-            username=username, secret=secret)
+            username=username)
 
 
 @register_operation

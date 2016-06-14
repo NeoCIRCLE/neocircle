@@ -22,7 +22,6 @@
   "fields": {
     "type": "file",
     "ceph_user": null,
-    "secret": null,
     "path": "/disks", 
     "hostname": "wut", 
     "name": "diszkek"

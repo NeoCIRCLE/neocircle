@@ -29,7 +29,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import redirect
 from django_tables2 import SingleTableView
 from django.http import (
-    Http404, HttpResponse, HttpResponseRedirect, JsonResponse
+    Http404, HttpResponseRedirect, JsonResponse
 )
 from django.core.exceptions import PermissionDenied
 
@@ -284,10 +284,8 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         # automatic credential refresh
-        changed = False
-        if self.object.type == "ceph_block":
-            changed = (self.object.tracker.has_changed("secret")
-                       or self.object.tracker.has_changed("ceph_user"))
+        changed = (self.object.type == "ceph_block" and
+                   self.object.tracker.has_changed("ceph_user"))
         response = super(StorageDetail, self).form_valid(form)
         if changed:
             nodes = Node.objects.all()
@@ -295,8 +293,7 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
                 if node.get_online():
                     node.refresh_credential(
                         user=self.request.user,
-                        username=self.object.ceph_user,
-                        secret=self.object.secret)
+                        username=self.object.ceph_user)
         return response
 
 

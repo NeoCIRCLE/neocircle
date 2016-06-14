@@ -27,7 +27,7 @@ import re
 from django.conf import settings
 from celery.contrib.abortable import AbortableAsyncResult
 from django.db.models import (Model, BooleanField, CharField, DateTimeField,
-                              ForeignKey, IntegerField, ManyToManyField)
+                              ForeignKey)
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.urlresolvers import reverse
 from django.utils import timezone
@@ -71,11 +71,9 @@ class DataStore(Model):
 
     ceph_user = CharField(max_length=255, null=True, blank=True,
                           verbose_name=_('Ceph username'))
-    secret = CharField(max_length=255, null=True, blank=True,
-                       verbose_name=_('secret key'))
     destroyed = DateTimeField(blank=True, default=None, null=True)
 
-    tracker = FieldTracker(fields=["ceph_user", "secret"])
+    tracker = FieldTracker(fields=["ceph_user"])
 
     class Meta:
         ordering = ['name']
@@ -460,7 +458,6 @@ class Disk(TimeStampedModel):
 
         desc = self.get_vmdisk_desc_for_filesystem()
         desc["ceph_user"] = self.datastore.ceph_user
-        desc["secret"] = self.datastore.secret
 
         return desc
 
