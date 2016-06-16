@@ -38,15 +38,23 @@ class SubOperationMixin(object):
             parent, user, kwargs)
 
 
+class WritableDocMeta(type):
+    pass
+
+
 class Operation(object):
     """Base class for VM operations.
     """
+
+    __metaclass__ = WritableDocMeta
+
     async_queue = 'localhost.man'
     required_perms = None
     superuser_required = False
     do_not_call_in_templates = True
     abortable = False
     has_percentage = False
+    description = None
 
     @classmethod
     def get_activity_code_suffix(cls):
@@ -219,10 +227,12 @@ operation_registry_name = '_ops'
 
 
 class OperatedMixin(object):
-    def __getattr__(self, name):
-        # NOTE: __getattr__ is only called if the attribute doesn't already
-        # exist in your __dict__
-        return self.get_operation_class(name)(self)
+
+    def __getattribute__(self, name):
+        ops = getattr(type(self), operation_registry_name, {})
+        if name in ops:
+            return type(self).get_operation_class(name)(self)
+        return object.__getattribute__(self, name)
 
     @classmethod
     def get_operation_class(cls, name):
@@ -261,6 +271,19 @@ class OperatedMixin(object):
             return None
 
 
+def generate_op_doc(op, op_id):
+    doc = """
+        Usage: %s(<args>) | %s.async(<args>)
+        Args: %s
+
+        %s
+        """ % (op_id, op_id,
+               ", ".join(getargspec(op._operation)[0]),
+               op.__doc__)
+
+    op.__doc__ = doc
+
+
 def register_operation(op_cls, op_id=None, target_cls=None):
     """Register the specified operation with the target class.
 
@@ -297,5 +320,9 @@ def register_operation(op_cls, op_id=None, target_cls=None):
     if not hasattr(target_cls, operation_registry_name):
         setattr(target_cls, operation_registry_name, dict())
 
+    op_cls.__doc__ = op_cls.description or "It has no documentation. :("
+    op = op_cls(None)
+    generate_op_doc(op, op_id)
+    setattr(target_cls, op_id, op)
     getattr(target_cls, operation_registry_name)[op_id] = op_cls
     return op_cls

@@ -30,7 +30,9 @@ from urlparse import urlsplit
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.urlresolvers import reverse
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _, ugettext_noop
+from django.utils.translation import (
+    ugettext_noop, ugettext_noop as _, ugettext_lazy
+)
 from django.conf import settings
 from django.db.models import Q
 
@@ -205,7 +207,7 @@ class RemoteAgentOperation(EnsureAgentMixin, RemoteInstanceOperation):
 @register_operation
 class AddInterfaceOperation(InstanceOperation):
     id = 'add_interface'
-    name = _("add interface")
+    name = ugettext_lazy("add interface")
     description = _("Add a new network interface for the specified VLAN to "
                     "the VM.")
     required_perms = ()
@@ -250,7 +252,7 @@ class AddInterfaceOperation(InstanceOperation):
 class CreateDiskOperation(InstanceOperation):
 
     id = 'create_disk'
-    name = _("create disk")
+    name = ugettext_lazy("create disk")
     description = _("Create and attach empty disk to the virtual machine.")
     required_perms = ('storage.create_empty_disk', )
     accept_states = ('STOPPED', 'PENDING', 'RUNNING')
@@ -287,7 +289,7 @@ class CreateDiskOperation(InstanceOperation):
 class ResizeDiskOperation(RemoteInstanceOperation):
 
     id = 'resize_disk'
-    name = _("resize disk")
+    name = ugettext_lazy("resize disk")
     description = _("Resize the virtual disk image. "
                     "Size must be greater value than the actual size.")
     required_perms = ('storage.resize_disk', )
@@ -317,7 +319,7 @@ class ResizeDiskOperation(RemoteInstanceOperation):
 @register_operation
 class DownloadDiskOperation(InstanceOperation):
     id = 'download_disk'
-    name = _("download disk")
+    name = ugettext_lazy("download disk")
     description = _("Download and attach disk image (ISO file) for the "
                     "virtual machine. Most operating systems do not detect a "
                     "new optical drive, so you may have to reboot the "
@@ -354,7 +356,7 @@ class DownloadDiskOperation(InstanceOperation):
 @register_operation
 class DeployOperation(InstanceOperation):
     id = 'deploy'
-    name = _("deploy")
+    name = ugettext_lazy("deploy")
     description = _("Deploy and start the virtual machine (including storage "
                     "and network configuration).")
     required_perms = ()
@@ -417,7 +419,7 @@ class DeployOperation(InstanceOperation):
     @register_operation
     class DeployVmOperation(SubOperationMixin, RemoteInstanceOperation):
         id = "_deploy_vm"
-        name = _("deploy vm")
+        name = ugettext_lazy("deploy vm")
         description = _("Deploy virtual machine.")
         remote_queue = ("vm", "slow")
         task = vm_tasks.deploy
@@ -434,7 +436,7 @@ class DeployOperation(InstanceOperation):
     @register_operation
     class DeployDisksOperation(SubOperationMixin, InstanceOperation):
         id = "_deploy_disks"
-        name = _("deploy disks")
+        name = ugettext_lazy("deploy disks")
         description = _("Deploy all associated disks.")
 
         def _operation(self):
@@ -452,7 +454,7 @@ class DeployOperation(InstanceOperation):
     @register_operation
     class ResumeVmOperation(SubOperationMixin, RemoteInstanceOperation):
         id = "_resume_vm"
-        name = _("boot virtual machine")
+        name = ugettext_lazy("boot virtual machine")
         remote_queue = ("vm", "slow")
         task = vm_tasks.resume
 
@@ -460,7 +462,7 @@ class DeployOperation(InstanceOperation):
 @register_operation
 class DestroyOperation(InstanceOperation):
     id = 'destroy'
-    name = _("destroy")
+    name = ugettext_lazy("destroy")
     description = _("Permanently destroy virtual machine, its network "
                     "settings and disks.")
     required_perms = ()
@@ -503,7 +505,7 @@ class DestroyOperation(InstanceOperation):
     @register_operation
     class DeleteVmOperation(SubOperationMixin, RemoteInstanceOperation):
         id = "_delete_vm"
-        name = _("destroy virtual machine")
+        name = ugettext_lazy("destroy virtual machine")
         task = vm_tasks.destroy
         # if e.libvirtError and "Domain not found" in str(e):
 
@@ -511,7 +513,7 @@ class DestroyOperation(InstanceOperation):
     class DeleteMemDumpOperation(RemoteOperationMixin, SubOperationMixin,
                                  InstanceOperation):
         id = "_delete_mem_dump"
-        name = _("removing memory dump")
+        name = ugettext_lazy("removing memory dump")
         task = storage_tasks.delete_dump
 
         def _get_remote_queue(self):
@@ -525,7 +527,7 @@ class DestroyOperation(InstanceOperation):
 @register_operation
 class MigrateOperation(RemoteInstanceOperation):
     id = 'migrate'
-    name = _("migrate")
+    name = ugettext_lazy("migrate")
     description = _("Move a running virtual machine to an other worker node "
                     "keeping its full state.")
     required_perms = ()
@@ -585,7 +587,7 @@ class MigrateOperation(RemoteInstanceOperation):
 @register_operation
 class RebootOperation(RemoteInstanceOperation):
     id = 'reboot'
-    name = _("reboot")
+    name = ugettext_lazy("reboot")
     description = _("Warm reboot virtual machine by sending Ctrl+Alt+Del "
                     "signal to its console.")
     required_perms = ()
@@ -602,7 +604,7 @@ class RebootOperation(RemoteInstanceOperation):
 @register_operation
 class RemoveInterfaceOperation(InstanceOperation):
     id = 'remove_interface'
-    name = _("remove interface")
+    name = ugettext_lazy("remove interface")
     description = _("Remove the specified network interface and erase IP "
                     "address allocations, related firewall rules and "
                     "hostnames.")
@@ -626,7 +628,7 @@ class RemoveInterfaceOperation(InstanceOperation):
 @register_operation
 class RemovePortOperation(InstanceOperation):
     id = 'remove_port'
-    name = _("close port")
+    name = ugettext_lazy("close port")
     description = _("Close the specified port.")
     concurrency_check = False
     acl_level = "operator"
@@ -645,7 +647,7 @@ class RemovePortOperation(InstanceOperation):
 @register_operation
 class AddPortOperation(InstanceOperation):
     id = 'add_port'
-    name = _("open port")
+    name = ugettext_lazy("open port")
     description = _("Open the specified port.")
     concurrency_check = False
     acl_level = "operator"
@@ -663,7 +665,7 @@ class AddPortOperation(InstanceOperation):
 @register_operation
 class RemoveDiskOperation(InstanceOperation):
     id = 'remove_disk'
-    name = _("remove disk")
+    name = ugettext_lazy("remove disk")
     description = _("Remove the specified disk from the virtual machine, and "
                     "destroy the data.")
     required_perms = ()
@@ -687,7 +689,7 @@ class RemoveDiskOperation(InstanceOperation):
 @register_operation
 class ResetOperation(RemoteInstanceOperation):
     id = 'reset'
-    name = _("reset")
+    name = ugettext_lazy("reset")
     description = _("Cold reboot virtual machine (power cycle).")
     required_perms = ()
     accept_states = ('RUNNING', )
@@ -703,7 +705,7 @@ class ResetOperation(RemoteInstanceOperation):
 @register_operation
 class SaveAsTemplateOperation(InstanceOperation):
     id = 'save_as_template'
-    name = _("save as template")
+    name = ugettext_lazy("save as template")
     description = _("Save virtual machine as a template so they can be shared "
                     "with users and groups.  Anyone who has access to a "
                     "template (and to the networks it uses) will be able to "
@@ -815,7 +817,7 @@ class SaveAsTemplateOperation(InstanceOperation):
 class ShutdownOperation(AbortableRemoteOperationMixin,
                         RemoteInstanceOperation):
     id = 'shutdown'
-    name = _("shutdown")
+    name = ugettext_lazy("shutdown")
     description = _("Try to halt virtual machine by a standard ACPI signal, "
                     "allowing the operating system to keep a consistent "
                     "state. The operation will fail if the machine does not "
@@ -847,7 +849,7 @@ class ShutdownOperation(AbortableRemoteOperationMixin,
 @register_operation
 class ShutOffOperation(InstanceOperation):
     id = 'shut_off'
-    name = _("shut off")
+    name = ugettext_lazy("shut off")
     description = _("Forcibly halt a virtual machine without notifying the "
                     "operating system. This operation will even work in cases "
                     "when shutdown does not, but the operating system and the "
@@ -873,7 +875,7 @@ class ShutOffOperation(InstanceOperation):
 @register_operation
 class SleepOperation(InstanceOperation):
     id = 'sleep'
-    name = _("sleep")
+    name = ugettext_lazy("sleep")
     description = _("Suspend virtual machine. This means the machine is "
                     "stopped and its memory is saved to disk, so if the "
                     "machine is waked up, all the applications will keep "
@@ -908,7 +910,7 @@ class SleepOperation(InstanceOperation):
     @register_operation
     class SuspendVmOperation(SubOperationMixin, RemoteInstanceOperation):
         id = "_suspend_vm"
-        name = _("suspend virtual machine")
+        name = ugettext_lazy("suspend virtual machine")
         task = vm_tasks.sleep
         remote_queue = ("vm", "slow")
         remote_timeout = 1000
@@ -922,7 +924,7 @@ class SleepOperation(InstanceOperation):
 @register_operation
 class WakeUpOperation(InstanceOperation):
     id = 'wake_up'
-    name = _("wake up")
+    name = ugettext_lazy("wake up")
     description = _("Wake up sleeping (suspended) virtual machine. This will "
                     "load the saved memory of the system and start the "
                     "virtual machine from this state.")
@@ -962,7 +964,7 @@ class WakeUpOperation(InstanceOperation):
     @register_operation
     class WakeUpVmOperation(SubOperationMixin, RemoteInstanceOperation):
         id = "_wake_up_vm"
-        name = _("resume virtual machine")
+        name = ugettext_lazy("resume virtual machine")
         task = vm_tasks.wake_up
         remote_queue = ("vm", "slow")
         remote_timeout = 1000
@@ -976,7 +978,7 @@ class WakeUpOperation(InstanceOperation):
 @register_operation
 class RenewOperation(InstanceOperation):
     id = 'renew'
-    name = _("renew")
+    name = ugettext_lazy("renew")
     description = _("Virtual machines are suspended and destroyed after they "
                     "expire. This operation renews expiration times according "
                     "to the lease type. If the machine is close to the "
@@ -1032,7 +1034,7 @@ class RenewOperation(InstanceOperation):
 @register_operation
 class ChangeStateOperation(InstanceOperation):
     id = 'emergency_change_state'
-    name = _("emergency state change")
+    name = ugettext_lazy("emergency state change")
     description = _("Change the virtual machine state to NOSTATE. This "
                     "should only be used if manual intervention was needed in "
                     "the virtualization layer, and the machine has to be "
@@ -1061,7 +1063,7 @@ class ChangeStateOperation(InstanceOperation):
 @register_operation
 class RedeployOperation(InstanceOperation):
     id = 'redeploy'
-    name = _("redeploy")
+    name = ugettext_lazy("redeploy")
     description = _("Change the virtual machine state to NOSTATE "
                     "and redeploy the VM. This operation allows starting "
                     "machines formerly running on a failed node.")
@@ -1125,7 +1127,7 @@ class NodeOperation(Operation):
 @register_operation
 class ResetNodeOperation(NodeOperation):
     id = 'reset'
-    name = _("reset")
+    name = ugettext_lazy("reset")
     description = _("Disable missing node and redeploy all instances "
                     "on other ones.")
     required_perms = ()
@@ -1154,7 +1156,7 @@ class ResetNodeOperation(NodeOperation):
 @register_operation
 class FlushOperation(NodeOperation):
     id = 'flush'
-    name = _("flush")
+    name = ugettext_lazy("flush")
     description = _("Passivate node and move all instances to other ones.")
     required_perms = ()
     async_queue = "localhost.man.slow"
@@ -1174,7 +1176,7 @@ class FlushOperation(NodeOperation):
 @register_operation
 class ActivateOperation(NodeOperation):
     id = 'activate'
-    name = _("activate")
+    name = ugettext_lazy("activate")
     description = _("Make node active, i.e. scheduler is allowed to deploy "
                     "virtual machines to it.")
     required_perms = ()
@@ -1195,7 +1197,7 @@ class ActivateOperation(NodeOperation):
 @register_operation
 class PassivateOperation(NodeOperation):
     id = 'passivate'
-    name = _("passivate")
+    name = ugettext_lazy("passivate")
     description = _("Make node passive, i.e. scheduler is denied to deploy "
                     "virtual machines to it, but remaining instances and "
                     "the ones manually migrated will continue running.")
@@ -1217,7 +1219,7 @@ class PassivateOperation(NodeOperation):
 @register_operation
 class DisableOperation(NodeOperation):
     id = 'disable'
-    name = _("disable")
+    name = ugettext_lazy("disable")
     description = _("Disable node.")
     required_perms = ()
     online_required = False
@@ -1241,7 +1243,7 @@ class DisableOperation(NodeOperation):
 @register_operation
 class UpdateNodeOperation(NodeOperation):
     id = 'update_node'
-    name = _("update node")
+    name = ugettext_lazy("update node")
     description = _("Upgrade or install node software (vmdriver, agentdriver, "
                     "monitor-client) with Salt.")
     required_perms = ()
@@ -1314,7 +1316,7 @@ class UpdateNodeOperation(NodeOperation):
 @register_operation
 class ScreenshotOperation(RemoteInstanceOperation):
     id = 'screenshot'
-    name = _("screenshot")
+    name = ugettext_lazy("screenshot")
     description = _("Get a screenshot about the virtual machine's console. A "
                     "key will be pressed on the keyboard to stop "
                     "screensaver.")
@@ -1327,7 +1329,7 @@ class ScreenshotOperation(RemoteInstanceOperation):
 @register_operation
 class RecoverOperation(InstanceOperation):
     id = 'recover'
-    name = _("recover")
+    name = ugettext_lazy("recover")
     description = _("Try to recover virtual machine disks from destroyed "
                     "state. Network resources (allocations) are already lost, "
                     "so you will have to manually add interfaces afterwards.")
@@ -1368,7 +1370,7 @@ class RecoverOperation(InstanceOperation):
 @register_operation
 class ResourcesOperation(InstanceOperation):
     id = 'resources_change'
-    name = _("resources change")
+    name = ugettext_lazy("resources change")
     description = _("Change resources of a stopped virtual machine.")
     acl_level = "owner"
     required_perms = ('vm.change_resources', )
@@ -1405,7 +1407,7 @@ class ResourcesOperation(InstanceOperation):
 @register_operation
 class PasswordResetOperation(RemoteAgentOperation):
     id = 'password_reset'
-    name = _("password reset")
+    name = ugettext_lazy("password reset")
     description = _("Generate and set a new login password on the virtual "
                     "machine. This operation requires the agent running. "
                     "Resetting the password is not warranted to allow you "
@@ -1430,7 +1432,7 @@ class PasswordResetOperation(RemoteAgentOperation):
 @register_operation
 class InstallKeysOperation(RemoteAgentOperation):
     id = 'install_keys'
-    name = _("install SSH keys")
+    name = ugettext_lazy("install SSH keys")
     description = _("Copy your public keys to the virtual machines. "
                     "Only works on UNIX-like operating systems.")
     acl_level = "user"
@@ -1447,7 +1449,7 @@ class InstallKeysOperation(RemoteAgentOperation):
 @register_operation
 class RemoveKeysOperation(RemoteAgentOperation):
     id = 'remove_keys'
-    name = _("remove SSH keys")
+    name = ugettext_lazy("remove SSH keys")
     acl_level = "user"
     task = agent_tasks.del_keys
     required_perms = ()
@@ -1460,7 +1462,7 @@ class RemoveKeysOperation(RemoteAgentOperation):
 @register_operation
 class AgentStartedOperation(InstanceOperation):
     id = 'agent_started'
-    name = _("agent")
+    name = ugettext_lazy("agent")
     acl_level = "owner"
     required_perms = ()
     concurrency_check = False
@@ -1537,13 +1539,13 @@ class AgentStartedOperation(InstanceOperation):
     @register_operation
     class CleanupOperation(SubOperationMixin, RemoteAgentOperation):
         id = '_cleanup'
-        name = _("cleanup")
+        name = ugettext_lazy("cleanup")
         task = agent_tasks.cleanup
 
     @register_operation
     class SetTimeOperation(SubOperationMixin, RemoteAgentOperation):
         id = '_set_time'
-        name = _("set time")
+        name = ugettext_lazy("set time")
         task = agent_tasks.set_time
 
         def _get_remote_args(self, **kwargs):
@@ -1554,7 +1556,7 @@ class AgentStartedOperation(InstanceOperation):
     @register_operation
     class SetHostnameOperation(SubOperationMixin, RemoteAgentOperation):
         id = '_set_hostname'
-        name = _("set hostname")
+        name = ugettext_lazy("set hostname")
         task = agent_tasks.set_hostname
 
         def _get_remote_args(self, **kwargs):
@@ -1565,13 +1567,13 @@ class AgentStartedOperation(InstanceOperation):
     @register_operation
     class RestartNetworkingOperation(SubOperationMixin, RemoteAgentOperation):
         id = '_restart_networking'
-        name = _("restart networking")
+        name = ugettext_lazy("restart networking")
         task = agent_tasks.restart_networking
 
     @register_operation
     class ChangeIpOperation(SubOperationMixin, RemoteAgentOperation):
         id = '_change_ip'
-        name = _("change ip")
+        name = ugettext_lazy("change ip")
         task = agent_tasks.change_ip
 
         def _get_remote_args(self, **kwargs):
@@ -1586,7 +1588,7 @@ class AgentStartedOperation(InstanceOperation):
 @register_operation
 class UpdateAgentOperation(RemoteAgentOperation):
     id = 'update_agent'
-    name = _("update agent")
+    name = ugettext_lazy("update agent")
     acl_level = "owner"
     required_perms = ()
 
@@ -1675,7 +1677,7 @@ class UpdateAgentOperation(RemoteAgentOperation):
 @register_operation
 class MountStoreOperation(EnsureAgentMixin, InstanceOperation):
     id = 'mount_store'
-    name = _("mount store")
+    name = ugettext_lazy("mount store")
     description = _(
         "This operation attaches your personal file store. Other users who "
         "have access to this machine can see these files as well."
@@ -1711,7 +1713,7 @@ class AbstractDiskOperation(SubOperationMixin, RemoteInstanceOperation):
 @register_operation
 class AttachDisk(AbstractDiskOperation):
     id = "_attach_disk"
-    name = _("attach disk")
+    name = ugettext_lazy("attach disk")
     task = vm_tasks.attach_disk
 
 
@@ -1732,7 +1734,7 @@ class DetachMixin(object):
 @register_operation
 class DetachDisk(DetachMixin, AbstractDiskOperation):
     id = "_detach_disk"
-    name = _("detach disk")
+    name = ugettext_lazy("detach disk")
     task = vm_tasks.detach_disk
 
 
@@ -1747,12 +1749,12 @@ class AbstractNetworkOperation(SubOperationMixin, RemoteInstanceOperation):
 @register_operation
 class AttachNetwork(AbstractNetworkOperation):
     id = "_attach_network"
-    name = _("attach network")
+    name = ugettext_lazy("attach network")
     task = vm_tasks.attach_network
 
 
 @register_operation
 class DetachNetwork(DetachMixin, AbstractNetworkOperation):
     id = "_detach_network"
-    name = _("detach network")
+    name = ugettext_lazy("detach network")
     task = vm_tasks.detach_network

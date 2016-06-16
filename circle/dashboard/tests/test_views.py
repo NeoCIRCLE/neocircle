@@ -24,6 +24,7 @@ from django.contrib.auth.models import User, Group, Permission
 from django.contrib.auth import authenticate
 
 from common.tests.celery_mock import MockCeleryMixin
+from common.operations import operation_registry_name
 from dashboard.views import VmAddInterfaceView
 from vm.models import Instance, InstanceTemplate, Lease, Node, Trait
 from vm.operations import (WakeUpOperation, AddInterfaceOperation,
@@ -482,7 +483,7 @@ class VmDetailTest(LoginMixin, MockCeleryMixin, TestCase):
                 patch.object(Instance.WrongStateError, 'send_message') as wro:
             inst = Instance.objects.get(pk=1)
             new_wake_up.side_effect = inst.wake_up
-            inst._wake_up_vm = Mock()
+            getattr(inst, operation_registry_name)["_wake_up_vm"] = Mock()
             inst.get_remote_queue_name = Mock(return_value='test')
             inst.status = 'SUSPENDED'
             inst.set_level(self.u2, 'owner')
