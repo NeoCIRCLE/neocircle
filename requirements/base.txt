@@ -11,7 +11,7 @@ django-braces==1.8.0
 django-crispy-forms==1.6.0
 django-model-utils==2.2
 djangosaml2==0.13.0
-django-sizefield==0.7
+django-sizefield==0.9.1
 git+https://git.ik.bme.hu/circle/django-sshkey.git
 django-statici18n==1.1.3
 django-tables2==0.16.0

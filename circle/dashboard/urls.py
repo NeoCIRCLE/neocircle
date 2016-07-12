@@ -42,7 +42,7 @@ from .views import (
     ConnectCommandDelete, ConnectCommandDetail, ConnectCommandCreate,
     StoreList, store_download, store_upload, store_get_upload_url, StoreRemove,
     store_new_directory, store_refresh_toplist,
-    VmTraitsUpdate, VmRawDataUpdate,
+    VmTraitsUpdate, VmRawDataUpdate, VmDataStoreUpdate,
     GroupPermissionsView,
     LeaseAclUpdateView,
     toggle_template_tutorial,
@@ -53,7 +53,8 @@ from .views import (
     OpenSearchDescriptionView,
     NodeActivityView,
     UserList,
-    StorageDetail, DiskDetail,
+    StorageDetail, StorageList, StorageChoose, StorageCreate, DiskDetail,
+    StorageDelete, StorageRestore,
     MessageList, MessageDetail, MessageCreate, MessageDelete,
 )
 from .views.vm import vm_ops, vm_mass_ops
@@ -113,6 +114,8 @@ urlpatterns = patterns(
         name='dashboard.views.vm-traits'),
     url(r'^vm/(?P<pk>\d+)/raw_data/$', VmRawDataUpdate.as_view(),
         name='dashboard.views.vm-raw-data'),
+    url(r'^vm/(?P<pk>\d+)/data_store/$', VmDataStoreUpdate.as_view(),
+        name='dashboard.views.vm-data-store'),
     url(r'^vm/(?P<pk>\d+)/toggle_tutorial/$', toggle_template_tutorial,
         name='dashboard.views.vm-toggle-tutorial'),
 
@@ -235,8 +238,19 @@ urlpatterns = patterns(
     url(r'^vm/opensearch.xml$', OpenSearchDescriptionView.as_view(),
         name="dashboard.views.vm-opensearch"),
 
-    url(r'^storage/$', StorageDetail.as_view(),
-        name="dashboard.views.storage"),
+    url(r'^storage/create/(?P<type>.+)$', StorageCreate.as_view(),
+        name="dashboard.views.storage-create"),
+    url(r'^storage/(?P<pk>\d+)/$', StorageDetail.as_view(),
+        name='dashboard.views.storage-detail'),
+    url(r'^storage/list/$', StorageList.as_view(),
+        name="dashboard.views.storage-list"),
+    url(r'^storage/choose/$', StorageChoose.as_view(),
+        name="dashboard.views.storage-choose"),
+    url(r"^storage/delete/(?P<pk>\d+)/$", StorageDelete.as_view(),
+        name="dashboard.views.storage-delete"),
+    url(r"^storage/restore/(?P<pk>\d+)/$", StorageRestore.as_view(),
+        name="dashboard.views.storage-restore"),
+
     url(r'^disk/(?P<pk>\d+)/$', DiskDetail.as_view(),
         name="dashboard.views.disk-detail"),
 

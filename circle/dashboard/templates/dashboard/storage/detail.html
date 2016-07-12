@@ -2,24 +2,49 @@
 {% load staticfiles %}
 {% load i18n %}
 {% load render_table from django_tables2 %}
-{% load crispy_forms_tags %}
 
 {% block title-page %}{% trans "Storage" %}{% endblock %}
 
 {% block content %}
 
 <div class="row">
-  <div class="col-md-5">
+  <div class="col-md-6">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <h3 class="no-margin"><i class="fa fa-database"></i> {% trans "Datastore" %}</h3>
+        <h3 class="no-margin"><i class="fa fa-database"></i> {% trans "Data store" %}</h3>
       </div>
       <div class="panel-body">
-        {% crispy form %}
+        <form id="storage-create-form" action="" method="POST">
+          {% include "dashboard/storage/form_chunk.html" %}
+          <fieldset>
+            <input type="submit" value="{% trans "Save" %}" class="btn btn-primary">
+          </fieldset>
+        </form>
       </div><!-- .panel-body -->
     </div>
   </div>
-  <div class="col-md-7">
+
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        {% if object.destroyed %}
+        <a href="{% url "dashboard.views.storage-restore" pk=object.pk %}"
+         class="btn btn-xs btn-warning pull-right storage-restore">
+          {% trans "Restore" %}
+        </a>
+        <h4 class="no-margin"><i class="fa fa-medkit"></i> {% trans "Restore data store"  %}</h4>
+        {% else %}
+        <a href="{% url "dashboard.views.storage-delete" pk=object.pk %}"
+         class="btn btn-xs btn-danger pull-right storage-delete">
+          {% trans "Delete" %}
+        </a>
+        <h4 class="no-margin"><i class="fa fa-times"></i> {% trans "Delete data store"  %}</h4>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
     <div class="panel panel-default">
       <div class="panel-heading">
         <h3 class="no-margin"><i class="fa fa-bar-chart"></i> {% trans "Statistics" %}</h3>
@@ -104,5 +129,4 @@
     </div>
   </div>
 </div>
-
-{% endblock %}
+{% endblock %} 

@@ -30,7 +30,7 @@ from dashboard.tests.test_views import LoginMixin
 from vm.operations import ResourcesOperation
 
 
-class RequestTest(LoginMixin, MockCeleryMixin, TestCase):
+class RequestTestBase(LoginMixin, MockCeleryMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
 
     def setUp(self):
@@ -57,10 +57,12 @@ class RequestTest(LoginMixin, MockCeleryMixin, TestCase):
         tat.templates.add(InstanceTemplate.objects.get(pk=1))
 
     def tearDown(self):
-        super(RequestTest, self).tearDown()
+        super(RequestTestBase, self).tearDown()
         self.u1.delete()
         self.us.delete()
 
+
+class ResourceRequestTest(RequestTestBase):
     def test_resources_request(self):
         c = Client()
         self.login(c, "user1")
@@ -98,6 +100,8 @@ class RequestTest(LoginMixin, MockCeleryMixin, TestCase):
         new_request = Request.objects.latest("pk")
         self.assertEqual(new_request.status, "ACCEPTED")
 
+
+class TemplateAccessRequestTest(RequestTestBase):
     def test_template_access_request(self):
         c = Client()
         self.login(c, "user1")
@@ -121,6 +125,8 @@ class RequestTest(LoginMixin, MockCeleryMixin, TestCase):
         self.assertEqual(new_request.status, "ACCEPTED")
         self.assertTrue(template.has_level(self.u1, "user"))
 
+
+class LeaseRequestTest(RequestTestBase):
     def test_lease_request(self):
         c = Client()
         self.login(c, "user1")

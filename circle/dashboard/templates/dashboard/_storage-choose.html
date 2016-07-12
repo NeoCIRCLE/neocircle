@@ -1,0 +1,37 @@
+{% load i18n %}
+
+<div class="alert alert-info" id="storage-choose-alert">
+    {% trans "Choose the type of the data store that you want to create." %}
+</div>
+
+<form action="{% url "dashboard.views.storage-choose" %}" method="POST"
+  id="storage-choose-form">
+  {% csrf_token %}
+  <div class="storage-choose-list">
+    {% for t in types %}
+    <div class="panel panel-default storage-choose-list-element">
+      <input type="radio" name="type" value="{{ t.0 }}"/>
+      {{ t.1 }}
+      <div class="clearfix"></div>
+    </div>
+    {% endfor %}
+    <button type="submit" id="storage-choose-next-button" class="btn btn-success pull-right">{% trans "Next" %}</button>
+    <div class="clearfix"></div>
+  </div>
+</form>
+
+<script>
+  $(function() {
+    $(".storage-choose-list-element").click(function() {
+      $("input", $(this)).prop("checked", true);
+    });
+    $(".storage-choose-list-element").hover(
+      function() {
+        $("small", $(this)).stop().fadeIn(200);
+      },
+      function() {
+        $("small", $(this)).stop().fadeOut(200);
+      }
+    );
+  });
+</script>

@@ -36,7 +36,7 @@ def garbage_collector(timeout=15, percent=10):
     for ds in DataStore.objects.all():
         queue_name = ds.get_remote_queue_name('storage', priority='fast')
         files = set(storage_tasks.list_files.apply_async(
-            args=[ds.path], queue=queue_name).get(timeout=timeout))
+            args=[ds.type, ds.path], queue=queue_name).get(timeout=timeout))
         disks = ds.get_deletable_disks()
         queue_name = ds.get_remote_queue_name('storage', priority='slow')
 
@@ -46,7 +46,7 @@ def garbage_collector(timeout=15, percent=10):
                         (i, ds.path))
         try:
             success = storage_tasks.make_free_space.apply_async(
-                args=[ds.path, deletable_disks, percent],
+                args=[ds.type, ds.path, deletable_disks, percent],
                 queue=queue_name).get(timeout=timeout)
             if not success:
                 logger.warning("Has no deletable disk.")

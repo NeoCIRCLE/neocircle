@@ -29,17 +29,26 @@ $(function () {
     return false;
   });
 
-  $('.group-create, .node-create, .tx-tpl-ownership, .group-delete, .node-delete, .disk-remove, .template-delete, .delete-from-group, .lease-delete').click(function(e) {
+  $('.group-create, .node-create, .tx-tpl-ownership, .group-delete, .node-delete, ' +
+    '.disk-remove, .template-delete, .delete-from-group, .lease-delete, ' +
+    '.storage-delete, .storage-restore').click(function(e) {
     $.ajax({
       type: 'GET',
       url: $(this).prop('href'),
-      success: function(data) {
-        $('body').append(data);
-        var modal = $('#confirmation-modal');
-        modal.modal('show');
-        modal.on('hidden.bs.modal', function() {
-          modal.remove();
-        });
+      success: function(data, _, xhr) {
+        var ctype = xhr.getResponseHeader("content-type") || "";
+        if(ctype.indexOf("html") > -1) {
+          $('body').append(data);
+          var modal = $('#confirmation-modal');
+          modal.modal('show');
+          modal.on('hidden.bs.modal', function() {
+            modal.remove();
+          });
+        }
+        else if(ctype.indexOf("json") > -1) {
+          if(data.error !== null && data.error !== undefined)
+            addMessage(data.error, "warning");
+        }
       },
       error: function(xhr, textStatus, error) {
         if(xhr.status === 403) {
@@ -52,7 +61,7 @@ $(function () {
     return false;
   });
 
-  $('.template-choose').click(function(e) {
+  $('.template-choose, .storage-choose').click(function(e) {
     $.ajax({
       type: 'GET',
       url: $(this).prop('href'),
@@ -68,6 +77,15 @@ $(function () {
           var radio = $('input[type="radio"]:checked', "#template-choose-form").val();
           if(!radio) {
             $("#template-choose-alert").addClass("alert-warning")
+            .text(gettext("Select an option to proceed!"));
+            return false;
+          }
+          return true;
+        });
+        $("#storage-choose-next-button").click(function() {
+          var radio = $('input[type="radio"]:checked', "#storage-choose-form").val();
+          if(!radio) {
+            $("#storage-choose-alert").addClass("alert-warning")
             .text(gettext("Select an option to proceed!"));
             return false;
           }

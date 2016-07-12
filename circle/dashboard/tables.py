@@ -27,7 +27,7 @@ from django_tables2.columns import (
 )
 from django_sshkey.models import UserKey
 
-from storage.models import Disk
+from storage.models import Disk, DataStore
 from vm.models import Node, InstanceTemplate, Lease
 from dashboard.models import ConnectCommand, Message
 
@@ -371,3 +371,42 @@ class MessageListTable(Table):
         order_by = ("-pk", )
         fields = ('pk', 'message', 'enabled', 'effect')
         empty_text = _("No messages.")
+
+
+class StorageListTable(Table):
+
+    name = TemplateColumn(
+        verbose_name=_("Name"),
+        template_name="dashboard/storage-list/column-storage-name.html",
+        attrs={'th': {'data-sort': "string"}}
+    )
+
+    type = Column(
+        verbose_name=_("Type"),
+        attrs={'th': {'data-sort': "string"}}
+    )
+
+    path = Column(
+        verbose_name=_("Path or Pool name"),
+        attrs={'th': {'data-sort': "string"}}
+    )
+
+    hostname = Column(
+        verbose_name=_("Hostname"),
+        attrs={'th': {'data-sort': "string"}}
+    )
+
+    used_percent = TemplateColumn(
+        verbose_name=_("Usage"),
+        template_name="dashboard/storage-list/" +
+                      "column-storage-used_percent.html",
+        orderable=False
+    )
+
+    class Meta:
+        model = DataStore
+        attrs = {'class': ('table table-bordered table-striped table-hover'
+                           'storage-list-table')}
+        fields = ('name', 'type', 'path', 'hostname', 'used_percent')
+
+        prefix = "storage-"

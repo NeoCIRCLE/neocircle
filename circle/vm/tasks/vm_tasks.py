@@ -185,3 +185,8 @@ def get_node_metrics(params):
 @celery.task(name='vmdriver.screenshot')
 def screenshot(params):
     pass
+
+
+@celery.task(name='vmdriver.refresh_secret')
+def refresh_credential(user):
+    pass

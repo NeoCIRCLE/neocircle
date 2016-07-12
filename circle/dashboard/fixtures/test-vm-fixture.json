@@ -20,6 +20,8 @@
   "pk": 1, 
   "model": "storage.datastore", 
   "fields": {
+    "type": "file",
+    "ceph_user": null,
     "path": "/disks", 
     "hostname": "wut", 
     "name": "diszkek"
@@ -36,6 +38,7 @@
     "destroyed": null, 
     "base": null, 
     "datastore": 1, 
+    "bus": null,
     "dev_num": "a", 
     "type": "qcow2-norm", 
     "size": 8589934592,
@@ -170,7 +173,8 @@
     "priority": 10, 
     "template": null, 
     "access_method": "nx", 
-    "lease": 1, 
+    "lease": 1,
+    "datastore": 1,
     "node": null, 
     "description": "", 
     "arch": "x86_64", 
@@ -200,7 +204,8 @@
     "priority": 10, 
     "template": null, 
     "access_method": "nx", 
-    "lease": 1, 
+    "lease": 1,
+    "datastore": 1,
     "node": null, 
     "description": "", 
     "arch": "x86_64", 
@@ -308,6 +313,7 @@
     "arch": "x86_64", 
     "max_ram_size": 1024, 
     "lease": 1,
+    "datastore": 1,
     "owner": 1
   }
 }
