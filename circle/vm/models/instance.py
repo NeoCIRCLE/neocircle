@@ -493,7 +493,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             datastore = self.disks.all()[0].datastore
         except IndexError:
             from storage.models import DataStore
-            datastore = DataStore.objects.get()
+            datastore = DataStore.get_default_datastore()
 
         path = datastore.path + '/' + self.vm_name + '.dump'
         return {'datastore': datastore, 'path': path}

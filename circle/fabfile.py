@@ -37,7 +37,7 @@ except Exception as e:
 else:
     env.roledefs['node'] = [unicode(n.host.ipv4)
                             for n in _Node.objects.filter(enabled=True)]
-    env.roledefs['storage'] = [_DataStore.objects.get().hostname]
+    env.roledefs['storage'] = [_DataStore.get_default_datastore().hostname]
 
 
 def update_all():
