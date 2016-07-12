@@ -63,18 +63,13 @@ def merge(src_disk_desc, dst_disk_desc):
     pass
 
 
+@celery.task(name='storagedriver.exists')
+def exists(path, disk_name):
+    pass
+
+
 @celery.task(name='storagedriver.make_free_space')
-def make_free_space(datastore, percent):
-    pass
-
-
-@celery.task(name='storagedriver.move_to_trash')
-def move_to_trash(datastore, disk_path):
-    pass
-
-
-@celery.task(name='storagedriver.recover_from_trash')
-def recover_from_trash(datastore, disk_path):
+def make_free_space(path, deletable_disks, percent):
     pass
 
 
