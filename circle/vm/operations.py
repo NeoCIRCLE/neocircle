@@ -1403,6 +1403,27 @@ class ResourcesOperation(InstanceOperation):
 
 
 @register_operation
+class ToggleBootMenuOperation(InstanceOperation):
+    id = 'toggle_bootmenu'
+    name = _("toggle boot menu")
+    description = _("Turn on/off boot menu.")
+    acl_level = "owner"
+    required_perms = ('vm.change_resources', )
+    accept_states = ('STOPPED', 'PENDING', 'RUNNING')
+
+    def _operation(self, user, activity, boot_menu):
+        self.instance.boot_menu = boot_menu
+
+        self.instance.full_clean()
+        self.instance.save()
+
+        return create_readable(ugettext_noop(
+            "Boot menu toggled: %(boot_menu)s"),
+            boot_menu="ON" if boot_menu else "OFF"
+        )
+
+
+@register_operation
 class PasswordResetOperation(RemoteAgentOperation):
     id = 'password_reset'
     name = _("password reset")

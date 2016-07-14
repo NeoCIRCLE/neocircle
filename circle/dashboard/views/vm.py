@@ -328,26 +328,6 @@ class VmRawDataUpdate(SuperuserRequiredMixin, UpdateView):
         return self.get_object().get_absolute_url() + "#resources"
 
 
-class VmToggleBootMenuUpdate(LoginRequiredMixin, UpdateView):
-    form_class = ToggleBootMenuForm
-    model = Instance
-
-    def get(self, *args, **kwargs):
-        raise Http404()
-
-    def form_valid(self, form):
-        user = self.request.user
-        is_owner = form.instance.has_level(user, "owner")
-
-        if not (is_owner and user.has_perm("vm.toggle_boot_menu")):
-            raise PermissionDenied()
-
-        return super(VmToggleBootMenuUpdate, self).form_valid(form)
-
-    def get_success_url(self):
-        return self.get_object().get_absolute_url() + "#resources"
-
-
 class VmOperationView(AjaxOperationMixin, OperationView):
 
     model = Instance
@@ -610,6 +590,38 @@ class VmResourcesChangeView(VmOperationView):
             extra['max_ram_size'] = extra['ram_size']
             return super(VmResourcesChangeView, self).post(request, extra,
                                                            *args, **kwargs)
+
+
+class VmToggleBootMenuUpdate(VmOperationView):
+    op = 'toggle_bootmenu'
+    icon = "save"
+    show_in_toolbar = False
+    wait_for_result = 0.5
+
+    def post(self, request, extra=None, *args, **kwargs):
+        if extra is None:
+            extra = {}
+
+        instance = get_object_or_404(Instance, pk=kwargs['pk'])
+
+        form = ToggleBootMenuForm(request.POST, instance=instance)
+        if not form.is_valid():
+            for f in form.errors:
+                messages.error(request, "<strong>%s</strong>: %s" % (
+                    f, form.errors[f].as_text()
+                ))
+            if request.is_ajax():  # this is not too nice
+                store = messages.get_messages(request)
+                store.used = True
+                return JsonResponse({'success': False,
+                                     'messages': [unicode(m) for m in store]})
+            else:
+                return HttpResponseRedirect(instance.get_absolute_url() +
+                                            "#resources")
+        else:
+            extra = form.cleaned_data
+            return super(VmToggleBootMenuUpdate, self).post(request, extra,
+                                                            *args, **kwargs)
 
 
 class TokenOperationView(OperationView):
