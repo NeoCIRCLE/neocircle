@@ -208,6 +208,12 @@ class VmRequestMixin(LoginRequiredMixin, object):
         user = self.request.user
         if not vm.has_level(user, self.user_level):
             raise PermissionDenied()
+
+        if vm.destroyed_at:
+            message = _("Instance %(instance)s has already been destroyed.")
+            messages.error(self.request, message % {'instance': vm.name})
+            return redirect(vm.get_absolute_url())
+
         return super(VmRequestMixin, self).dispatch(*args, **kwargs)
 
     def get_context_data(self, **kwargs):

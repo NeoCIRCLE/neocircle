@@ -284,7 +284,7 @@ a.hover-black {
 }
 
 .hover-black:hover {
-  color: black /*#d9534f*/;
+  color: black; /*#d9534f*/
   text-decoration: none;
 }
 
@@ -1285,9 +1285,16 @@ textarea[name="new_members"] {
   }
 }
 
-#vm-detail-successfull-boot {
+#vm-detail-successful-boot {
   margin-bottom: 20px;
   display: none;
+
+  .label {
+    width: 100%;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 #vm-detail-access-help {
@@ -1522,4 +1529,8 @@ textarea[name="new_members"] {
   font-size: 1.5em;
   text-align: center;
   width: 100%;
+}
+
+#manage-access-select-all {
+  cursor: pointer;
 }

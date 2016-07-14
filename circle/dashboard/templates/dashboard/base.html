@@ -12,6 +12,9 @@
 
 {% block navbar %}
 {% if request.user.is_authenticated and request.user.pk and not request.token_user %}
+
+  <span id="user-options" data-desktop_notifications="{{ request.user.profile.desktop_notifications }}"><span>
+
   <ul class="nav navbar-nav navbar-right" id="dashboard-menu">
     {% if request.user.is_superuser %}
     {% if ADMIN_ENABLED %}

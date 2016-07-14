@@ -25,7 +25,7 @@ from .views import (
     GroupDetailView, GroupList, IndexView,
     InstanceActivityDetail, LeaseCreate, LeaseDelete, LeaseDetail,
     MyPreferencesView, NodeAddTraitView, NodeCreate, NodeDelete,
-    NodeDetailView, NodeList,
+    NodeDetailView, NodeList, NodeActivityDetail,
     NotificationView, TemplateAclUpdateView, TemplateCreate,
     TemplateDelete, TemplateDetail, TemplateList,
     vm_activity, VmCreate, VmDetailView,
@@ -136,6 +136,8 @@ urlpatterns = patterns(
         name='dashboard.views.node-activity-list'),
     url(r'^node/create/$', NodeCreate.as_view(),
         name='dashboard.views.node-create'),
+    url(r'^node/activity/(?P<pk>\d+)/$', NodeActivityDetail.as_view(),
+        name='dashboard.views.node-activity'),
 
     url(r'^favourite/$', FavouriteView.as_view(),
         name='dashboard.views.favourite'),

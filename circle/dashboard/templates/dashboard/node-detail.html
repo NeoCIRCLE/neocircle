@@ -56,6 +56,11 @@
           <span class="label label-warning">{% trans "Offline" %}</span>
         {% endif %}
       </div>
+      <div>
+        {% for k, v in queues.iteritems %}
+          <span class="label label-{% if v %}success{% else %}danger{% endif %}">{{ k }}</span>
+        {% endfor %}
+      </div>
     </div>
     <div class="col-md-10" id="node-detail-pane">
       <div class="panel panel-default" id="node-detail-panel">

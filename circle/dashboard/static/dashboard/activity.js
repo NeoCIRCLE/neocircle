@@ -169,6 +169,9 @@ $(function() {
           );
         } else {
           in_progress = false;
+          if(document.hasFocus() === false && userWantNotifications()){
+            sendNotification(generateMessageFromLastActivity());
+          }
           if(reload_vm_detail) location.reload();
           if(runs > 1) addConnectText();
         }
@@ -181,17 +184,48 @@ $(function() {
   }
 });
 
+// Notification init
+$(function(){
+  if(userWantNotifications())
+    Notification.requestPermission();
+});
+
+function generateMessageFromLastActivity(){
+  var ac = $("div.activity").first();
+  var error = ac.children(".timeline-icon-failed").length;
+  var sign = (error === 1) ? "❌ " : "✓ ";
+  var msg = ac.children("strong").text().replace(/\s+/g, " ");
+  return sign + msg;
+}
+
+function sendNotification(message) {
+  var options = { icon: "/static/dashboard/img/favicon.png"};
+  if (Notification.permission === "granted") {
+    var notification = new Notification(message, options);
+  }
+  else if (Notification.permission !== "denied") {
+    Notification.requestPermission(function (permission) {
+      if (permission === "granted") {
+        var notification = new Notification(message, options);
+      }
+    });
+  }
+}
+
+function userWantNotifications(){
+  var dn = $("#user-options").data("desktop_notifications");
+  return dn === "True";
+}
 
 function addConnectText() {
   var activities = $(".timeline .activity");
   if(activities.length > 1) {
     if(activities.eq(0).data("activity-code") == "vm.Instance.wake_up" ||
        activities.eq(0).data("activity-code") == "vm.Instance.agent") {
-      $("#vm-detail-successfull-boot").slideDown(500);
+      $("#vm-detail-successful-boot").slideDown(500);
     }
   }
 }
-
 
 String.prototype.hashCode = function() {
   var hash = 0, i, chr, len;

@@ -73,8 +73,11 @@ class InitialFromFileMixin(object):
         )
 
     def clean_message(self):
+        def comp(x):
+            return "".join(x.strip().splitlines())
+
         message = self.cleaned_data['message']
-        if message.strip() == self.initial['message'].strip():
+        if comp(message) == comp(self.initial['message']):
             raise ValidationError(_("Fill in the message."), code="invalid")
         return message.strip()
 

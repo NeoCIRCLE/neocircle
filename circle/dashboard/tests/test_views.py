@@ -270,33 +270,6 @@ class VmDetailTest(LoginMixin, MockCeleryMixin, TestCase):
         self.assertEqual(InstanceTemplate.objects.get(id=1).raw_data,
                          "<devices></devices>")
 
-    def test_permitted_lease_delete_w_template_using_it(self):
-        c = Client()
-        self.login(c, 'superuser')
-        leases = Lease.objects.count()
-        response = c.post("/dashboard/lease/delete/1/")
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(leases, Lease.objects.count())
-
-    def test_permitted_lease_delete_w_template_not_using_it(self):
-        c = Client()
-        self.login(c, 'superuser')
-        lease = Lease.objects.create(name="yay")
-        leases = Lease.objects.count()
-
-        response = c.post("/dashboard/lease/delete/%d/" % lease.pk)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(leases - 1, Lease.objects.count())
-
-    def test_unpermitted_lease_delete(self):
-        c = Client()
-        self.login(c, 'user1')
-        leases = Lease.objects.count()
-        response = c.post("/dashboard/lease/delete/1/")
-        # redirect to the login page
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(leases, Lease.objects.count())
-
     def test_notification_read(self):
         c = Client()
         self.login(c, "user1")
@@ -615,6 +588,12 @@ class NodeDetailTest(LoginMixin, MockCeleryMixin, TestCase):
         node = Node.objects.get(pk=1)
         trait, created = Trait.objects.get_or_create(name='testtrait')
         node.traits.add(trait)
+        self.patcher = patch("vm.tasks.vm_tasks.get_queues", return_value={
+            'x': [{'name': "devenv.vm.fast"}],
+            'y': [{'name': "devenv.vm.slow"}],
+            'z': [{'name': "devenv.net.fast"}],
+        })
+        self.patcher.start()
 
     def tearDown(self):
         super(NodeDetailTest, self).tearDown()
@@ -622,12 +601,19 @@ class NodeDetailTest(LoginMixin, MockCeleryMixin, TestCase):
         self.u2.delete()
         self.us.delete()
         self.g1.delete()
+        self.patcher.stop()
 
     def test_404_superuser_node_page(self):
         c = Client()
         self.login(c, 'superuser')
         response = c.get('/dashboard/node/25555/')
         self.assertEqual(response.status_code, 404)
+
+    def test_200_superuser_node_page(self):
+        c = Client()
+        self.login(c, 'superuser')
+        response = c.get('/dashboard/node/1/')
+        self.assertEqual(response.status_code, 200)
 
     def test_302_user_node_page(self):
         c = Client()
@@ -1758,3 +1744,76 @@ class SshKeyTest(LoginMixin, TestCase):
 
         resp = c.post("/dashboard/sshkey/delete/1/")
         self.assertEqual(403, resp.status_code)
+
+
+class LeaseDetailTest(LoginMixin, TestCase):
+    fixtures = ['test-vm-fixture.json', ]
+
+    def setUp(self):
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+        self.u2 = User.objects.create(username='user2', is_staff=True)
+        self.u2.set_password('password')
+        self.u2.save()
+        self.us = User.objects.create(username='superuser', is_superuser=True)
+        self.us.set_password('password')
+        self.us.save()
+
+    def tearDown(self):
+        super(LeaseDetailTest, self).tearDown()
+        self.u1.delete()
+        self.u2.delete()
+        self.us.delete()
+
+    def test_anon_view(self):
+        c = Client()
+        response = c.get("/dashboard/lease/1/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_unpermitted_view(self):
+        c = Client()
+        self.login(c, 'user1')
+        response = c.get("/dashboard/lease/1/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_operator_view(self):
+        c = Client()
+        self.login(c, 'user2')
+        lease = Lease.objects.get()
+        lease.set_level(self.u2, "owner")
+        response = c.get("/dashboard/lease/1/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_superuser_view(self):
+        c = Client()
+        self.login(c, 'superuser')
+        response = c.get("/dashboard/lease/1/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_permitted_lease_delete_w_template_using_it(self):
+        c = Client()
+        self.login(c, 'superuser')
+        leases = Lease.objects.count()
+        response = c.post("/dashboard/lease/delete/1/")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(leases, Lease.objects.count())
+
+    def test_permitted_lease_delete_w_template_not_using_it(self):
+        c = Client()
+        self.login(c, 'superuser')
+        lease = Lease.objects.create(name="yay")
+        leases = Lease.objects.count()
+
+        response = c.post("/dashboard/lease/delete/%d/" % lease.pk)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(leases - 1, Lease.objects.count())
+
+    def test_unpermitted_lease_delete(self):
+        c = Client()
+        self.login(c, 'user1')
+        leases = Lease.objects.count()
+        response = c.post("/dashboard/lease/delete/1/")
+        # redirect to the login page
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(leases, Lease.objects.count())

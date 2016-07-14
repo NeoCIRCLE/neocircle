@@ -200,6 +200,8 @@ class MyPreferencesView(UpdateView):
                                             data=request.POST)
             if form.is_valid():
                 form.save()
+                messages.success(self.request,
+                                 _("Password successfully changed."))
 
         if form.is_valid():
             return redirect_response

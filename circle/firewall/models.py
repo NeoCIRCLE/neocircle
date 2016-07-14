@@ -499,7 +499,11 @@ class Vlan(AclBase, models.Model):
 
     def get_new_address(self):
         hosts = self.host_set
-        used_v4 = IPSet(hosts.values_list('ipv4', flat=True))
+        used_ext_addrs = Host.objects.filter(
+            external_ipv4__isnull=False).values_list(
+            'external_ipv4', flat=True)
+        used_v4 = IPSet(hosts.values_list('ipv4', flat=True)).union(
+            used_ext_addrs).union([self.network4.ip])
         used_v6 = IPSet(hosts.exclude(ipv6__isnull=True)
                         .values_list('ipv6', flat=True))
 

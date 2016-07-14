@@ -448,12 +448,17 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         if new_node is False:  # None would be a valid value
             new_node = self.node
         # log state change
+
+        if new_node:
+            msg = ugettext_noop("vm state changed to %(state)s on %(node)s")
+        else:
+            msg = ugettext_noop("vm state changed to %(state)s")
+
         try:
             act = InstanceActivity.create(
                 code_suffix='vm_state_changed',
-                readable_name=create_readable(
-                    ugettext_noop("vm state changed to %(state)s on %(node)s"),
-                    state=new_state, node=new_node),
+                readable_name=create_readable(msg, state=new_state,
+                                              node=new_node),
                 instance=self)
         except ActivityInProgressError:
             pass  # discard state change if another activity is in progress.
@@ -676,7 +681,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         with self.activity('notification_about_expiration',
                            readable_name=ugettext_noop(
                                "notify owner about expiration"),
-                           on_commit=on_commit):
+                           on_commit=on_commit, concurrency_check=False):
             from dashboard.views import VmRenewView, absolute_url
             level = self.get_level_object("owner")
             for u, ulevel in self.get_users_with_level(level__pk=level.pk):

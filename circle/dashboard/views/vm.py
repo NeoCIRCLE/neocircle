@@ -105,6 +105,19 @@ class VmDetailView(GraphMixin, CheckedDetailView):
     template_name = "dashboard/vm-detail.html"
     model = Instance
 
+    def get(self, *args, **kwargs):
+        if self.request.is_ajax():
+            return JsonResponse(self.get_json_data())
+        else:
+            return super(VmDetailView, self).get(*args, **kwargs)
+
+    def get_json_data(self):
+        instance = self.get_object()
+        return {"status": instance.status,
+                "host": instance.get_connect_host(),
+                "port": instance.get_connect_port(),
+                "password": instance.pw}
+
     def get_context_data(self, **kwargs):
         context = super(VmDetailView, self).get_context_data(**kwargs)
         instance = context['instance']
