@@ -76,9 +76,8 @@ class DataStore(Model):
 
     def get_deletable_disks(self):
         deletables = [disk for disk in self.disk_set.filter(
-                      destroyed__isnull=False) if disk.is_deletable]
-        deletables = sorted(deletables, key=lambda disk: disk.destroyed)
-
+                      destroyed__isnull=False).order_by(
+                        "destroyed") if disk.is_deletable]
         return [disk.filename for disk in deletables]
 
     @method_cache(30)
@@ -475,8 +474,6 @@ class Disk(TimeStampedModel):
         """
         queue_name = self.datastore.get_remote_queue_name(
             'storage', priority='slow')
-        logger.info("Image: %s at Datastore: %s recovered from trash." %
-                    (self.filename, self.datastore.path))
         res = storage_tasks.exists.apply_async(
             args=[self.datastore.path,
                   self.filename],
@@ -487,6 +484,7 @@ class Disk(TimeStampedModel):
         else:
             logger.info("Image: %s at Datastore: %s not recovered." %
                         (self.filename, self.datastore.path))
+        return res
 
     def save_as(self, task=None, user=None, task_uuid=None, timeout=300):
         """Save VM as template.

@@ -3,7 +3,9 @@
 
 <i class="fa fa-file"></i>
 {{ d.name }} (#{{ d.id }}) - {{ d.size|filesize }}
-
+{% if d.destroyed %}
+<i class="fa fa-exclamation-triangle text-danger" alt="missing" title="missing"></i>
+{% endif %}
 
 <span class="operation-wrapper pull-right">
   {% if d.is_resizable %}

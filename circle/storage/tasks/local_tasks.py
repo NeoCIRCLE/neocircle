@@ -62,7 +62,7 @@ def destroy(disk, user):
 
 @celery.task
 def restore(disk, user):
-    disk.restore(task_uuid=restore.request.id, user=user)
+    return disk.restore(task_uuid=restore.request.id, user=user)
 
 
 @celery.task(base=AbortableTask, bind=True)

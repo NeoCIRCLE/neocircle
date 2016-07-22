@@ -1347,10 +1347,13 @@ class RecoverOperation(InstanceOperation):
             'recover_instance',
                 readable_name=ugettext_noop("recover instance")):
             self.instance.destroyed_at = None
+            not_restored = []
             for disk in self.instance.disks.all():
-                disk.destroyed = None
-                disk.restore()
-                disk.save()
+                if disk.restore():
+                    disk.destroyed = None
+                    disk.save()
+                else:
+                    not_restored.append(unicode(disk))
             self.instance.status = 'PENDING'
             self.instance.save()
 
@@ -1358,6 +1361,12 @@ class RecoverOperation(InstanceOperation):
             self.instance.renew(parent_activity=activity)
         except:
             pass
+
+        if not_restored:
+            raise HumanReadableException.create(ugettext_noop(
+                "The following disk(s) couldn't be recovered: %(disks)s"),
+                disks=", ".join(not_restored)
+            )
 
         if self.instance.template:
             for net in self.instance.template.interface_set.all():
