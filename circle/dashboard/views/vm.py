@@ -594,14 +594,11 @@ class VmResourcesChangeView(VmOperationView):
 
 class VmToggleBootMenuUpdate(VmOperationView):
     op = 'toggle_bootmenu'
-    icon = "save"
+    icon = "wrench"
     show_in_toolbar = False
     wait_for_result = 0.5
 
     def post(self, request, extra=None, *args, **kwargs):
-        if extra is None:
-            extra = {}
-
         instance = get_object_or_404(Instance, pk=kwargs['pk'])
 
         form = ToggleBootMenuForm(request.POST, instance=instance)
@@ -817,6 +814,7 @@ vm_ops = OrderedDict([
     ('add_port', VmPortAddView),
     ('renew', VmRenewView),
     ('resources_change', VmResourcesChangeView),
+    ('toggle_bootmenu', VmToggleBootMenuUpdate),
     ('password_reset', VmOperationView.factory(
         op='password_reset', icon='unlock', effect='warning',
         show_in_toolbar=False, wait_for_result=0.5, with_reload=True)),
