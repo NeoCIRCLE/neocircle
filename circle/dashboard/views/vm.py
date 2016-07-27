@@ -798,6 +798,8 @@ def _get_activity_icon(act):
     op = act.get_operation()
     if op and op.id in vm_ops:
         return vm_ops[op.id].icon
+    elif act.activity_code == u'vm.Instance.console-accessed':
+        return "terminal"
     else:
         return "cog"
 
