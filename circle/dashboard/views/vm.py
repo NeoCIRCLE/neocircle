@@ -46,6 +46,7 @@ from braces.views import SuperuserRequiredMixin, LoginRequiredMixin
 
 from common.models import (
     create_readable, HumanReadableException, fetch_human_exception,
+    split_activity_code,
 )
 from firewall.models import Vlan, Host, Rule
 from manager.scheduler import SchedulerError
@@ -798,7 +799,7 @@ def _get_activity_icon(act):
     op = act.get_operation()
     if op and op.id in vm_ops:
         return vm_ops[op.id].icon
-    elif act.activity_code == u'vm.Instance.console-accessed':
+    elif split_activity_code(act.activity_code)[-1] == u'console-accessed':
         return "terminal"
     else:
         return "cog"
