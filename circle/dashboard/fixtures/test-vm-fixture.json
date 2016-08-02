@@ -22,7 +22,7 @@
   "fields": {
     "path": "/disks", 
     "hostname": "wut", 
-    "name": "diszkek"
+    "name": "default"
   }
 },
 {
