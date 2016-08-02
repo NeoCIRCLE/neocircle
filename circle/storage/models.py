@@ -113,13 +113,9 @@ class DataStore(Model):
 
     @classmethod
     def get_default_datastore(cls):
-        try:
-            datastore_name = settings.DEFAULT_DATASTORE
-            if datastore_name:
-                return cls.objects.get(name=datastore_name)
-        except cls.DoesNotExist:
-            pass
-        return cls.objects.all()[0]  # TODO
+        datastore_name = settings.DEFAULT_DATASTORE
+        if datastore_name:
+            return cls.objects.get(name=datastore_name)
 
 
 class Disk(TimeStampedModel):
