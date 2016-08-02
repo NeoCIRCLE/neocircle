@@ -52,7 +52,8 @@ class ViewUserTestCase(unittest.TestCase):
     def test_not_superuser(self):
         request = FakeRequestFactory(superuser=False)
         with patch.object(InstanceActivityDetail, 'get_object') as go:
-            go.return_value = MagicMock(spec=InstanceActivity)
+            go.return_value = MagicMock(spec=InstanceActivity,
+                                        activity_code='test.test')
             go.return_value._meta.object_name = "InstanceActivity"
             view = InstanceActivityDetail.as_view()
             self.assertEquals(view(request, pk=1234).status_code, 200)
@@ -61,7 +62,8 @@ class ViewUserTestCase(unittest.TestCase):
         request = FakeRequestFactory(superuser=True)
 
         with patch.object(InstanceActivityDetail, 'get_object') as go:
-            act = MagicMock(spec=InstanceActivity)
+            act = MagicMock(spec=InstanceActivity,
+                            activity_code='test.test')
             act._meta.object_name = "InstanceActivity"
             act.user.pk = 1
             go.return_value = act
