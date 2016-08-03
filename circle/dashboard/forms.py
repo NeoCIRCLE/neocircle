@@ -1632,9 +1632,9 @@ class MessageForm(ModelForm):
         fields = ("message", "enabled", "effect", "start", "end")
         help_texts = {
             'start': _("Start time of the message in "
-                       "YYYY.DD.MM. hh.mm.ss format."),
+                       "YYYY-MM-DD hh:mm:ss format."),
             'end': _("End time of the message in "
-                     "YYYY.DD.MM. hh.mm.ss format."),
+                     "YYYY-MM-DD hh:mm:ss format."),
             'effect': _('The color of the message box defined by the '
                         'respective '
                         '<a href="http://getbootstrap.com/components/#alerts">'
