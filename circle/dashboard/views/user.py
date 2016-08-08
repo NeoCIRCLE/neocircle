@@ -19,6 +19,8 @@ from __future__ import unicode_literals, absolute_import
 import json
 import logging
 
+import pyotp
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
@@ -26,9 +28,7 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth.views import login as login_view
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core import signing
-from django.core.exceptions import (
-    PermissionDenied, SuspiciousOperation,
-)
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.core.paginator import Paginator, InvalidPage
 from django.db.models import Q
@@ -51,7 +51,7 @@ from vm.models import Instance, InstanceTemplate
 from ..forms import (
     CircleAuthenticationForm, MyProfileForm, UserCreationForm, UnsubscribeForm,
     UserKeyForm, CirclePasswordChangeForm, ConnectCommandForm,
-    UserListSearchForm, UserEditForm,
+    UserListSearchForm, UserEditForm, TwoFactorForm, DisableTwoFactorForm
 )
 from ..models import Profile, GroupProfile, ConnectCommand
 from ..tables import (
@@ -555,3 +555,37 @@ class UserList(LoginRequiredMixin, PermissionRequiredMixin, SingleTableView):
             qs = qs.filter(filters)
 
         return qs.select_related("profile")
+
+
+class EnableTwoFactorView(LoginRequiredMixin, UpdateView):
+    model = Profile
+    form_class = TwoFactorForm
+    template_name = "dashboard/enable-two-factor.html"
+    success_url = reverse_lazy("dashboard.views.profile-preferences")
+
+    def get_object(self, queryset=None):
+        if self.request.user.is_anonymous():
+            raise PermissionDenied
+
+        return self.request.user.profile
+
+    def get_context_data(self, **kwargs):
+        ctx = super(EnableTwoFactorView, self).get_context_data(**kwargs)
+        random_base32 = pyotp.random_base32()
+        ctx['uri'] = pyotp.TOTP(random_base32).provisioning_uri(
+            self.request.user.username, issuer_name=settings.TWO_FACTOR_ISSUER)
+        ctx['secret'] = random_base32
+        return ctx
+
+
+class DisableTwoFactorView(LoginRequiredMixin, UpdateView):
+    model = Profile
+    form_class = DisableTwoFactorForm
+    template_name = "dashboard/disable-two-factor.html"
+    success_url = reverse_lazy("dashboard.views.profile-preferences")
+
+    def get_object(self, queryset=None):
+        if self.request.user.is_anonymous():
+            raise PermissionDenied
+
+        return self.request.user.profile
