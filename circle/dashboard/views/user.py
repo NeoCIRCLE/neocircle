@@ -111,7 +111,7 @@ class CircleLoginView(LoginView):
 
     def form_valid(self, form):
         user = form.get_user()
-        if user.profile.two_factor_secret:
+        if hasattr(user, "profile") and user.profile.two_factor_secret:
             self.request.session['two-fa-user'] = user.pk
             self.request.session['two-fa-redirect'] = self.get_success_url()
             self.request.session['login-type'] = "password"
@@ -719,7 +719,7 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
             relay_state = settings.LOGIN_REDIRECT_URL
         logger.debug('Redirecting to the RelayState: ' + relay_state)
 
-        if user.profile.two_factor_secret:
+        if hasattr(user, "profile") and user.profile.two_factor_secret:
             request.session['two-fa-user'] = user.pk
             request.session['two-fa-redirect'] = relay_state
             request.session['login-type'] = "saml2"
