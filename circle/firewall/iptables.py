@@ -24,6 +24,8 @@ logger = logging.getLogger()
 ipv4_re = re.compile(
     r'(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}')
 
+multiport_re = re.compile(r'^\d+\:\d+$')
+
 
 class InvalidRuleExcepion(Exception):
     pass
@@ -32,13 +34,19 @@ class InvalidRuleExcepion(Exception):
 class IptRule(object):
 
     def __init__(self, priority=1000, action=None, src=None, dst=None,
-                 proto=None, sport=None, dport=None, extra=None,
-                 ipv4_only=False, comment=None):
+                 proto=None, sport=None, sports=None,
+                 dport=None, dports=None,
+                 extra=None, ipv4_only=False, comment=None):
         if proto not in ['tcp', 'udp', 'icmp', None]:
             raise InvalidRuleExcepion()
         if proto not in ['tcp', 'udp'] and (sport is not None or
-                                            dport is not None):
+                                            sports is not None or
+                                            dport is not None or
+                                            dports is not None):
             raise InvalidRuleExcepion()
+
+        self.check_multiport(sports)
+        self.check_multiport(dports)
 
         self.priority = int(priority)
         self.action = action
@@ -55,8 +63,15 @@ class IptRule(object):
                 ipv4_only = True
 
         self.proto = proto
-        self.sport = sport
-        self.dport = dport
+        self.sport = sport if sports is None else None
+        self.dport = dport if dports is None else None
+        self.sports = sports
+        self.dports = dports
+
+        if sports is not None or dports is not None:
+            self.multiport = ""
+        else:
+            self.multiport = None
 
         self.extra = extra
         self.ipv4_only = (ipv4_only or
@@ -84,6 +99,9 @@ class IptRule(object):
                             ('proto', '-p %s'),
                             ('sport', '--sport %s'),
                             ('dport', '--dport %s'),
+                            ('multiport', '-m multiport %s'),
+                            ('sports', '--sports %s'),
+                            ('dports', '--dports %s'),
                             ('extra', '%s'),
                             ('comment', '-m comment --comment "%s"'),
                             ('action', '-g %s')])
@@ -91,6 +109,10 @@ class IptRule(object):
                   for param in opts
                   if getattr(self, param) is not None]
         return ' '.join(params)
+
+    def check_multiport(self, ports):
+        if ports is not None and not multiport_re.match(ports):
+            raise InvalidRuleExcepion()
 
 
 class IptChain(object):

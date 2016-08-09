@@ -204,46 +204,13 @@ class RecordForm(ModelForm):
 
 
 class RuleForm(ModelForm):
-    helper = FormHelper()
-    helper.layout = Layout(
-        Div(
-            Fieldset(
-                '',
-                'direction',
-                'description',
-                'foreign_network',
-                'dport',
-                'sport',
-                'weight',
-                'proto',
-                'extra',
-                'action',
-                'owner',
-                'nat',
-                'nat_external_port',
-                'nat_external_ipv4',
-            ),
-            Fieldset(
-                _('External'),
-                'vlan',
-                'vlangroup',
-                'host',
-                'hostgroup',
-                'firewall'
-            )
-        ),
-        FormActions(
-            Submit('submit', _("Save")),
-            LinkButton('back', _("Back"), reverse_lazy('network.rule_list'))
-        )
-    )
-
     class Meta:
         model = Rule
         fields = ("direction", "description", "foreign_network", "dport",
                   "sport", "weight", "proto", "extra", "action", "owner",
                   "nat", "nat_external_port", "nat_external_ipv4", "vlan",
-                  "vlangroup", "host", "hostgroup", "firewall", )
+                  "vlangroup", "host", "hostgroup", "firewall",
+                  "dport_end", "sport_end")
 
 
 class SwitchPortForm(ModelForm):

@@ -106,42 +106,26 @@ class Command(BaseCommand):
 
         if port:
             self.validate_port(port)
-            try:
-                rule = self.make_rule(dport=port, proto=proto, action=action,
-                                      direction=dir, owner=owner,
-                                      firewall=firewall, foreign_network=fnet)
-                rule.save()
-            except Warning as e:
-                logger.warning(e)
+            self.make_rule(dport=port, proto=proto, action=action,
+                           direction=dir, owner=owner,
+                           firewall=firewall, foreign_network=fnet)
         else:
             lower = min(range)
             higher = max(range)
             self.validate_port(lower)
             self.validate_port(higher)
-
-            rules = []
-
-            for port in xrange(lower, higher+1):
-                try:
-                    rule = self.make_rule(port, proto, action, dir,
-                                          owner, firewall, fnet)
-                    rules.append(rule)
-                except Warning as e:
-                    logger.warning(e)
-
-            Rule.objects.bulk_create(rules)
+            self.make_rule(dport=lower, dport_end=higher, proto=proto,
+                           action=action, direction=dir, owner=owner,
+                           firewall=firewall, foreign_network=fnet)
 
     def make_rule(self, **kwargs):
-
         rule, created = Rule.objects.get_or_create(**kwargs)
-
         if not created:
-            raise Warning(('Rule does exist: %s' %
-                          unicode(rule)).encode('utf-8'))
-
-        rule.full_clean()
-
-        return rule
+            logger.warning(('Rule does exist: %s' %
+                           unicode(rule)).encode('utf-8'))
+        else:
+            rule.full_clean()
+            rule.save()
 
     def validate_port(self, port):
         if port < 0 or port > 65535:

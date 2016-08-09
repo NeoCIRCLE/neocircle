@@ -187,6 +187,21 @@ class IptablesTestCase(TestCase):
                           IptRule, **{'priority': 5, 'action': 'ACCEPT',
                                       'dst': '127.0.0.5',
                                       'proto': 'icmp', 'dport': 443})
+        self.assertRaises(InvalidRuleExcepion,
+                          IptRule, **{'priority': 5, 'action': 'ACCEPT',
+                                      'proto': 'tcp', 'dports': '442:'})
+        self.assertRaises(InvalidRuleExcepion,
+                          IptRule, **{'priority': 5, 'action': 'ACCEPT',
+                                      'proto': 'tcp', 'dports': ':443'})
+        self.assertRaises(InvalidRuleExcepion,
+                          IptRule, **{'priority': 5, 'action': 'ACCEPT',
+                                      'proto': 'tcp', 'dports': '442-443'})
+        self.assertRaises(InvalidRuleExcepion,
+                          IptRule, **{'priority': 5, 'action': 'ACCEPT',
+                                      'proto': 'tcp', 'dports': '442'})
+        self.assertRaises(InvalidRuleExcepion,
+                          IptRule, **{'priority': 5, 'action': 'ACCEPT',
+                                      'proto': 'tcp', 'dports': ':'})
 
     def test_chain_compile(self):
         ch = IptChain(name='test')

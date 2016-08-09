@@ -3,7 +3,6 @@
 {% load i18n %}
 {% load l10n %}
 {% load staticfiles %}
-{% load crispy_forms_tags %}
 
 {% block title-page %}{{ rule.pk }} | {% trans "rule" %}{% endblock %}
 
@@ -18,8 +17,8 @@
 </div>
 
 <div class="row">
-    <div class="col-sm-7">
-        {% crispy form %}
-    </div>
+  <div class="col-sm-7">
+    {% include "network/rule-form.html" %}
+  </div>
 </div>
 {% endblock %}

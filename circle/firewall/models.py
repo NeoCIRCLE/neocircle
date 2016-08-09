@@ -79,13 +79,23 @@ class Rule(models.Model):
                     "(direction out) or from (in)."),
         related_name="ForeignRules")
     dport = models.IntegerField(
-        blank=True, null=True, verbose_name=_("dest. port"),
+        blank=True, null=True, verbose_name=_("destination port"),
         validators=[MinValueValidator(1), MaxValueValidator(65535)],
-        help_text=_("Destination port number of packets that match."))
+        help_text=_("Destination port number of packets that match."
+                    " It can also be a range."))
+    dport_end = models.IntegerField(
+        blank=True, null=True, verbose_name=_("destination port end"),
+        validators=[MinValueValidator(1), MaxValueValidator(65535)],
+        help_text=_("End of the destination port range."))
     sport = models.IntegerField(
         blank=True, null=True, verbose_name=_("source port"),
         validators=[MinValueValidator(1), MaxValueValidator(65535)],
-        help_text=_("Source port number of packets that match."))
+        help_text=_("Source port number of packets that match."
+                    " It can also be a range."))
+    sport_end = models.IntegerField(
+        blank=True, null=True, verbose_name=_("source port end"),
+        validators=[MinValueValidator(1), MaxValueValidator(65535)],
+        help_text=_("End of the source port range."))
     weight = models.IntegerField(
         verbose_name=_("weight"),
         validators=[MinValueValidator(1), MaxValueValidator(65535)],
@@ -161,6 +171,12 @@ class Rule(models.Model):
             raise ValidationError(
                 _('One of the following fields must be selected: '
                   'vlan, vlan group, host, host group, firewall.'))
+        if (self.sport_end is not None and self.sport_end <= self.sport or
+           self.dport_end is not None and self.dport_end <= self.dport):
+
+            raise ValidationError(
+                _("Destination or Source port: The beginning of a range"
+                  " can't be greater than or equal to the end of that range."))
 
     def get_external_ipv4(self):
         return (self.nat_external_ipv4
@@ -237,6 +253,9 @@ class Rule(models.Model):
         if vlan and not vlan.managed:
             return retval
 
+        sports = self.make_multiport_value(self.sport, self.sport_end)
+        dports = self.make_multiport_value(self.dport, self.dport_end)
+
         # process foreign vlans
         for foreign_vlan in self.foreign_network.vlans.all():
             if not foreign_vlan.managed:
@@ -245,11 +264,17 @@ class Rule(models.Model):
             r = IptRule(priority=self.weight, action=action,
                         proto=self.proto, extra=self.extra,
                         comment='Rule #%s' % self.pk,
-                        src=src, dst=dst, dport=self.dport, sport=self.sport)
+                        src=src, dst=dst, dport=self.dport, sport=self.sport,
+                        sports=sports, dports=dports)
             chain_name = self.get_chain_name(local=vlan, remote=foreign_vlan)
             retval[chain_name] = r
 
         return retval
+
+    def make_multiport_value(self, port_begin, port_end):
+        if port_begin is not None and port_end is not None:
+            return '%s:%s' % (port_begin, port_end)
+        return None
 
     @classmethod
     def portforwards(cls, host=None):

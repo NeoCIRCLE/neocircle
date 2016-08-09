@@ -1,0 +1,9 @@
+{% if record.dport %}
+    {% if record.dport_end %}
+        {{ record.dport }} - {{ record.dport_end }}
+    {% else %}
+        {{ record.dport }}
+    {% endif %}
+{% else %}
+    —
+{% endif %}

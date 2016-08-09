@@ -189,6 +189,11 @@ class RuleTable(Table):
     nat_external_port = Column(
         verbose_name=_("NAT")
     )
+    dport = TemplateColumn(
+        template_name="network/columns/rule-destination-port.html",
+        verbose_name=_("destination port"),
+        orderable=True,
+    )
 
     class Meta:
         model = Rule

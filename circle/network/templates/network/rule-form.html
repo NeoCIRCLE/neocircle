@@ -1,0 +1,50 @@
+{% load crispy_forms_tags %}
+{% load i18n %}
+
+{{ form|as_crispy_errors }}
+<form class="uniForm" method="POST">
+  {% csrf_token %}
+  <fieldset>
+    {{ form.direction|as_crispy_field }}
+    {{ form.description|as_crispy_field }}
+    {{ form.foreign_network|as_crispy_field }}
+    <div>
+      <div class="row">
+        <div class="col-xs-6">
+          {{ form.dport|as_crispy_field }}
+        </div>
+        <div class="col-xs-6">
+          {{ form.dport_end|as_crispy_field }}
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="row">
+        <div class="col-xs-6">
+          {{ form.sport|as_crispy_field }}
+        </div>
+        <div class="col-xs-6">
+          {{ form.sport_end|as_crispy_field }}
+        </div>
+      </div>
+    </div>
+    {{ form.weight|as_crispy_field }}
+    {{ form.proto|as_crispy_field }}
+    {{ form.extra|as_crispy_field }}
+    {{ form.action|as_crispy_field }}
+    {{ form.owner|as_crispy_field }}
+    {{ form.nat|as_crispy_field }}
+    {{ form.nat_external_port|as_crispy_field }}
+    {{ form.nat_external_ipv4|as_crispy_field }}
+  </fieldset>
+  <fieldset>
+    <legend>{% trans "External" %}</legend>
+    {{ form.vlan |as_crispy_field }}
+    {{ form.vlangroup |as_crispy_field }}
+    {{ form.host |as_crispy_field }}
+    {{ form.hostgroup |as_crispy_field }}
+    {{ form.firewall |as_crispy_field }}
+  </fieldset>
+  <input type="submit" value="{% trans "Save" %}" class="btn btn-primary">
+  <a href="{% url "network.rule_list" %}" class="btn btn-default">{% trans "Back" %}</a>
+</form>
