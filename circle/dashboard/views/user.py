@@ -50,8 +50,7 @@ from vm.models import Instance, InstanceTemplate
 from ..forms import (
     CircleAuthenticationForm, MyProfileForm, UserCreationForm, UnsubscribeForm,
     UserKeyForm, CirclePasswordChangeForm, ConnectCommandForm,
-    UserListSearchForm, UserEditForm, TwoFactorForm, DisableTwoFactorForm,
-    TwoFactorAuthForm,
+    UserListSearchForm, UserEditForm, TwoFactorForm, TwoFactorConfirmationForm,
 )
 from ..models import Profile, GroupProfile, ConnectCommand
 from ..tables import (
@@ -590,21 +589,31 @@ class EnableTwoFactorView(LoginRequiredMixin, UpdateView):
         return ctx
 
 
-class DisableTwoFactorView(LoginRequiredMixin, UpdateView):
-    model = Profile
-    form_class = DisableTwoFactorForm
+class DisableTwoFactorView(LoginRequiredMixin, FormView):
+    form_class = TwoFactorConfirmationForm
     template_name = "dashboard/disable-two-factor.html"
     success_url = reverse_lazy("dashboard.views.profile-preferences")
 
-    def get_object(self, queryset=None):
+    def get_profile(self, queryset=None):
         if self.request.user.is_anonymous():
             raise PermissionDenied
 
         return self.request.user.profile
 
+    def get_form_kwargs(self):
+        kwargs = super(DisableTwoFactorView, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        profile = self.get_profile()
+        profile.two_factor_secret = ""
+        profile.save()
+        return super(DisableTwoFactorView, self).form_valid(form)
+
 
 class TwoFactorLoginView(FormView):
-    form_class = TwoFactorAuthForm
+    form_class = TwoFactorConfirmationForm
     template_name = "registration/two-factor-login.html"
 
     def dispatch(self, *args, **kwargs):
