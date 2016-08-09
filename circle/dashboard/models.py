@@ -399,9 +399,6 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
 
     pre_user_save.connect(save_org_id)
 
-else:
-    logger.debug("Do not register save_org_id to djangosaml2 pre_user_save")
-
 
 def update_store_profile(sender, **kwargs):
     profile = kwargs.get('instance')

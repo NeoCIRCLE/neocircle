@@ -1686,3 +1686,19 @@ class DisableTwoFactorForm(ModelForm):
         totp = pyotp.TOTP(self.instance.two_factor_secret)
         if not totp.verify(self.cleaned_data.get('confirmation_code')):
             raise ValidationError(_("Invalid confirmation code."))
+
+
+class TwoFactorAuthForm(forms.Form):
+    confirmation_code = forms.CharField(
+        label=_('Confirmation code'),
+        help_text=_("Get the code from your authenticator to disable "
+                    "two-factor authentication."))
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super(TwoFactorAuthForm, self).__init__(*args, **kwargs)
+
+    def clean_confirmation_code(self):
+        totp = pyotp.TOTP(self.user.profile.two_factor_secret)
+        if not totp.verify(self.cleaned_data.get('confirmation_code')):
+            raise ValidationError(_("Invalid confirmation code."))

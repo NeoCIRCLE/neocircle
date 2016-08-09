@@ -25,7 +25,9 @@ from django.shortcuts import redirect
 
 
 from circle.settings.base import get_env_variable
-from dashboard.views import circle_login, HelpView, ResizeHelpView
+from dashboard.views import (
+    CircleLoginView, HelpView, ResizeHelpView, TwoFactorLoginView
+)
 from dashboard.forms import CirclePasswordResetForm, CircleSetPasswordForm
 from firewall.views import add_blacklist_item
 
@@ -52,8 +54,12 @@ urlpatterns = patterns(
         {'password_reset_form': CirclePasswordResetForm},
         name="accounts.password-reset",
         ),
-    url(r'^accounts/login/?$', circle_login, name="accounts.login"),
+    url(r'^accounts/login/?$', CircleLoginView.as_view(),
+        name="accounts.login"),
     url(r'^accounts/', include('django.contrib.auth.urls')),
+    url(r'^two-factor-login/$', TwoFactorLoginView.as_view(),
+        name="two-factor-login"),
+
     url(r'^info/help/$', HelpView.as_view(template_name="info/help.html"),
         name="info.help"),
     url(r'^info/policy/$',

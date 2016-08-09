@@ -1,0 +1,24 @@
+{% extends "registration/base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block title-page %}{% trans "Login" %}{% endblock %}
+
+{% block content_box %}
+  <div class="row">
+    <div class="col-md-12">
+      <form action="" method="POST">
+        {% csrf_token %}
+        {{ form.confirmation_code|as_crispy_field }}
+        <input type="submit"/>
+      </form>
+    </div>
+  </div>
+  <style>
+    .help-block {
+      display: block;
+    }
+  </style>
+{% endblock %}
