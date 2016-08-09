@@ -945,7 +945,8 @@ class SleepOperation(InstanceOperation):
                     ._get_remote_args(**kwargs) +
                     [self.instance.mem_dump['datastore'].type,
                      self.instance.mem_dump['datastore'].path,
-                     self.instance.mem_dump['filename']])
+                     self.instance.mem_dump['filename'],
+                     self.instance.ram_size])
 
 
 @register_operation
