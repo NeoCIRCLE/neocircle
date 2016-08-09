@@ -283,17 +283,20 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
         return reverse("dashboard.views.storage-detail", kwargs={"pk": ds.id})
 
     def form_valid(self, form):
+        response = super(StorageDetail, self).form_valid(form)
         # automatic credential refresh
         changed = (self.object.type == "ceph_block" and
-                   self.object.tracker.has_changed("ceph_user"))
-        response = super(StorageDetail, self).form_valid(form)
+                   self.object.ceph_user_changed)
         if changed:
-            nodes = Node.objects.all()
-            for node in nodes:
-                if node.get_online():
-                    node.refresh_credential(
-                        user=self.request.user,
-                        username=self.object.ceph_user)
+            try:
+                nodes = Node.objects.all()
+                for node in nodes:
+                    if node.get_online():
+                        node.refresh_credential(
+                            user=self.request.user,
+                            username=self.object.ceph_user)
+            except Exception as e:
+                messages.error(self.request, unicode(e))
         return response
 
 

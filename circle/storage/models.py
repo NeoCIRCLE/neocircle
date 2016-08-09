@@ -33,7 +33,6 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from model_utils.models import TimeStampedModel
-from model_utils import FieldTracker
 from sizefield.models import FileSizeField
 
 from .tasks import local_tasks, storage_tasks
@@ -73,7 +72,7 @@ class DataStore(Model):
                           verbose_name=_('Ceph username'))
     destroyed = DateTimeField(blank=True, default=None, null=True)
 
-    tracker = FieldTracker(fields=["ceph_user"])
+    ceph_user_changed = False
 
     class Meta:
         ordering = ['name']
@@ -82,6 +81,12 @@ class DataStore(Model):
 
     def __unicode__(self):
         return u'%s (%s)' % (self.name, self.path)
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            orig = DataStore.objects.get(pk=self.pk)
+            self.ceph_user_changed = orig.ceph_user != self.ceph_user
+        super(DataStore, self).save(*args, **kwargs)
 
     def get_remote_queue_name(self, queue_id, priority=None,
                               check_worker=True):
