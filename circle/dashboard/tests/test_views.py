@@ -1869,7 +1869,7 @@ class TwoFactorTest(LoginMixin, TestCase):
 
     def test_successful_2fa_login(self):
         c = Client()
-        response = self.login(c, 'user1')
+        self.login(c, 'user1')
 
         code = pyotp.TOTP(self.p1.two_factor_secret).now()
         r = c.post("/two-factor-login/", {'confirmation_code': code},
@@ -1879,8 +1879,28 @@ class TwoFactorTest(LoginMixin, TestCase):
 
     def test_unsuccessful_2fa_login(self):
         c = Client()
-        response = self.login(c, 'user1')
+        self.login(c, 'user1')
 
         r = c.post("/two-factor-login/", {'confirmation_code': "nudli"})
         self.assertTemplateUsed(r, "registration/two-factor-login.html")
         self.assertContains(r, "Welcome Bela Akkounter (user1)!")
+
+    def test_straight_to_2fa_as_anonymous(self):
+        c = Client()
+        response = c.get("/two-factor-login/", follow=True)
+        self.assertItemsEqual(
+            response.redirect_chain,
+            [('http://testserver/', 302),
+             ('http://testserver/dashboard/', 302),
+             ('http://testserver/accounts/login/?next=/dashboard/', 302)]
+        )
+
+    def test_straight_to_2fa_as_user(self):
+        c = Client()
+        self.login(c, 'user2')
+        response = c.get("/two-factor-login/", follow=True)
+        self.assertItemsEqual(
+            response.redirect_chain,
+            [('http://testserver/', 302),
+             ('http://testserver/dashboard/', 302)]
+        )
