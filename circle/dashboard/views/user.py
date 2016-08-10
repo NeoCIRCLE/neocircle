@@ -622,15 +622,21 @@ class TwoFactorLoginView(FormView):
 
         return super(TwoFactorLoginView, self).dispatch(*args, **kwargs)
 
+    def get_user(self):
+        return User.objects.get(pk=self.request.session['two-fa-user'])
+
     def get_form_kwargs(self):
         kwargs = super(TwoFactorLoginView, self).get_form_kwargs()
-        user_pk = self.request.session['two-fa-user']
-        kwargs['user'] = User.objects.get(pk=user_pk)
+        kwargs['user'] = self.get_user()
         return kwargs
 
+    def get_context_data(self, **kwargs):
+        ctx = super(TwoFactorLoginView, self).get_context_data(**kwargs)
+        ctx['user'] = self.get_user()
+        return ctx
+
     def form_valid(self, form):
-        user_pk = self.request.session['two-fa-user']
-        user = User.objects.get(pk=user_pk)
+        user = self.get_user()
 
         if self.request.session['login-type'] == "saml2":
             user.backend = 'common.backends.Saml2Backend'

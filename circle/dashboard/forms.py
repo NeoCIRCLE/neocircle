@@ -1670,9 +1670,8 @@ class TwoFactorForm(ModelForm):
 
 class TwoFactorConfirmationForm(forms.Form):
     confirmation_code = forms.CharField(
-        label=_('Confirmation code'),
-        help_text=_("Get the code from your authenticator to disable "
-                    "two-factor authentication."))
+        label=_('Two-factor authentication passcode'),
+        help_text=_("Get the code from your authenticator."))
 
     def __init__(self, user, *args, **kwargs):
         self.user = user

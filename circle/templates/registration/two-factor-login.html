@@ -4,21 +4,24 @@
 {% load crispy_forms_tags %}
 {% get_current_language as LANGUAGE_CODE %}
 
-{% block title-page %}{% trans "Login" %}{% endblock %}
+{% block title-page %}{% trans "Two-factor authentication" %}{% endblock %}
 
 {% block content_box %}
-  <div class="row">
+  <div class="row" id="two-factor-box">
     <div class="col-md-12">
+      <h4>
+        {% blocktrans with username=user.username full_name=user.get_full_name %}
+        Welcome {{ full_name }} ({{ username }})!
+        {% endblocktrans %}
+      </h4>
+      <hr/>
       <form action="" method="POST">
         {% csrf_token %}
         {{ form.confirmation_code|as_crispy_field }}
-        <input type="submit"/>
+        <button type="submit" class="btn btn-success">
+          {% trans "Confirm" %}
+        </button>
       </form>
     </div>
   </div>
-  <style>
-    .help-block {
-      display: block;
-    }
-  </style>
 {% endblock %}
