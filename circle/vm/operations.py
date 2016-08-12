@@ -1353,6 +1353,7 @@ class RecoverOperation(InstanceOperation):
                     disk.destroyed = None
                     disk.save()
                 else:
+                    self.instance.disks.remove(disk)
                     not_restored.append(unicode(disk))
             self.instance.status = 'PENDING'
             self.instance.save()
