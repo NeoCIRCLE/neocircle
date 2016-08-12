@@ -18,6 +18,11 @@
           {% include "dashboard/storage/form_chunk.html" %}
           <fieldset>
             <input type="submit" value="{% trans "Save" %}" class="btn btn-primary">
+            {% if object.type == "ceph_block" %}
+            <a class="btn btn-success pull-right" href="{% url "dashboard.views.storage-refresh_credential" pk=object.pk %}">
+                <i class="fa fa-key"></i> {% trans "Refresh credential on all node" %}
+            </a>
+            {% endif %}
           </fieldset>
         </form>
       </div><!-- .panel-body -->

@@ -23,7 +23,7 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _, ugettext
 from django.views.generic import (
-    UpdateView, TemplateView, CreateView, DeleteView
+    UpdateView, TemplateView, CreateView, DeleteView, DetailView
 )
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import redirect
@@ -288,15 +288,8 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
         changed = (self.object.type == "ceph_block" and
                    self.object.ceph_user_changed)
         if changed:
-            try:
-                nodes = Node.objects.all()
-                for node in nodes:
-                    if node.get_online():
-                        node.refresh_credential(
-                            user=self.request.user,
-                            username=self.object.ceph_user)
-            except Exception as e:
-                messages.error(self.request, unicode(e))
+            Node.refresh_crendential_on_all(self.request.user,
+                                            self.object.ceph_user)
         return response
 
 
@@ -376,6 +369,18 @@ class StorageRestore(SuperuserRequiredMixin, UpdateView):
         ds = self.get_object()
         return reverse_lazy("dashboard.views.storage-detail",
                             kwargs={"pk": ds.id})
+
+
+class StorageRefreshCredential(SuperuserRequiredMixin, DetailView):
+
+    model = DataStore
+
+    def get(self, request, *args, **kwargs):
+        if self.get_object().type == 'ceph_block':
+            Node.refresh_crendential_on_all(self.request.user,
+                                            self.get_object().ceph_user)
+        return redirect('dashboard.views.storage-detail',
+                        pk=self.get_object().pk)
 
 
 class DiskDetail(SuperuserRequiredMixin, UpdateView):

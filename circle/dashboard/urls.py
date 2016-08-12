@@ -54,7 +54,7 @@ from .views import (
     NodeActivityView,
     UserList,
     StorageDetail, StorageList, StorageChoose, StorageCreate, DiskDetail,
-    StorageDelete, StorageRestore,
+    StorageDelete, StorageRestore, StorageRefreshCredential,
     MessageList, MessageDetail, MessageCreate, MessageDelete,
 )
 from .views.vm import vm_ops, vm_mass_ops
@@ -250,6 +250,9 @@ urlpatterns = patterns(
         name="dashboard.views.storage-delete"),
     url(r"^storage/restore/(?P<pk>\d+)/$", StorageRestore.as_view(),
         name="dashboard.views.storage-restore"),
+    url(r'^storage/(?P<pk>\d+)/refresh_credential/$',
+        StorageRefreshCredential.as_view(),
+        name='dashboard.views.storage-refresh_credential'),
 
     url(r'^disk/(?P<pk>\d+)/$', DiskDetail.as_view(),
         name="dashboard.views.disk-detail"),

@@ -460,3 +460,10 @@ class Node(OperatedMixin, TimeStampedModel):
     @property
     def metric_prefix(self):
         return 'circle.%s' % self.host.hostname
+
+    @classmethod
+    def refresh_crendential_on_all(cls, user, ceph_user):
+        nodes = cls.objects.all()
+        for node in nodes:
+            if node.get_online():
+                node.refresh_credential.async(user=user, username=ceph_user)
