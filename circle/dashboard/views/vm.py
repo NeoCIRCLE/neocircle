@@ -56,7 +56,7 @@ from vm.models import (
 )
 from .util import (
     CheckedDetailView, AjaxOperationMixin, OperationView, AclUpdateView,
-    FormOperationMixin, VmDescFilterMixin, GraphMixin,
+    FormOperationMixin, FilterMixin, GraphMixin,
     TransferOwnershipConfirmView, TransferOwnershipView,
 )
 from ..forms import (
@@ -921,7 +921,7 @@ vm_mass_ops = OrderedDict([
 ])
 
 
-class VmList(LoginRequiredMixin, VmDescFilterMixin, ListView):
+class VmList(LoginRequiredMixin, FilterMixin, ListView):
     template_name = "dashboard/vm-list.html"
     allowed_filters = {
         'name': "name__icontains",
