@@ -111,9 +111,10 @@ $(function() {
   /* rename ajax */
   $('.vm-details-rename-submit').click(function() {
     var name = $(this).parent("span").prev("input").val();
+    var url = $("#vm-details-rename-form").attr("action");
     $.ajax({
       method: 'POST',
-      url: location.href,
+      url: url,
       data: {'new_name': name},
       headers: {"X-CSRFToken": getCookie('csrftoken')},
       success: function(data, textStatus, xhr) {
