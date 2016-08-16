@@ -1531,6 +1531,7 @@ class VmResourcesForm(forms.ModelForm):
 vm_search_choices = (
     ("owned", _("owned")),
     ("shared", _("shared")),
+    ("shared_with_me", _("shared with me")),
     ("all", _("all")),
 )
 

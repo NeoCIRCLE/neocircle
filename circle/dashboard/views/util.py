@@ -46,6 +46,7 @@ from common.models import HumanReadableException, HumanReadableObject
 from ..models import GroupProfile, Profile
 from ..forms import TransferOwnershipForm
 
+
 logger = logging.getLogger(__name__)
 saml_available = hasattr(settings, "SAML_CONFIG")
 
@@ -166,6 +167,26 @@ class FilterMixin(object):
             level, self.request.user,
             group_also=shared, disregard_superuser=not superuser,
         )
+        return queryset
+
+
+class VmDescFilterMixin(FilterMixin):
+
+    def create_acl_queryset(self, model):
+        cleaned_data = self.search_form.cleaned_data
+        stype = cleaned_data.get('stype', 'all')
+        queryset = super(VmDescFilterMixin, self).create_acl_queryset(model)
+        user = self.request.user
+        if stype == 'owned':
+            queryset = queryset.filter(owner=user)
+        elif stype == 'shared':
+            queryset = model.get_objects_with_level(
+                'owner', self.request.user)
+            pk_list = [record.pk for record in queryset
+                       if record.object_level_set.count() > 1]
+            queryset = queryset.filter(pk__in=pk_list)
+        elif stype == 'shared_with_me':
+            queryset = queryset.exclude(owner=user)
         return queryset
 
 
