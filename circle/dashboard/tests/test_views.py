@@ -28,7 +28,7 @@ from dashboard.views import VmAddInterfaceView
 from vm.models import Instance, InstanceTemplate, Lease, Node, Trait
 from vm.operations import (WakeUpOperation, AddInterfaceOperation,
                            AddPortOperation, RemoveInterfaceOperation,
-                           DeployOperation)
+                           DeployOperation, RenameOperation)
 from ..models import Profile
 from firewall.models import Vlan, Host, VlanGroup
 from mock import Mock, patch
@@ -433,31 +433,43 @@ class VmDetailTest(LoginMixin, MockCeleryMixin, TestCase):
     def test_unpermitted_set_name(self):
         c = Client()
         self.login(c, "user2")
-        inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u2, 'user')
-        old_name = inst.name
-        response = c.post("/dashboard/vm/1/", {'new_name': 'test1235'})
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(Instance.objects.get(pk=1).name, old_name)
+        with patch.object(RenameOperation, 'async') as mock_method:
+            inst = Instance.objects.get(pk=1)
+            mock_method.side_effect = inst.rename
+            inst.set_level(self.u2, 'user')
+            old_name = inst.name
+            response = c.post("/dashboard/vm/1/op/rename/",
+                              {'new_name': 'test1235'})
+            self.assertEqual(response.status_code, 403)
+            assert not mock_method.called
+            self.assertEqual(Instance.objects.get(pk=1).name, old_name)
 
     def test_permitted_set_name(self):
         c = Client()
         self.login(c, "user2")
-        inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u2, 'owner')
-        response = c.post("/dashboard/vm/1/", {'new_name': 'test1234'})
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(Instance.objects.get(pk=1).name, 'test1234')
+        with patch.object(RenameOperation, 'async') as mock_method:
+            inst = Instance.objects.get(pk=1)
+            mock_method.side_effect = inst.rename
+            inst.set_level(self.u2, 'owner')
+            response = c.post("/dashboard/vm/1/op/rename/",
+                              {'new_name': 'test1234'})
+            self.assertEqual(response.status_code, 302)
+            assert mock_method.called
+            self.assertEqual(Instance.objects.get(pk=1).name, 'test1234')
 
     def test_permitted_set_name_w_ajax(self):
         c = Client()
         self.login(c, "user2")
         inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u2, 'owner')
-        response = c.post("/dashboard/vm/1/", {'new_name': 'test123'},
-                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(Instance.objects.get(pk=1).name, 'test123')
+        with patch.object(RenameOperation, 'async') as mock_method:
+            inst.set_level(self.u2, 'owner')
+            mock_method.side_effect = inst.rename
+            response = c.post("/dashboard/vm/1/op/rename/",
+                              {'new_name': 'test123'},
+                              HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+            self.assertEqual(response.status_code, 200)
+            assert mock_method.called
+            self.assertEqual(Instance.objects.get(pk=1).name, 'test123')
 
     def test_permitted_wake_up_wrong_state(self):
         c = Client()
