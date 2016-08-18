@@ -1408,7 +1408,7 @@ class RenameOperation(InstanceOperation):
     name = _("rename")
     description = _("Change the name of virtual machine.")
     acl_level = "operator"
-    required_perms = ("vm.change_resources", )
+    required_perms = ()
 
     def _operation(self, user, activity, new_name):
 
