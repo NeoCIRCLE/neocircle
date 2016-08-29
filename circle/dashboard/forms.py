@@ -19,6 +19,7 @@ from __future__ import absolute_import
 
 from datetime import timedelta
 from urlparse import urlparse
+import re
 
 from django.forms import ModelForm
 from django.contrib.auth.forms import (
@@ -893,6 +894,88 @@ class VmDiskRemoveForm(OperationForm):
                     css_class="form-group",
                 ),
                 Field("disk"),
+            )
+        return helper
+
+
+def snapshot_name_validator(name):
+    number = re.compile(r'^\d+$')
+    if number.match(name):
+        raise forms.ValidationError(_('The name shall not be a number.'),
+                                    code='invalid')
+
+
+class VmCommonSnapshotDiskForm(OperationForm):
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.disk = kwargs.pop('default')
+        self.snap_id = kwargs.pop('snap_id')
+        self.snap_name = kwargs.pop('snap_name')
+
+        super(VmCommonSnapshotDiskForm, self).__init__(*args, **kwargs)
+
+        self.fields['disk'] = forms.ModelChoiceField(
+            queryset=choices, initial=self.disk, required=True,
+            empty_label=None, label=_('Disk'))
+        if self.disk:
+            self.fields['disk'].widget = HiddenInput()
+        self.fields['snap_id'] = forms.IntegerField(initial=self.snap_id,
+                                                    widget=HiddenInput())
+        self.fields['snap_name'] = forms.CharField(
+            initial=self.snap_name,
+            widget=HiddenInput(),
+            validators=[snapshot_name_validator])
+
+    @property
+    def helper(self):
+        helper = super(VmCommonSnapshotDiskForm, self).helper
+        if self.disk:
+            helper.layout = Layout(
+                AnyTag(
+                    'div',
+                    HTML(_('<label>Disk:</label> %s<br />'
+                           '<label>Snapshot:</label> %s (#%s)') %
+                         (escape(self.disk), escape(self.snap_name),
+                          escape(self.snap_id))),
+                    css_class='form-group',
+                ),
+                Field('disk'),
+                Field('snap_id'),
+                Field('snap_name'),
+            )
+        return helper
+
+
+class VmSnapshotDiskForm(OperationForm):
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.disk = kwargs.pop('default')
+
+        super(VmSnapshotDiskForm, self).__init__(*args, **kwargs)
+
+        self.fields['disk'] = forms.ModelChoiceField(
+            queryset=choices, initial=self.disk, required=True,
+            empty_label=None, label=_('Disk'))
+        if self.disk:
+            self.fields['disk'].widget = HiddenInput()
+        self.fields['snap_name'] = forms.CharField(
+            validators=[snapshot_name_validator])
+
+    @property
+    def helper(self):
+        helper = super(VmSnapshotDiskForm, self).helper
+        if self.disk:
+            helper.layout = Layout(
+                AnyTag(
+                    'div',
+                    HTML(_('<label>Disk:</label> %s') %
+                         escape(self.disk)),
+                    css_class='form-group',
+                ),
+                Field('disk'),
+                Field('snap_name'),
             )
         return helper
 

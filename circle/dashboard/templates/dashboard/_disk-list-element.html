@@ -6,6 +6,14 @@
 
 
 <span class="operation-wrapper pull-right">
+  <div>
+  {% if op.create_snapshot %}
+    <a href="{{ op.create_snapshot.get_url }}?disk={{d.pk}}"
+      class="btn btn-xs btn-{{ op.create_snapshot.effect }} operation disk-create_snapshot-btn
+      {% if op.create_snapshot.disabled %}disabled{% endif %}">
+      <i class="fa fa-{{ op.create_snapshot.icon }} fa-fw-12"></i> {% trans "Snapshot" %}
+    </a>
+  {% endif %}
   {% if d.is_resizable %}
     {% if op.resize_disk %}
       <a href="{{ op.resize_disk.get_url }}?disk={{d.pk}}"
@@ -30,10 +38,47 @@
       <i class="fa fa-{{ op.remove_disk.icon }} fa-fw-12"></i> {% trans "Remove" %}
     </a>
   {% endif %}
+  </div>
+  <div class="pull-right">
+  {% if perms.view_snapshot and d.list_snapshots %}
+  <input type="button" class="btn btn-default btn-xs show-snapshot-btn"
+   data-toggle="collapse" data-target="#snapshots-{{ d.pk }}"
+   value="{% trans "Show snapshots" %}" />
+  {% endif %}
+  </div>
 </span>
-<div style="clear: both;"></div>
-
+<br />
 {% if request.user.is_superuser %}
-  <small>{% trans "File name" %}: {{ d.filename }}</small><br/>
-  <small>{% trans "Bus" %}: {{ d.device_bus }}</small>
+  <small>{% trans "File name" %}: {{ d.filename }}</small><br />
+  <small>{% trans "Bus" %}: {{ d.device_bus }}</small><br />
+{% endif %}
+<div style="clear: both;"></div>
+{% if perms.storage.view_snapshot %}
+<div id="snapshots-{{ d.pk }}" class="collapse out snapshot-list">
+  <table class="table table-striped info-panel small snapshot-table">
+    {% for snap in d.list_snapshots %}
+      <tr>
+        <td>{{ snap.id }}</td>
+        <td>{{ snap.name }}</td>
+        <td><span title="{{ snap.date }}">{{ snap.date_human }}</span></td>
+        <td>
+          <div class="pull-right">
+            <a href="{{ op.revert_snapshot.get_url }}?disk={{d.pk}}&snap_name={{ snap.name }}&snap_id={{ snap.id }}"
+              class="btn btn-xs btn-{{ op.revert_snapshot.effect }} operation disk-revert_snapshot-btn
+              {% if op.revert_snapshot.disabled %}disabled{% endif %}"
+              title="{% trans "Revert" %}">
+              <i class="fa fa-{{ op.revert_snapshot.icon }} fa-fw-12"></i>
+            </a>
+            <a href="{{ op.remove_snapshot.get_url }}?disk={{d.pk}}&snap_name={{ snap.name }}&snap_id={{ snap.id }}"
+              class="btn btn-xs btn-{{ op.remove_snapshot.effect }} operation disk-remove_snapshot-btn
+              {% if op.remove_snapshot.disabled %}disabled{% endif %}"
+              title="{% trans "Remove" %}">
+              <i class="fa fa-{{ op.remove_snapshot.icon }} fa-fw-12"></i>
+            </a>
+          </div>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+</div>
 {% endif %}

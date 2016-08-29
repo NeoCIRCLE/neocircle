@@ -48,8 +48,28 @@ def delete_dump(path):
     pass
 
 
+@celery.task(name='storagedriver.snapshot_from_base')
+def snapshot_from_base(disk_desc):
+    pass
+
+
 @celery.task(name='storagedriver.snapshot')
-def snapshot(disk_desc):
+def snapshot(disk_desc, name):
+    pass
+
+
+@celery.task(name='storagedriver.list_snapshots')
+def list_snapshots(disk_desc):
+    pass
+
+
+@celery.task(name='storagedriver.remove_snapshot')
+def remove_snapshot(disk_desc, id):
+    pass
+
+
+@celery.task(name='storagedriver.revert_snapshot')
+def revert_snapshot(disk_desc, id):
     pass
 
 

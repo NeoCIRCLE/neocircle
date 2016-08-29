@@ -24,6 +24,8 @@ from os.path import join
 import uuid
 import re
 
+import arrow
+
 from celery.contrib.abortable import AbortableAsyncResult
 from django.db.models import (Model, BooleanField, CharField, DateTimeField,
                               ForeignKey)
@@ -142,7 +144,11 @@ class Disk(TimeStampedModel):
         permissions = (
             ('create_empty_disk', _('Can create an empty disk.')),
             ('download_disk', _('Can download a disk.')),
-            ('resize_disk', _('Can resize a disk.'))
+            ('resize_disk', _('Can resize a disk.')),
+            ('create_snapshot', _('Can create snapshot')),
+            ('remove_snapshot', _('Can remove snapshot')),
+            ('revert_snapshot', _('Can revert snapshot')),
+            ('view_snapshot', _('Can view snapshot')),
         )
 
     class DiskError(HumanReadableException):
@@ -391,9 +397,9 @@ class Disk(TimeStampedModel):
         queue_name = self.get_remote_queue_name('storage', priority="fast")
         disk_desc = self.get_disk_desc()
         if self.base is not None:
-            storage_tasks.snapshot.apply_async(args=[disk_desc],
-                                               queue=queue_name
-                                               ).get(timeout=timeout)
+            storage_tasks.snapshot_from_base.apply_async(args=[disk_desc],
+                                                         queue=queue_name
+                                                         ).get(timeout=timeout)
         else:
             storage_tasks.create.apply_async(args=[disk_desc],
                                              queue=queue_name
@@ -402,6 +408,26 @@ class Disk(TimeStampedModel):
         self.is_ready = True
         self.save()
         return True
+
+    def repack_snapshot_info(self, snap):
+        date = arrow.get(snap['date-sec'])
+        return {
+            'id': snap['id'],
+            'name': snap['name'],
+            'date': date.format('YYYY.DD.MM. hh:mm:ss'),
+            'date_human': date.humanize(),
+        }
+
+    @method_cache(30)
+    def list_snapshots(self, timeout=15):
+        if not self.is_ready:
+            return []
+        queue_name = self.get_remote_queue_name('storage', priority='fast')
+        disk_desc = self.get_disk_desc()
+        snaps = storage_tasks.list_snapshots.apply_async(args=[disk_desc],
+                                                         queue=queue_name
+                                                         ).get(timeout=timeout)
+        return [self. repack_snapshot_info(snap) for snap in snaps]
 
     @classmethod
     def create(cls, user=None, **params):

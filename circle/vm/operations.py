@@ -283,6 +283,88 @@ class CreateDiskOperation(InstanceOperation):
             size=filesizeformat(kwargs['size']), name=kwargs['name'])
 
 
+class RemoteSnapshotDiskOperation(InstanceOperation):
+
+    remote_queue = ('storage', 'slow')
+    remote_timeout = 30
+
+    def _operation(self, disk, **kwargs):
+        if disk:
+            if not disk.is_ready:
+                raise disk.DiskIsNotReady(disk)
+            disk_desc = disk.get_disk_desc()
+            args = [disk_desc] + self._get_remote_args(**kwargs)
+            return self.task.apply_async(
+                args=args,
+                queue=disk.get_remote_queue_name(*self.remote_queue)
+            ).get(timeout=self.remote_timeout)
+
+
+@register_operation
+class CreateSnapshotDiskOperation(RemoteSnapshotDiskOperation):
+
+    id = 'create_snapshot'
+    name = _('create snapshot')
+    description = _('Create snapshot from disk.')
+    required_perms = ('storage.create_snapshot', )
+    accept_states = ('STOPPED')
+    task = storage_tasks.snapshot
+
+    def _get_remote_args(self, **kwargs):
+        snap_name = kwargs.get('snap_name')
+        if not snap_name:
+            snap_name = 'new snapshot'
+        return [snap_name]
+
+    def get_activity_name(self, kwargs):
+        return create_readable(
+            ugettext_noop('Created snapshot %(snap_name)s'
+                          ' from disk %(disk_name)s'),
+            disk_name=kwargs['disk'].name,
+            snap_name=kwargs['snap_name'])
+
+
+@register_operation
+class RemoveSnapshotDiskOperation(RemoteSnapshotDiskOperation):
+
+    id = 'remove_snapshot'
+    name = _('remove snapshot')
+    description = _('Remove snapshot from disk.')
+    required_perms = ('storage.remove_snapshot', )
+    task = storage_tasks.remove_snapshot
+
+    def _get_remote_args(self, **kwargs):
+        return [kwargs.get('snap_id')]
+
+    def get_activity_name(self, kwargs):
+        return create_readable(
+            ugettext_noop('Removed snapshot %(snap_name)s'
+                          ' from disk %(disk_name)s'),
+            disk_name=kwargs['disk'].name,
+            snap_name=kwargs['snap_name'])
+
+
+@register_operation
+class RevertSnapshotDiskOperation(RemoteSnapshotDiskOperation):
+
+    id = 'revert_snapshot'
+    name = _('revert snapshot')
+    description = _('Revert snapshot on disk.')
+    required_perms = ('storage.revert_snapshot', )
+    accept_states = ('STOPPED')
+    task = storage_tasks.revert_snapshot
+
+    def _get_remote_args(self, **kwargs):
+        return [kwargs.get('snap_id')]
+
+    def get_activity_name(self, kwargs):
+        return create_readable(
+            ugettext_noop('Revert snapshot %(snap_name)s'
+                          ' on disk %(disk_name)s'),
+            disk_name=kwargs['disk'].name,
+            snap_name=kwargs['snap_name'])
+
+
 @register_operation
 class ResizeDiskOperation(RemoteInstanceOperation):
 

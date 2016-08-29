@@ -65,6 +65,7 @@ from ..forms import (
     VmAddInterfaceForm, VmCreateDiskForm, VmDownloadDiskForm, VmSaveForm,
     VmRenewForm, VmStateChangeForm, VmListSearchForm, VmCustomizeForm,
     VmDiskResizeForm, RedeployForm, VmDiskRemoveForm,
+    VmSnapshotDiskForm, VmCommonSnapshotDiskForm,
     VmMigrateForm, VmDeployForm,
     VmPortRemoveForm, VmPortAddForm,
     VmRemoveInterfaceForm,
@@ -743,6 +744,18 @@ class VmDeployView(FormOperationMixin, VmOperationView):
         return kwargs
 
 
+class VmCommonSnapshotDiskView(VmDiskModifyView):
+
+    form_class = VmCommonSnapshotDiskForm
+
+    def get_form_kwargs(self):
+        snap_id = self.request.GET.get('snap_id')
+        snap_name = self.request.GET.get('snap_name')
+        val = super(VmCommonSnapshotDiskView, self).get_form_kwargs()
+        val.update({'snap_id': snap_id, 'snap_name': snap_name})
+        return val
+
+
 vm_ops = OrderedDict([
     ('deploy', VmDeployView),
     ('wake_up', VmOperationView.factory(
@@ -792,6 +805,13 @@ vm_ops = OrderedDict([
         op='install_keys', icon='key', effect='info',
         show_in_toolbar=False,
     )),
+    ('create_snapshot', VmDiskModifyView.factory(
+        op='create_snapshot', icon='camera', effect='success',
+        form_class=VmSnapshotDiskForm)),
+    ('remove_snapshot', VmCommonSnapshotDiskView.factory(
+        op='remove_snapshot', icon='times', effect='danger')),
+    ('revert_snapshot', VmCommonSnapshotDiskView.factory(
+        op='revert_snapshot', icon='backward', effect='warning')),
 ])
 
 
