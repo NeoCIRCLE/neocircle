@@ -55,7 +55,7 @@
     </div>
     <h1>
       <div id="vm-details-rename" class="vm-details-home-rename-form-div">
-        <form action="{{ rename_op.get_url }}" method="POST" id="vm-details-rename-form">
+        <form action="{{ op.rename.get_url }}" method="POST" id="vm-details-rename-form">
           {% csrf_token %}
           <div class="input-group vm-details-home-name">
             <input id="vm-details-rename-name" class="form-control input-sm" name="new_name" type="text" value="{{ instance.name }}"/>

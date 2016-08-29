@@ -134,7 +134,6 @@ class VmDetailView(GraphMixin, CheckedDetailView):
                                     kwargs={'pk': self.object.pk}),
             'ops': ops,
             'op': {i.op: i for i in ops},
-            'rename_op': self.get_rename_operation(instance),
             'connect_commands': user.profile.get_connect_commands(instance),
             'hide_tutorial': hide_tutorial,
             'fav': instance.favourite_set.filter(user=user).exists(),
@@ -283,19 +282,6 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         activity.abort()
         return HttpResponseRedirect("%s#activity" %
                                     self.object.get_absolute_url())
-
-    def get_rename_operation(self, instance):
-        v = VmRenameView
-        try:
-            op = v.get_op_by_object(instance)
-            op.check_auth(self.request.user)
-            op.check_precond()
-        except PermissionDenied as e:
-            logger.debug('Not showing operation %s for %s: %s',
-                         'rename', instance, unicode(e))
-        except Exception:
-            return v.bind_to_object(instance, disabled=True)
-        return v.bind_to_object(instance)
 
 
 class VmTraitsUpdate(SuperuserRequiredMixin, UpdateView):
