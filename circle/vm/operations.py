@@ -1408,7 +1408,7 @@ class ToggleBootMenuOperation(InstanceOperation):
     name = _("toggle boot menu")
     description = _("Turn on/off boot menu.")
     acl_level = "owner"
-    required_perms = ('vm.change_resources', )
+    required_perms = ('vm.toggle_boot_menu', )
     accept_states = ('STOPPED', 'PENDING', 'RUNNING')
 
     def _operation(self, user, activity, boot_menu):

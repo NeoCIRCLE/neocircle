@@ -1445,7 +1445,7 @@ class ToggleBootMenuForm(forms.ModelForm):
         helper = FormHelper()
         helper.form_show_labels = True
         helper.form_action =\
-            reverse_lazy("dashboard.views.vm-toggle-boot-menu",
+            reverse_lazy("dashboard.instance.op.toggle_bootmenu",
                          kwargs={'pk': self.instance.pk})
         return helper
 
