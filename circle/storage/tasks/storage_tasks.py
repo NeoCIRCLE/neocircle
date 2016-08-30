@@ -53,8 +53,8 @@ def snapshot_from_base(disk_desc):
     pass
 
 
-@celery.task(name='storagedriver.snapshot')
-def snapshot(disk_desc, name):
+@celery.task(name='storagedriver.create_snapshot')
+def create_snapshot(disk_desc, name):
     pass
 
 

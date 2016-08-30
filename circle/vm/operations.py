@@ -307,8 +307,8 @@ class CreateSnapshotDiskOperation(RemoteSnapshotDiskOperation):
     name = _('create snapshot')
     description = _('Create snapshot from disk.')
     required_perms = ('storage.create_snapshot', )
-    accept_states = ('STOPPED')
-    task = storage_tasks.snapshot
+    accept_states = ('STOPPED', )
+    task = storage_tasks.create_snapshot
 
     def _get_remote_args(self, **kwargs):
         snap_name = kwargs.get('snap_name')
@@ -351,7 +351,7 @@ class RevertSnapshotDiskOperation(RemoteSnapshotDiskOperation):
     name = _('revert snapshot')
     description = _('Revert snapshot on disk.')
     required_perms = ('storage.revert_snapshot', )
-    accept_states = ('STOPPED')
+    accept_states = ('STOPPED', )
     task = storage_tasks.revert_snapshot
 
     def _get_remote_args(self, **kwargs):
