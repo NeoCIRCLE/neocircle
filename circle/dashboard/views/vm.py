@@ -175,9 +175,10 @@ class VmDetailView(GraphMixin, CheckedDetailView):
             context['traits_form'] = TraitsForm(instance=instance)
             context['raw_data_form'] = RawDataForm(instance=instance)
 
-        if is_owner and user.has_perm("vm.toggle_boot_menu"):
-            context['toggle_boot_menu_form'] =\
-                ToggleBootMenuForm(instance=instance)
+        context['toggle_boot_menu_form'] = ToggleBootMenuForm(
+                instance=instance,
+                disabled=hasattr(
+                    context['op']['toggle_boot_menu'], 'disabled'))
 
         # resources change perm
         context['can_change_resources'] = self.request.user.has_perm(
@@ -592,33 +593,20 @@ class VmResourcesChangeView(VmOperationView):
                                                            *args, **kwargs)
 
 
-class VmToggleBootMenuUpdate(VmOperationView):
-    op = 'toggle_bootmenu'
+class VmToggleBootMenuUpdate(FormOperationMixin, VmOperationView):
+    op = 'toggle_boot_menu'
     icon = "wrench"
     show_in_toolbar = False
     wait_for_result = 0.5
+    form_class = ToggleBootMenuForm
 
-    def post(self, request, extra=None, *args, **kwargs):
-        instance = get_object_or_404(Instance, pk=kwargs['pk'])
-
-        form = ToggleBootMenuForm(request.POST, instance=instance)
-        if not form.is_valid():
-            for f in form.errors:
-                messages.error(request, "<strong>%s</strong>: %s" % (
-                    f, form.errors[f].as_text()
-                ))
-            if request.is_ajax():  # this is not too nice
-                store = messages.get_messages(request)
-                store.used = True
-                return JsonResponse({'success': False,
-                                     'messages': [unicode(m) for m in store]})
-            else:
-                return HttpResponseRedirect(instance.get_absolute_url() +
-                                            "#resources")
-        else:
-            extra = form.cleaned_data
-            return super(VmToggleBootMenuUpdate, self).post(request, extra,
-                                                            *args, **kwargs)
+    def get_form_kwargs(self):
+        instance = self.get_op().instance
+        disabled = hasattr(self, 'disabled')
+        val = super(VmToggleBootMenuUpdate, self).get_form_kwargs()
+        val['instance'] = instance
+        val['disabled'] = disabled
+        return val
 
 
 class TokenOperationView(OperationView):
@@ -814,7 +802,7 @@ vm_ops = OrderedDict([
     ('add_port', VmPortAddView),
     ('renew', VmRenewView),
     ('resources_change', VmResourcesChangeView),
-    ('toggle_bootmenu', VmToggleBootMenuUpdate),
+    ('toggle_boot_menu', VmToggleBootMenuUpdate),
     ('password_reset', VmOperationView.factory(
         op='password_reset', icon='unlock', effect='warning',
         show_in_toolbar=False, wait_for_result=0.5, with_reload=True)),

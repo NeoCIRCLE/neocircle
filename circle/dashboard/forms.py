@@ -1440,13 +1440,18 @@ class ToggleBootMenuForm(forms.ModelForm):
                                                     'data-off': _('Off')})
         }
 
+    def __init__(self, *args, **kwargs):
+        disabled = kwargs.pop('disabled')
+        super(ToggleBootMenuForm, self).__init__(*args, **kwargs)
+        if disabled:
+            self.fields['boot_menu'].widget.attrs['disabled'] = 'disabled'
+
     @property
     def helper(self):
         helper = FormHelper()
-        helper.form_show_labels = True
-        helper.form_action =\
-            reverse_lazy("dashboard.instance.op.toggle_bootmenu",
-                         kwargs={'pk': self.instance.pk})
+        helper.form_action = (
+            reverse_lazy("dashboard.instance.op.toggle_boot_menu",
+                         kwargs={'pk': self.instance.pk}))
         return helper
 
 

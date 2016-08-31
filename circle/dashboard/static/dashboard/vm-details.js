@@ -256,4 +256,6 @@ $(function() {
     $(this).parents("form").submit();
   });
 
+  $('#boot-menu-save-btn').hide();
+
 });

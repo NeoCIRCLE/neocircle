@@ -1404,12 +1404,12 @@ class ResourcesOperation(InstanceOperation):
 
 @register_operation
 class ToggleBootMenuOperation(InstanceOperation):
-    id = 'toggle_bootmenu'
+    id = 'toggle_boot_menu'
     name = _("toggle boot menu")
     description = _("Turn on/off boot menu.")
     acl_level = "owner"
     required_perms = ('vm.toggle_boot_menu', )
-    accept_states = ('STOPPED', 'PENDING', 'RUNNING')
+    accept_states = ('STOPPED', )
 
     def _operation(self, user, activity, boot_menu):
         self.instance.boot_menu = boot_menu

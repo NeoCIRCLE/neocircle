@@ -103,11 +103,18 @@
 
 {% endif %}
 
-{% if toggle_boot_menu_form %}
+{% if op.toggle_boot_menu %}
 <hr />
 <div class="row">
   <div class="col-sm-12">
-    {% crispy toggle_boot_menu_form %}
+    <form action="{{ op.toggle_boot_menu.get_url }}" method="POST">
+      {% csrf_token %}
+      {{ toggle_boot_menu_form.boot_menu|as_crispy_field }}
+      <input type="submit" id="boot-menu-save-btn"
+        class="btn btn-success"
+        value="{% trans "Save" %}"
+        {% if op.toggle_boot_menu.disabled %}disabled{% endif %} />
+    </form>
   </div>
 </div>
 {% endif %}
