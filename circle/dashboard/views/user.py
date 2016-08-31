@@ -63,6 +63,14 @@ from .util import saml_available, DeleteViewBase, LoginView
 logger = logging.getLogger(__name__)
 
 
+def set_session_expiry(request, user):
+    if user.is_superuser:
+        messages.info(request, _("You've logged in with an administrator "
+                                 "account, your session will expire when "
+                                 "the web browser is closed."))
+        request.session.set_expiry(0)
+
+
 class NotificationView(LoginRequiredMixin, TemplateView):
 
     def get_template_names(self):
@@ -119,6 +127,7 @@ class CircleLoginView(LoginView):
         else:
             response = super(CircleLoginView, self).form_valid(form)
             set_language_cookie(self.request, response)
+            set_session_expiry(self.request, user)
             return response
 
 
@@ -646,6 +655,8 @@ class TwoFactorLoginView(FormView):
         login(self.request, user)
         response = redirect(self.request.session['two-fa-redirect'])
         set_language_cookie(self.request, response)
+        set_session_expiry(self.request, user)
+
         return response
 
 
@@ -732,6 +743,7 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
             return redirect(reverse("two-factor-login"))
         else:
             login(request, user)
+            set_session_expiry(request, user)
 
             def _set_subject_id(session, subject_id):
                 session['_saml2_subject_id'] = code(subject_id)
