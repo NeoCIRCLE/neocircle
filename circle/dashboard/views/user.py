@@ -583,6 +583,14 @@ class EnableTwoFactorView(LoginRequiredMixin, UpdateView):
     template_name = "dashboard/enable-two-factor.html"
     success_url = reverse_lazy("dashboard.views.profile-preferences")
 
+    def dispatch(self, *args, **kwargs):
+        if self.get_object().two_factor_secret:
+            messages.info(self.request, _("Two-factor authentication is al"
+                                          "ready enabled for your account."))
+            return redirect(reverse("dashboard.index"))
+
+        return super().dispatch(*args, **kwargs)
+
     def get_object(self, queryset=None):
         if self.request.user.is_anonymous():
             raise PermissionDenied
