@@ -589,7 +589,7 @@ class EnableTwoFactorView(LoginRequiredMixin, UpdateView):
                                           "ready enabled for your account."))
             return redirect(reverse("dashboard.index"))
 
-        return super().dispatch(*args, **kwargs)
+        return super(EnableTwoFactorView, self).dispatch(*args, **kwargs)
 
     def get_object(self, queryset=None):
         if self.request.user.is_anonymous():
