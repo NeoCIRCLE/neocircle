@@ -17,6 +17,8 @@
 
 import json
 
+import pyotp
+
 # from unittest import skip
 from django.test import TestCase
 from django.test.client import Client
@@ -39,10 +41,12 @@ settings = django.conf.settings.FIREWALL_SETTINGS
 
 
 class LoginMixin(object):
-    def login(self, client, username, password='password'):
+    def login(self, client, username, password='password', follow=False):
         response = client.post('/accounts/login/', {'username': username,
-                                                    'password': password})
+                                                    'password': password},
+                               follow=follow)
         self.assertNotEqual(response.status_code, 403)
+        return response
 
 
 class VmDetailTest(LoginMixin, MockCeleryMixin, TestCase):
@@ -1817,3 +1821,86 @@ class LeaseDetailTest(LoginMixin, TestCase):
         # redirect to the login page
         self.assertEqual(response.status_code, 403)
         self.assertEqual(leases, Lease.objects.count())
+
+
+class TwoFactorTest(LoginMixin, TestCase):
+    def setUp(self):
+        self.u1 = User.objects.create(username='user1', first_name="Bela",
+                                      last_name="Akkounter")
+        self.u1.set_password('password')
+        self.u1.save()
+        self.p1 = Profile.objects.create(
+            user=self.u1, two_factor_secret=pyotp.random_base32())
+        self.p1.save()
+
+        self.u2 = User.objects.create(username='user2', is_staff=True)
+        self.u2.set_password('password')
+        self.u2.save()
+        self.p2 = Profile.objects.create(user=self.u2)
+        self.p2.save()
+
+    def tearDown(self):
+        super(TwoFactorTest, self).tearDown()
+        self.u1.delete()
+        self.u2.delete()
+
+    def test_login_wo_2fa_by_redirect(self):
+        c = Client()
+        response = self.login(c, 'user2')
+        self.assertRedirects(response, "/", target_status_code=302)
+
+    def test_login_w_2fa_by_redirect(self):
+        c = Client()
+        response = self.login(c, 'user1')
+        self.assertRedirects(response, "/two-factor-login/")
+
+    def test_login_wo_2fa_by_content(self):
+        c = Client()
+        response = self.login(c, 'user2', follow=True)
+        self.assertTemplateUsed(response, "dashboard/index.html")
+        self.assertContains(response, "You have no permission to start "
+                                      "or manage virtual machines.")
+
+    def test_login_w_2fa_by_conent(self):
+        c = Client()
+        r = self.login(c, 'user1', follow=True)
+        self.assertTemplateUsed(r, "registration/two-factor-login.html")
+        self.assertContains(r, "Welcome Bela Akkounter (user1)!")
+
+    def test_successful_2fa_login(self):
+        c = Client()
+        self.login(c, 'user1')
+
+        code = pyotp.TOTP(self.p1.two_factor_secret).now()
+        r = c.post("/two-factor-login/", {'confirmation_code': code},
+                   follow=True)
+        self.assertContains(r, "You have no permission to start "
+                               "or manage virtual machines.")
+
+    def test_unsuccessful_2fa_login(self):
+        c = Client()
+        self.login(c, 'user1')
+
+        r = c.post("/two-factor-login/", {'confirmation_code': "nudli"})
+        self.assertTemplateUsed(r, "registration/two-factor-login.html")
+        self.assertContains(r, "Welcome Bela Akkounter (user1)!")
+
+    def test_straight_to_2fa_as_anonymous(self):
+        c = Client()
+        response = c.get("/two-factor-login/", follow=True)
+        self.assertItemsEqual(
+            response.redirect_chain,
+            [('http://testserver/', 302),
+             ('http://testserver/dashboard/', 302),
+             ('http://testserver/accounts/login/?next=/dashboard/', 302)]
+        )
+
+    def test_straight_to_2fa_as_user(self):
+        c = Client()
+        self.login(c, 'user2')
+        response = c.get("/two-factor-login/", follow=True)
+        self.assertItemsEqual(
+            response.redirect_chain,
+            [('http://testserver/', 302),
+             ('http://testserver/dashboard/', 302)]
+        )

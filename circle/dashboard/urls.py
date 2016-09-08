@@ -55,6 +55,7 @@ from .views import (
     UserList,
     StorageDetail, DiskDetail,
     MessageList, MessageDetail, MessageCreate, MessageDelete,
+    EnableTwoFactorView, DisableTwoFactorView,
 )
 from .views.vm import vm_ops, vm_mass_ops
 from .views.node import node_ops
@@ -179,6 +180,10 @@ urlpatterns = patterns(
     url(r'^profile/(?P<username>[^/]+)/$', ProfileView.as_view(),
         name="dashboard.views.profile"),
     url(r'^profile/(?P<username>[^/]+)/use_gravatar/$', toggle_use_gravatar),
+    url(r'^profile/two-factor/enable/$', EnableTwoFactorView.as_view(),
+        name="dashboard.views.profile-enable-two-factor"),
+    url(r'^profile/two-factor/disable/$', DisableTwoFactorView.as_view(),
+        name="dashboard.views.profile-disable-two-factor"),
 
     url(r'^group/(?P<group_pk>\d+)/remove/user/(?P<member_pk>\d+)/$',
         GroupRemoveUserView.as_view(),

@@ -19,16 +19,15 @@ from __future__ import unicode_literals, absolute_import
 import json
 import logging
 
+import pyotp
+
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User, Group
-from django.contrib.auth.views import login as login_view
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core import signing
-from django.core.exceptions import (
-    PermissionDenied, SuspiciousOperation,
-)
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.core.paginator import Paginator, InvalidPage
 from django.db.models import Q
@@ -38,7 +37,7 @@ from django.templatetags.static import static
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_POST
 from django.views.generic import (
-    TemplateView, View, UpdateView, CreateView,
+    TemplateView, View, UpdateView, CreateView, FormView
 )
 from django_sshkey.models import UserKey
 
@@ -51,17 +50,25 @@ from vm.models import Instance, InstanceTemplate
 from ..forms import (
     CircleAuthenticationForm, MyProfileForm, UserCreationForm, UnsubscribeForm,
     UserKeyForm, CirclePasswordChangeForm, ConnectCommandForm,
-    UserListSearchForm, UserEditForm,
+    UserListSearchForm, UserEditForm, TwoFactorForm, TwoFactorConfirmationForm,
 )
 from ..models import Profile, GroupProfile, ConnectCommand
 from ..tables import (
     UserKeyListTable, ConnectCommandListTable, UserListTable,
 )
 
-from .util import saml_available, DeleteViewBase
+from .util import saml_available, DeleteViewBase, LoginView
 
 
 logger = logging.getLogger(__name__)
+
+
+def set_session_expiry(request, user):
+    if user.is_superuser:
+        messages.info(request, _("You've logged in with an administrator "
+                                 "account, your session will expire when "
+                                 "the web browser is closed."))
+        request.session.set_expiry(0)
 
 
 class NotificationView(LoginRequiredMixin, TemplateView):
@@ -98,17 +105,30 @@ class NotificationView(LoginRequiredMixin, TemplateView):
         return response
 
 
-def circle_login(request):
-    authentication_form = CircleAuthenticationForm
-    extra_context = {
-        'saml2': saml_available,
-        'og_image': (settings.DJANGO_URL.rstrip("/") +
-                     static("dashboard/img/og.png"))
-    }
-    response = login_view(request, authentication_form=authentication_form,
-                          extra_context=extra_context)
-    set_language_cookie(request, response)
-    return response
+class CircleLoginView(LoginView):
+    form_class = CircleAuthenticationForm
+
+    def get_context_data(self, **kwargs):
+        ctx = super(CircleLoginView, self).get_context_data(**kwargs)
+        ctx.update({
+            'saml2': saml_available,
+            'og_image': (settings.DJANGO_URL.rstrip("/") +
+                         static("dashboard/img/og.png"))
+        })
+        return ctx
+
+    def form_valid(self, form):
+        user = form.get_user()
+        if hasattr(user, "profile") and user.profile.two_factor_secret:
+            self.request.session['two-fa-user'] = user.pk
+            self.request.session['two-fa-redirect'] = self.get_success_url()
+            self.request.session['login-type'] = "password"
+            return redirect(reverse("two-factor-login"))
+        else:
+            response = super(CircleLoginView, self).form_valid(form)
+            set_language_cookie(self.request, response)
+            set_session_expiry(self.request, user)
+            return response
 
 
 class TokenLogin(View):
@@ -555,3 +575,195 @@ class UserList(LoginRequiredMixin, PermissionRequiredMixin, SingleTableView):
             qs = qs.filter(filters)
 
         return qs.select_related("profile")
+
+
+class EnableTwoFactorView(LoginRequiredMixin, UpdateView):
+    model = Profile
+    form_class = TwoFactorForm
+    template_name = "dashboard/enable-two-factor.html"
+    success_url = reverse_lazy("dashboard.views.profile-preferences")
+
+    def dispatch(self, *args, **kwargs):
+        if self.get_object().two_factor_secret:
+            messages.info(self.request, _("Two-factor authentication is al"
+                                          "ready enabled for your account."))
+            return redirect(reverse("dashboard.index"))
+
+        return super().dispatch(*args, **kwargs)
+
+    def get_object(self, queryset=None):
+        if self.request.user.is_anonymous():
+            raise PermissionDenied
+
+        return self.request.user.profile
+
+    def get_context_data(self, **kwargs):
+        ctx = super(EnableTwoFactorView, self).get_context_data(**kwargs)
+        random_base32 = pyotp.random_base32()
+        ctx['uri'] = pyotp.TOTP(random_base32).provisioning_uri(
+            self.request.user.username, issuer_name=settings.TWO_FACTOR_ISSUER)
+        ctx['secret'] = random_base32
+        return ctx
+
+
+class DisableTwoFactorView(LoginRequiredMixin, FormView):
+    form_class = TwoFactorConfirmationForm
+    template_name = "dashboard/disable-two-factor.html"
+    success_url = reverse_lazy("dashboard.views.profile-preferences")
+
+    def get_profile(self, queryset=None):
+        if self.request.user.is_anonymous():
+            raise PermissionDenied
+
+        return self.request.user.profile
+
+    def get_form_kwargs(self):
+        kwargs = super(DisableTwoFactorView, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        profile = self.get_profile()
+        profile.two_factor_secret = ""
+        profile.save()
+        return super(DisableTwoFactorView, self).form_valid(form)
+
+
+class TwoFactorLoginView(FormView):
+    form_class = TwoFactorConfirmationForm
+    template_name = "registration/two-factor-login.html"
+
+    def dispatch(self, *args, **kwargs):
+        if not self.request.session.get('two-fa-user'):
+            return redirect("/")
+
+        return super(TwoFactorLoginView, self).dispatch(*args, **kwargs)
+
+    def get_user(self):
+        return User.objects.get(pk=self.request.session['two-fa-user'])
+
+    def get_form_kwargs(self):
+        kwargs = super(TwoFactorLoginView, self).get_form_kwargs()
+        kwargs['user'] = self.get_user()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        ctx = super(TwoFactorLoginView, self).get_context_data(**kwargs)
+        ctx['user'] = self.get_user()
+        return ctx
+
+    def form_valid(self, form):
+        user = self.get_user()
+
+        if self.request.session['login-type'] == "saml2":
+            user.backend = 'common.backends.Saml2Backend'
+        else:
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+
+        login(self.request, user)
+        response = redirect(self.request.session['two-fa-redirect'])
+        set_language_cookie(self.request, response)
+        set_session_expiry(self.request, user)
+
+        return response
+
+
+if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
+    from django.http import HttpResponseBadRequest, HttpResponseForbidden
+    from django.views.decorators.csrf import csrf_exempt
+
+    from djangosaml2.cache import IdentityCache, OutstandingQueriesCache
+    from djangosaml2.conf import get_config
+    from djangosaml2.signals import post_authenticated
+    from djangosaml2.utils import get_custom_setting
+    from saml2.client import Saml2Client
+    from saml2.ident import code
+    from saml2 import BINDING_HTTP_POST
+
+    @require_POST
+    @csrf_exempt
+    def circle_assertion_consumer_service(request,
+                                          config_loader_path=None,
+                                          attribute_mapping=None,
+                                          create_unknown_user=None):
+        """SAML Authorization Response endpoint
+        The IdP will send its response to this view, which
+        will process it with pysaml2 help and log the user
+        in using the custom Authorization backend or redirect to 2fa
+        djangosaml2.backends.Saml2Backend that should be
+        enabled in the settings.py
+        """
+        attribute_mapping = attribute_mapping or get_custom_setting(
+            'SAML_ATTRIBUTE_MAPPING', {'uid': ('username', )})
+        create_unknown_user = create_unknown_user or get_custom_setting(
+            'SAML_CREATE_UNKNOWN_USER', True)
+        logger.debug('Assertion Consumer Service started')
+
+        conf = get_config(config_loader_path, request)
+        if 'SAMLResponse' not in request.POST:
+            return HttpResponseBadRequest(
+                'Couldn\'t find "SAMLResponse" in POST data.')
+        xmlstr = request.POST['SAMLResponse']
+        client = Saml2Client(
+            conf, identity_cache=IdentityCache(request.session))
+
+        oq_cache = OutstandingQueriesCache(request.session)
+        outstanding_queries = oq_cache.outstanding_queries()
+
+        # process the authentication response
+        response = client.parse_authn_request_response(
+            xmlstr, BINDING_HTTP_POST, outstanding_queries)
+        if response is None:
+            logger.error('SAML response is None')
+            return HttpResponseBadRequest(
+                "SAML response has errors. Please check the logs")
+
+        session_id = response.session_id()
+        oq_cache.delete(session_id)
+
+        # authenticate the remote user
+        session_info = response.session_info()
+
+        if callable(attribute_mapping):
+            attribute_mapping = attribute_mapping()
+        if callable(create_unknown_user):
+            create_unknown_user = create_unknown_user()
+
+        logger.debug('Trying to authenticate the user')
+        user = authenticate(session_info=session_info,
+                            attribute_mapping=attribute_mapping,
+                            create_unknown_user=create_unknown_user)
+        if user is None:
+            logger.error('The user is None')
+            return HttpResponseForbidden("Permission denied")
+
+        # redirect the user to the view where he came from
+        relay_state = request.POST.get('RelayState', '/')
+        if not relay_state:
+            logger.warning('The RelayState parameter exists but is empty')
+            relay_state = settings.LOGIN_REDIRECT_URL
+        logger.debug('Redirecting to the RelayState: ' + relay_state)
+
+        if hasattr(user, "profile") and user.profile.two_factor_secret:
+            request.session['two-fa-user'] = user.pk
+            request.session['two-fa-redirect'] = relay_state
+            request.session['login-type'] = "saml2"
+            return redirect(reverse("two-factor-login"))
+        else:
+            login(request, user)
+            set_session_expiry(request, user)
+
+            def _set_subject_id(session, subject_id):
+                session['_saml2_subject_id'] = code(subject_id)
+
+            _set_subject_id(request.session, session_info['name_id'])
+
+            logger.debug('Sending the post_authenticated signal')
+            post_authenticated.send_robust(sender=user,
+                                           session_info=session_info)
+
+            # redirect the user to the view where he came from
+            return redirect(relay_state)
+
+    from djangosaml2 import views as saml2_views
+    saml2_views.assertion_consumer_service = circle_assertion_consumer_service
