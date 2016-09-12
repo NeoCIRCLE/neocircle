@@ -23,6 +23,28 @@
               <legend>{% trans "Password change" %}</legend>
               {% crispy forms.change_password %}
             </fieldset>
+            <fieldset style="margin-top: 25px;">
+              <legend>{% trans "Two-factor authentication" %}</legend>
+              {% if profile.two_factor_secret %}
+                {% blocktrans %}
+                Two-factor authentication is currently enabled on your account. To disable it
+                click the button
+                {% endblocktrans %}
+                <a href="{% url "dashboard.views.profile-disable-two-factor" %}" class="btn btn-warning btn-xs">
+                  <i class="fa fa-unlock"></i>
+                  {% trans "Disable" %}
+                </a>
+              {% else %}
+                {% blocktrans %}
+                Two-factor authentication is currently disabled on your account. To enable it
+                click the button
+                {% endblocktrans %}
+                <a href="{% url "dashboard.views.profile-enable-two-factor" %}" class="btn btn-success btn-xs">
+                  <i class="fa fa-lock"></i>
+                  {% trans "Enable" %}
+                </a>
+              {% endif %}
+            </fieldset>
           </div>
           <div class="col-md-4" style="margin-bottom: 50px;">
             <fieldset>

@@ -567,3 +567,5 @@ BLACKLIST_HOOK_URL = get_env_variable("BLACKLIST_HOOK_URL", "")
 REQUEST_HOOK_URL = get_env_variable("REQUEST_HOOK_URL", "")
 
 SSHKEY_EMAIL_ADD_KEY = False
+
+TWO_FACTOR_ISSUER = get_env_variable("TWO_FACTOR_ISSUER", "CIRCLE")

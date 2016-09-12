@@ -200,6 +200,10 @@ class Profile(Model):
         verbose_name=_('disk quota'),
         default=2048 * 1024 * 1024,
         help_text=_('Disk quota in mebibytes.'))
+    two_factor_secret = CharField(
+        verbose_name=_("two factor secret key"),
+        max_length=32, null=True, blank=True,
+    )
 
     def get_connect_commands(self, instance, use_ipv6=False):
         """ Generate connection command based on template."""
@@ -394,9 +398,6 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
         return False  # User did not change
 
     pre_user_save.connect(save_org_id)
-
-else:
-    logger.debug("Do not register save_org_id to djangosaml2 pre_user_save")
 
 
 def update_store_profile(sender, **kwargs):

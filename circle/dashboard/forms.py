@@ -20,6 +20,8 @@ from __future__ import absolute_import
 from datetime import timedelta
 from urlparse import urlparse
 
+import pyotp
+
 from django.forms import ModelForm
 from django.contrib.auth.forms import (
     AuthenticationForm, PasswordResetForm, SetPasswordForm,
@@ -1298,21 +1300,29 @@ class UserEditForm(forms.ModelForm):
     instance_limit = forms.IntegerField(
         label=_('Instance limit'),
         min_value=0, widget=NumberInput)
+    two_factor_secret = forms.CharField(
+        label=_('Two-factor authentication secret'),
+        help_text=_("Remove the secret key to disable two-factor "
+                    "authentication for this user."), required=False)
 
     def __init__(self, *args, **kwargs):
         super(UserEditForm, self).__init__(*args, **kwargs)
         self.fields["instance_limit"].initial = (
             self.instance.profile.instance_limit)
+        self.fields["two_factor_secret"].initial = (
+            self.instance.profile.two_factor_secret)
 
     class Meta:
         model = User
         fields = ('email', 'first_name', 'last_name', 'instance_limit',
-                  'is_active')
+                  'is_active', "two_factor_secret", )
 
     def save(self, commit=True):
         user = super(UserEditForm, self).save()
         user.profile.instance_limit = (
             self.cleaned_data['instance_limit'] or None)
+        user.profile.two_factor_secret = (
+            self.cleaned_data['two_factor_secret'] or None)
         user.profile.save()
         return user
 
@@ -1633,9 +1643,9 @@ class MessageForm(ModelForm):
         fields = ("message", "enabled", "effect", "start", "end")
         help_texts = {
             'start': _("Start time of the message in "
-                       "YYYY.DD.MM. hh.mm.ss format."),
+                       "YYYY-MM-DD hh:mm:ss format."),
             'end': _("End time of the message in "
-                     "YYYY.DD.MM. hh.mm.ss format."),
+                     "YYYY-MM-DD hh:mm:ss format."),
             'effect': _('The color of the message box defined by the '
                         'respective '
                         '<a href="http://getbootstrap.com/components/#alerts">'
@@ -1651,3 +1661,24 @@ class MessageForm(ModelForm):
         helper = FormHelper()
         helper.add_input(Submit("submit", _("Save")))
         return helper
+
+
+class TwoFactorForm(ModelForm):
+    class Meta:
+        model = Profile
+        fields = ["two_factor_secret", ]
+
+
+class TwoFactorConfirmationForm(forms.Form):
+    confirmation_code = forms.CharField(
+        label=_('Two-factor authentication passcode'),
+        help_text=_("Get the code from your authenticator."))
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super(TwoFactorConfirmationForm, self).__init__(*args, **kwargs)
+
+    def clean_confirmation_code(self):
+        totp = pyotp.TOTP(self.user.profile.two_factor_secret)
+        if not totp.verify(self.cleaned_data.get('confirmation_code')):
+            raise ValidationError(_("Invalid confirmation code."))
