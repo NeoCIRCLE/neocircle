@@ -173,11 +173,11 @@ class FilterMixin(object):
 
             pk_list = []
             for record in queryset:
-                sum = record.object_level_set.annotate(
+                count = record.object_level_set.annotate(
                     Count('users'), Count('groups')).aggregate(
                         Sum('users__count'), Sum('groups__count'))
-                if (sum['users__count__sum'] > 1 or
-                   sum['groups__count__sum'] > 0):
+                if (count['users__count__sum'] > 1 or
+                   count['groups__count__sum'] > 0):
 
                     pk_list.append(record.pk)
 
