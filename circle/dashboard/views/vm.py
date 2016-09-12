@@ -175,9 +175,9 @@ class VmDetailView(GraphMixin, CheckedDetailView):
             context['traits_form'] = TraitsForm(instance=instance)
             context['raw_data_form'] = RawDataForm(instance=instance)
 
-        context['toggle_boot_menu_form'] = ToggleBootMenuForm(
-                instance=instance,
-                disabled=hasattr(
+        if is_owner and user.has_perm("vm.toggle_boot_menu"):
+            context['toggle_boot_menu_form'] = ToggleBootMenuForm(
+                instance=instance, disabled=hasattr(
                     context['op']['toggle_boot_menu'], 'disabled'))
 
         # resources change perm

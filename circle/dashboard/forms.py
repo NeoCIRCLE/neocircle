@@ -1446,14 +1446,6 @@ class ToggleBootMenuForm(forms.ModelForm):
         if disabled:
             self.fields['boot_menu'].widget.attrs['disabled'] = 'disabled'
 
-    @property
-    def helper(self):
-        helper = FormHelper()
-        helper.form_action = (
-            reverse_lazy("dashboard.instance.op.toggle_boot_menu",
-                         kwargs={'pk': self.instance.pk}))
-        return helper
-
 
 class GroupPermissionForm(forms.ModelForm):
     permissions = forms.ModelMultipleChoiceField(
