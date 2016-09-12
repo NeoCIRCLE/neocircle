@@ -735,10 +735,9 @@ class VmRenameView(FormOperationMixin, VmOperationView):
             extra.update(form.cleaned_data)
             resp = super(FormOperationMixin, self).post(
                 request, extra, *args, **kwargs)
-            new_name = request.POST.get("new_name")
-            success_message = _("VM successfully renamed.")
+            success_message = _('VM successfully renamed.')
             if request.is_ajax():
-                return JsonResponse({'new_name': new_name})
+                return JsonResponse({'new_name': extra['new_name']})
             else:
                 messages.success(request, success_message)
                 return resp

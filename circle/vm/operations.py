@@ -1411,7 +1411,6 @@ class RenameOperation(InstanceOperation):
     required_perms = ()
 
     def _operation(self, user, activity, new_name):
-
         old_name = self.instance.name
         self.instance.name = new_name
 
