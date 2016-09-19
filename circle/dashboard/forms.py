@@ -1671,7 +1671,9 @@ class TwoFactorForm(ModelForm):
 class TwoFactorConfirmationForm(forms.Form):
     confirmation_code = forms.CharField(
         label=_('Two-factor authentication passcode'),
-        help_text=_("Get the code from your authenticator."))
+        help_text=_("Get the code from your authenticator."),
+        widget=forms.TextInput(attrs={'autofocus': True})
+    )
 
     def __init__(self, user, *args, **kwargs):
         self.user = user
