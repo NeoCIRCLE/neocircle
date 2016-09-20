@@ -24,7 +24,8 @@ from django.shortcuts import redirect
 from braces.views import LoginRequiredMixin
 from django.views.generic import TemplateView, DeleteView
 from django_tables2 import SingleTableView
-from .models import Element, ElementTemplate, ElementConnection, Service
+from saltstackhelper import *
+from controller import *
 from dashboard.views.util import FilterMixin
 from django.utils.translation import ugettext as _
 import json
@@ -39,6 +40,7 @@ logger = logging.getLogger(__name__)
 
 class DetailView(LoginRequiredMixin, TemplateView):
     template_name = "setty/index.html"
+    salthelper = SaltStackHelper()
 
     def get_context_data(self, **kwargs):
         logger.debug('DetailView.get_context_data() called. User: %s',
@@ -54,88 +56,37 @@ class DetailView(LoginRequiredMixin, TemplateView):
             raise PermissionDenied
 
     def post(self, request, *args, **kwargs):
-        logger.debug('DetailView.post() called. User: %s',
-                     unicode(self.request.user))
         service = Service.objects.get(id=kwargs['pk'])
-
-        if self.request.user == service.user or self.request.user.is_superuser:
-            if self.request.POST.get('event') == "saveService":
-                data = json.loads(self.request.POST.get('data'))
-                service = Service.objects.get(id=kwargs['pk'])
-                service.name = data['serviceName']
-                service.save()
-
-                Element.objects.filter(service=service).delete()
-
-                for element in data['elements']:
-                    elementObject = Element(
-                        service=service,
-                        parameters=element['parameters'],
-                        display_id=element['displayId'],
-                        position_left=element['positionLeft'],
-                        position_top=element['positionTop'],
-                        anchor_number=element['anchorNumber']
-                    )
-                    elementObject.save()
-
-                for elementConnection in data['elementConnections']:
-                    sourceId = elementConnection['sourceId']
-                    targetId = elementConnection['targetId']
-                    sourceEndpoint = elementConnection['sourceEndpoint']
-                    targetEndpoint = elementConnection['targetEndpoint']
-                    connectionParameters = elementConnection['parameters']
-
-                    targetObject = Element.objects.get(
-                        display_id=targetId,
-                        service=service)
-
-                    sourceObject = Element.objects.get(
-                        display_id=sourceId,
-                        service=service)
-
-                    connectionObject = ElementConnection(
-                        target=targetObject,
-                        source=sourceObject,
-                        target_endpoint=targetEndpoint,
-                        source_endpoint=sourceEndpoint,
-                        parameters=connectionParameters
-                    )
-                    connectionObject.save()
-
-                return JsonResponse({'serviceName': service.name})
-
-            elif self.request.POST.get('event') == "loadService":
-                service = Service.objects.get(id=kwargs['pk'])
-                elementList = Element.objects.filter(service=service)
-                elementConnectionList = ElementConnection.objects.filter(
-                    Q(target__in=elementList) | Q(source__in=elementList))
-
-                elements = []
-                elementConnections = []
-
-                for item in elementList:
-                    elements.append({
-                        'parameters': item.parameters,
-                        'displayId': item.display_id,
-                        'positionLeft': item.position_left,
-                        'positionTop': item.position_top,
-                        'anchorNumber': item.anchor_number})
-
-                for item in elementConnectionList:
-                    elementConnections.append({
-                        'targetEndpoint': item.target_endpoint,
-                        'sourceEndpoint': item.source_endpoint,
-                        'parameters': item.parameters})
-
-                return JsonResponse(
-                    {'elements': elements,
-                     'elementConnections': elementConnections,
-                     'serviceName': service.name})
-
-            else:
-                raise PermissionDenied
-        else:
+        if self.request.user != service.user or not self.request.user.is_superuser:
             raise PermissionDenied
+            
+        result = {}
+        eventName = self.request.POST.get('event')
+        serviceId = kwargs['pk']
+        if eventName == 'loadService':
+            result = SettyController.loadService(serviceId)
+
+        elif eventName == "deploy":
+            result = SettyController.deploy(serviceId) 
+
+        data = json.loads(self.request.POST.get('data'))
+
+        if eventName == "saveService":
+            result = SettyController.saveService(serviceId, data['serviceName'], data[
+                                                 'serviceNodes'], data['machines'], data['elementConnections'])
+        elif eventName == "getMachineAvailableList":
+            result = SettyController.getMachineAvailableList(
+                serviceId, data["usedHostnames"])
+        elif eventName == "addServiceNode":
+            result = SettyController.addServiceNode(
+                data["elementTemplateId"])
+        elif eventName == "addMachine":
+            result = SettyController.addMachine(data["hostname"])
+        elif eventName == "getInformation":
+            result = SettyController.getInformation(
+                data['elementTemplateId'], data['hostname'])
+
+        return JsonResponse(result)
 
 
 class DeleteView(LoginRequiredMixin, DeleteView):
@@ -180,11 +131,16 @@ class CreateView(LoginRequiredMixin, TemplateView):
         if not service_name:
             service_name = "Noname"
 
-        service = Service(
-            name=service_name,
-            status="stopped",
-            user=self.request.user
-        )
+        try:
+            serviceNameAvailable = Service.objects.get(name=service_name)
+            raise PermissionDenied
+        except Service.DoesNotExist:
+            pass
+
+        service = Service(name=service_name,
+                          status=1,
+                          user=self.request.user)
+
         service.save()
         return redirect('setty.views.service-detail', pk=service.pk)
 

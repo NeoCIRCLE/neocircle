@@ -17,13 +17,21 @@
 
 from django.contrib import admin
 from .models import (
-    Element,
+    Service,
+    ElementCategory,
     ElementTemplate,
     ElementConnection,
-    Service,
+    Machine,
+    NginxNode,
+    MySQLNode,
+    PostgreSQLNode
 )
 
-admin.site.register(Element)
+admin.site.register(ElementCategory)
 admin.site.register(ElementTemplate)
 admin.site.register(ElementConnection)
 admin.site.register(Service)
+admin.site.register(Machine)
+admin.site.register(NginxNode)
+admin.site.register(MySQLNode)
+admin.site.register(PostgreSQLNode)
