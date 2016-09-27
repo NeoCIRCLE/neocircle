@@ -2,13 +2,14 @@ from .models import *
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.db.models.loading import get_model
+from django.db import transaction
 from saltstackhelper import *
 import os
 
 class SettyController:
-	salthelper = SaltStackHelper()
 
 	@staticmethod
+	@transaction.atomic
 	def saveService( serviceId, serviceName, serviceNodes, machines, elementConnections ):
 		service = None
 		try:
@@ -19,18 +20,16 @@ class SettyController:
 		service.name = serviceName
 		service.save()
 
-		#first check machine names
-		#validMachineNames = self.salthelper.getAllMinionsUngrouped()
 		Machine.objects.filter(service=service).delete()
 		for machineData in machines:
-		 #   if machineData["hostname"] in validMachineNames:
 		    machineSaved = Machine(service=service)
 		    machineSaved.fromDataDictionary( machineData )
 		    machineSaved.save()
 
 		ServiceNode.objects.filter(service=service).delete()
+
 		for node in serviceNodes:
-		    elementTemplateId = node["displayId"].split("_")[0]
+		    elementTemplateId = node["displayId"].split("_")[1]
 		    elementTemplate = ElementTemplate.objects.get(id=elementTemplateId)
 		    newNode = get_model('setty', elementTemplate.prototype ).clone()
 
@@ -43,7 +42,6 @@ class SettyController:
 		    targetId = elementConnection['targetId']
 		    sourceEndpoint = elementConnection['sourceEndpoint']
 		    targetEndpoint = elementConnection['targetEndpoint']
-		    connectionParameters = elementConnection['parameters']
 
 		    targetObject = Element.objects.get(
 		        display_id=targetId)
@@ -55,12 +53,12 @@ class SettyController:
 		        target=targetObject,
 		        source=sourceObject,
 		        target_endpoint=targetEndpoint,
-		        source_endpoint=sourceEndpoint,
-		        parameters=connectionParameters
+		        source_endpoint=sourceEndpoint
 		    )
+
 		    connectionObject.save()
 
-	        return {"serviceName": serviceName}
+    		return {"serviceName": serviceName}
 
 	@staticmethod
 	def loadService(serviceId):
@@ -149,9 +147,9 @@ class SettyController:
 	            model = get_model('setty', elementTemplate.prototype )
 	            return model.clone().getDataDictionary()
 	        except ElementTemplate.DoesNotExist:
-	            return {'error': 'lofaszka' }
+	            return {'error': "ElementTemplate doesn't exists" }
 	        except:
-	            return {'error': 'valami nagyon el lett baszva'}
+	            return {'error': 'Can not get prototype'}
 	    else:
 	        return {'error': 'templateid'}
 
@@ -189,7 +187,7 @@ class SettyController:
 				configuratedNodes.append( generatedNodes )
 
 		#phase three: sort the nodes by deployment priority(lower the prio, later in the deployement)
-		
+
 		configuratedNodes.sort(reverse=True)
 
 		#deploy the nodes

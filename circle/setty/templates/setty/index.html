@@ -3,6 +3,7 @@
 {% load staticfiles %}
 {% load i18n %}
 
+
 {% block title-page %}Setty{% endblock %}
 
 {% block content %}
@@ -165,9 +166,13 @@
         <button class="close" type="button" data-dismiss="modal">&times;</button>
         <h4 class="modal-title"><i class="fa fa-info"></i>&nbsp;{% trans 'Information' %}</h4>
       </div>
-      <div class="modal-body" id="informationContainer">
+      <div class="modal-body">
+        <form id="informationContainer">
+        </form>
       </div>
       <div class="modal-footer">
+        <div class="btn btn-success" id="informationDialogSave" data-dismiss="modal">Mentés</div>
+        <div class="btn btn-primary" data-dismiss="modal"/>Mégsem</div>
       </div>
     </div>
   </div>
@@ -189,6 +194,7 @@
     </div>
   </div>
 </div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsPlumb/1.4.1/jquery.jsPlumb-1.4.1-all.js"></script>
 {% endblock %}
 

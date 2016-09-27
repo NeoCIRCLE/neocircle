@@ -40,7 +40,6 @@ logger = logging.getLogger(__name__)
 
 class DetailView(LoginRequiredMixin, TemplateView):
     template_name = "setty/index.html"
-    salthelper = SaltStackHelper()
 
     def get_context_data(self, **kwargs):
         logger.debug('DetailView.get_context_data() called. User: %s',
@@ -55,6 +54,19 @@ class DetailView(LoginRequiredMixin, TemplateView):
         else:
             raise PermissionDenied
 
+    #def get(self, request, *args, **kwargs):
+#   #    service = Service.objects.get(id=kwargs['pk'])
+#   #    if self.request.user != service.user or not self.request.user.is_superuser:
+#   #        raise PermissionDenied
+#    #    requestName = self.request.GET.get('event')
+#    #    result = {}
+#    #    if requestName == "elementPicture":
+#    #        data = json.loads( self.request.GET.get('data') )
+#    #        result = SettyController.getPictureName( data["elementTemplateId"] )
+#
+    #    return JsonResponse(result)
+        
+
     def post(self, request, *args, **kwargs):
         service = Service.objects.get(id=kwargs['pk'])
         if self.request.user != service.user or not self.request.user.is_superuser:
@@ -63,28 +75,35 @@ class DetailView(LoginRequiredMixin, TemplateView):
         result = {}
         eventName = self.request.POST.get('event')
         serviceId = kwargs['pk']
+        
         if eventName == 'loadService':
             result = SettyController.loadService(serviceId)
-
         elif eventName == "deploy":
             result = SettyController.deploy(serviceId) 
+        else:
+            data = json.loads(self.request.POST.get('data'))
+            if eventName == "saveService":
+                result = SettyController.saveService(serviceId, data['serviceName'], data[
+                                                     'serviceNodes'], data['machines'], data['elementConnections'])
+            elif eventName == "getMachineAvailableList":
+                result = SettyController.getMachineAvailableList(
+                    serviceId, data["usedHostnames"])
+            elif eventName == "addServiceNode":
+                result = SettyController.addServiceNode(
+                    data["elementTemplateId"])
+            elif eventName == "addMachine":
+                result = SettyController.addMachine(data["hostname"])
+            elif eventName == "getInformation":
+                templateId = ""
+                hostname   = ""
 
-        data = json.loads(self.request.POST.get('data'))
+                if "elementTemplateId" in data.keys():
+                    templateId = data['elementTemplateId']
+                if "hostname" in data.keys():
+                    hostname = data['hostname']
 
-        if eventName == "saveService":
-            result = SettyController.saveService(serviceId, data['serviceName'], data[
-                                                 'serviceNodes'], data['machines'], data['elementConnections'])
-        elif eventName == "getMachineAvailableList":
-            result = SettyController.getMachineAvailableList(
-                serviceId, data["usedHostnames"])
-        elif eventName == "addServiceNode":
-            result = SettyController.addServiceNode(
-                data["elementTemplateId"])
-        elif eventName == "addMachine":
-            result = SettyController.addMachine(data["hostname"])
-        elif eventName == "getInformation":
-            result = SettyController.getInformation(
-                data['elementTemplateId'], data['hostname'])
+                result = SettyController.getInformation(
+                    templateId, hostname )
 
         return JsonResponse(result)
 

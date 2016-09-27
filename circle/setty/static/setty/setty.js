@@ -96,99 +96,97 @@ jsPlumb.ready(function() {
 
     addInfo = function(title, info, type, object) {
         id = object.attr("id").split("_")[1];
+        information = undefined;
         $.post("", {
             event: "getInformation",
             data: JSON.stringify({
-                "elementTemplateId": object.attr("id").split("_")[1],
-                "hostname": object.attr("hostname")})
+                "elementTemplateId": object.attr("id").split("_")[1] ,
+                "hostname": object.attr("hostname")} )
         }, function(result) {
-            alert(result);
-        });
 
-        /*
         $("#informationContainer").empty();
-
         switch(type){
-            case "connection":
-                div =
-                    '<div class="row">' +
-                        '<div class="col-xs-12 text-center">' +
-                            '<h4>' + title + '</h4>' +
-                        '</div>' +
-                    '</div>&nbsp;' +
-                    '<div class="row">' +
-                        '<div class="col-xs-12">' +
-                            '<textarea class="form-control" rows="28" id="infoInput" placeholder="Config data"></textarea>' +
-                        '</div>' +
-                    '</div>&nbsp;' +
-                    '<div class="row">' +
-                        '<div class="col-xs-12 text-center">' +
-                            '<button id="removeConnection" class="btn btn-info">Remove connection</button>' +
-                        '</div>' +
-                    '</div>';
-                break;
-            case "element":
-                div =
-                    '<div class="row">' +
-                        '<div class="col-xs-12 text-center">' +
-                            '<h4>' + title + '</h4>' +
-                        '</div>' +
-                    '</div>&nbsp;' +
-                    '<div class="row">' +
-                        '<div class="col-xs-12">' +
-                            '<textarea class="form-control" rows="24" id="infoInput" placeholder="Config data"></textarea>' +
-                        '</div>' +
-                    '</div>&nbsp;' +
-                    '<div class="row text-center">' +
-                        '<label>Endpoints</label>' +
+        /*case "connection":
+            div =
+                '<div class="row">' +
+                    '<div class="col-xs-12 text-center">' +
+                        '<h4>' + title + '</h4>' +
                     '</div>' +
-                    '<div class="row">' +
-                        '<div class="col-xs-6 text-center">' +
-                            '<button id="addEndpoint" class="btn btn-success"><i class="fa fa-plus"></i></button>' +
-                        '</div>' +
-                        '<div class="col-xs-6 text-center">' +
-                            '<button id="removeEndpoint" class="btn btn-danger"><i class="fa fa-minus"></i></button>' +
-                        '</div>' +
-                    '</div>&nbsp;' +
-                    '<div class="row">' +
-                        '<div class="col-xs-12 text-center">' +
-                            '<button id="removeElementFromWorkspace" class="btn btn-info">Remove from workspace</button>' +
-                        '</div>' +
-                    '</div>';
-                break;
-            case "elementTemplate":
-                div =
-                    '<div class="row">' +
-                        '<div class="col-xs-12 text-center">' +
-                            '<h4>' + title + '</h4>' +
-                        '</div>' +
-                    '</div>&nbsp;' +
-                    '<div class="row">' +
-                        '<div class="col-xs-12">' +
-                            '<textarea class="form-control" rows="28" id="infoInput" placeholder="Config data"></textarea>' +
-                        '</div>' +
-                    '</div>&nbsp;' +
-                    '<div class="row">' +
-                        '<div class="col-xs-12 text-center">' +
-                            '<button id="addElementToWorkspace" class="btn btn-success">Add to workspace</button>' +
-                        '</div>' +
-                    '</div>';
-                break;
-        }*/
-        
-        // Here comes the ajax getInformation post.
-        // elementtemplateid vagy hostname
-        
-        
-        div = 0;
+                '</div>&nbsp;' +
+                '<div class="row">' +
+                    '<div class="col-xs-12">' +
+                        '<textarea class="form-control" rows="28" id="infoInput" placeholder="Config data"></textarea>' +
+                    '</div>' +
+                '</div>&nbsp;' +
+                '<div class="row">' +
+                    '<div class="col-xs-12 text-center">' +
+                        '<button id="removeConnection" class="btn btn-info">Remove connection</button>' +
+                    '</div>' +
+                '</div>';
+            break;*/
+        case "element":
+            $.each( result, function(fieldName, fieldType)
+            {   
+                form_group = $("<div class='form-group'></div>");
+                label = $("<label></label>").attr("for",fieldName).append( fieldName );
+                switch( fieldType )
+                {
+                    //#TODO: Gaben: handle additional types
+                    case 'PositiveIntegerField':
+                        input = $("<input>").prop("type","number" ).prop("min",0).addClass("form-control");
+                        value = object.attr( "data-"+ fieldName );
+                        if( value )
+                            input.prop("value",value );
+                        break;
+                    case 'TextField':
+                    case 'CharField':
+                        input = $("<input>").prop("type","text" ).addClass("form-control");
+                        value = object.attr( "data-"+ fieldName );
+                        if( value )
+                            input.prop("value",value );
+                        break;
+                    case 'BooleanField':
+                        input = $("<input>").prop("type","checkbox" );
+                        break;
+                    default:
+                        alert( "unknown field type: " + fieldType );
+                        break;
+                }
 
-        $("#informationContainer").append(div);
+                input.attr("attribute-name", "data-" + fieldName );
+                input.prop("id", "input-data-" + fieldName)
+
+                form_group.append( label );
+                form_group.append( input );
+                $("#informationContainer").append( form_group )
+            } );
+            break;
+        /*case "elementTemplate":
+            div =
+                '<div class="row">' +
+                    '<div class="col-xs-12 text-center">' +
+                        '<h4>' + title + '</h4>' +
+                    '</div>' +
+                '</div>&nbsp;' +
+                '<div class="row">' +
+                    '<div class="col-xs-12">' +
+                        '<textarea class="form-control" rows="28" id="infoInput" placeholder="Config data"></textarea>' +
+                    '</div>' +
+                '</div>&nbsp;' +
+                '<div class="row">' +
+                    '<div class="col-xs-12 text-center">' +
+                        '<button id="addElementToWorkspace" class="btn btn-success">Add to workspace</button>' +
+                    '</div>' +
+                '</div>';
+            break;*/
+        }
 
         $("#infoInput").val(info);
 
         $("#changeInformationDialog").modal('show');
         
         sharedObject = object;
+        });
     };
 
     updateConnections = function(connection, remove) {
@@ -384,11 +382,8 @@ jsPlumb.ready(function() {
     connectEndpoints = function(data) {
         connectionObject =
             jsPlumbInstance.connect({
-                source: data[0],
-                target: data[1]
+                uuids: data
             });
-
-        connectionObject.parameters = data[2];
 
         setServiceStatus("unsaved");
     };
@@ -405,6 +400,8 @@ jsPlumb.ready(function() {
     };
 
     addElement = function(idOrInstance, newId, newPositionY, endpoints, parameters, newPositionX) {
+
+        var skippedAttributes = [ 'displayId', 'positionLeft', 'positionTop','anchorNumber' ];
         newInstance = "";
 
         if (typeof idOrInstance != "string") {
@@ -419,10 +416,15 @@ jsPlumb.ready(function() {
                 .removeClass()
                 .addClass("element")
                 .attr("anchors", 0)
-                .attr("parameters", parameters)
                 .css("top", newPositionY)
                 .css("left", newPositionX);
         }
+
+        $.each(parameters, function(key, value) 
+        {
+            if( skippedAttributes.indexOf( key ) == -1 )
+                newInstance.attr("data-"+key, value || "");
+        });
 
         $("#dropContainer").append(newInstance);
                 
@@ -440,6 +442,7 @@ jsPlumb.ready(function() {
         
         return newInstance;
     };
+
     addMachine = function(idOrInstance, newId, newPositionY, endpoints, parameters, newPositionX) {
         newInstance = "";
 
@@ -537,20 +540,39 @@ jsPlumb.ready(function() {
     });
 
 
-/* Registering events using JQuery. */
+/* Registering general events using JQuery. */
 
+/* Adding new element to service  */
     $('body').on('click', '.elementTemplate', function() {
-        addElement($(this).attr("id"),
-            (++elementIndex) + "_" + $(this).attr("id"),
-            (elementIndex % 21) * 30, 4, "",
+        var elementTemplate = $(this)
+        $.post("", {
+            event: "addServiceNode",
+            data: JSON.stringify({
+                "elementTemplateId": $(this).attr("id") })
+        }, function(result) {
+            addElement($(elementTemplate).attr("id"),
+            (++elementIndex) + "_" + $(elementTemplate).attr("id"),
+            (elementIndex % 21) * 30, 4, result,
             (elementIndex % 21) * 30);
 
-        undoStack.splice(stackIndexer, 0, removeElement);
-        redoStack.splice(stackIndexer, 0, addElement);
-        objectStack.splice(stackIndexer, 0, newInstance);
-        stackSize++;
-        stackIndexer++;
+            undoStack.splice(stackIndexer, 0, removeElement);
+            redoStack.splice(stackIndexer, 0, addElement);
+            objectStack.splice(stackIndexer, 0, newInstance);
+            stackSize++;
+            stackIndexer++;
+        });
     });
+
+/* element editor dialog save*/
+    $('body').on('click', '#informationDialogSave', function(){
+            $("[id^=input-data-]").each( function( index, item ){
+                sharedObject.attr( $(item).attr("attribute-name"), $(item).prop( "value" ) );
+            } );
+        });
+
+/* ---------------------------------------- */
+
+
     
     $('body').on('dblclick', '.element', function() {
         element = $(this);
@@ -792,17 +814,23 @@ jsPlumb.ready(function() {
                 "sourceId": elementConnections[index].sourceId,
                 "sourceEndpoint": elementConnections[index].endpoints[0].getUuid(),
                 "targetId": elementConnections[index].targetId,
-                "targetEndpoint": elementConnections[index].endpoints[1].getUuid(),
-                "parameters": elementConnections[index].parameters});
+                "targetEndpoint": elementConnections[index].endpoints[1].getUuid() });
         });
 
-        $.each($(".element"), function() {
-            instanceSet.push({
-                "displayId": $(this).prop("id"),
-                "positionLeft": $(this).position().left/workspaceWidth,
-                "positionTop": $(this).position().top/workspaceHeight,
-                "anchorNumber": $(this).attr("anchors"),
-                "parameters": $(this).attr("parameters")});
+        $.each($(".element"), function( index, item ) {
+            basic_data = { "anchorNumber": $(item).attr("anchors"),
+                           "positionLeft": $(item).position().left/workspaceWidth,
+                           "positionTop":  $(item).position().top/workspaceHeight,
+                           "displayId":    $(item).prop("id") };
+            attributes = item.attributes
+            $.each( attributes, function(key,attribute){
+             
+                if( attribute.name.indexOf("data-") != -1 ){
+                    basic_data[ attribute.name.substring( attribute.name.indexOf('-') + 1 ) ] = attribute.value || "";
+                }
+            });
+
+            instanceSet.push( basic_data );
         });
 
         $.post("", {
@@ -810,8 +838,8 @@ jsPlumb.ready(function() {
             data: JSON.stringify({
                 "serviceName": serviceName,
                 "elementConnections": connectionSet,
-                "elements": instanceSet,
-                "machines": []}) //TODO: Dani: add machines here
+                "serviceNodes": instanceSet,
+                "machines": []})
         }, function(result) {
             addMessage(result.serviceName + gettext(" saved successfully."),"success");
             setServiceStatus("saved");
@@ -825,15 +853,11 @@ jsPlumb.ready(function() {
         $.post("", {
             event: "loadService"
         }, function(result) {
-            $("#serviceName").text(result.serviceName);
+            $("#serviceName").text( result.serviceName );
 
             $.each(result.serviceNodes, function(i, element) {
-                addElement(element.displayId.split('_')[1],
-                    element.displayId,
-                    (element.positionTop*workspaceHeight) + "px",
-                    element.anchorNumber,
-                    element.parameters,
-                    (element.positionLeft*workspaceWidth) + "px");
+                addElement2( element );
+            
                 if (elementIndex < element.displayId.split('_')[0])
                     elementIndex = element.displayId.split('_')[0];
                 elementIndex++;
@@ -854,10 +878,54 @@ jsPlumb.ready(function() {
             clickEvent = 1;
             $.each(result.elementConnections,
                 function(i, connection) {
-                    connectEndpoints([connection.sourceEndpoint, connection.targetEndpoint, connection.parameters]);
+                    connectEndpoints([connection.sourceEndpoint, connection.targetEndpoint ]);
                 });
+
             clickEvent = 0;
             setServiceStatus("saved");
         });
     });
+
+    addElement2 = function(elementData) {
+        templateId = elementData.displayId.split('_')[1]
+        template = $(".elementTemplate").filter( "#" + templateId );
+        
+        id = elementData.displayId.split('_')[0]
+        newInstance = $('<img id="' + elementData["displayId"] + '"/>')
+            .prop("title", "Right click to delete")
+            .removeClass()
+            .attr("anchors", 0)
+            .addClass("element")
+            .prop("src", template ? template.prop("src") : "");
+
+        var skippedVariables = ["anchorNumber", "displayId"] 
+        $.each(elementData, function(key, value) 
+        {
+            if (skippedVariables.indexOf(key) == -1 )
+            {
+                if (key === "positionTop")
+                    newInstance.css("top", value * workspaceHeight);
+                else if(key === "positionLeft")
+                    newInstance.css("left", value * workspaceWidth);
+                else
+                    newInstance.attr("data-"+key, value);
+            }
+
+        });
+
+        $("#dropContainer").append(newInstance);
+        for (idx = 0; idx < elementData["anchorNumber"]; idx++) 
+            addEndpoint(newInstance);
+
+        setServiceStatus("unsaved");
+
+        jsPlumbInstance.draggable(jsPlumb.getSelector(".element"), {
+            containment: $("#dropContainer")
+        });
+
+
+        jsPlumbInstance.repaintEverything();
+    
+        return newInstance;
+    };
 });

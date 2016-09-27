@@ -122,15 +122,13 @@ class ElementConnection(models.Model):
         on_delete=models.CASCADE)
     source_endpoint = models.TextField()
     target_endpoint = models.TextField()
-    parameters = models.TextField()
 
     def __unicode__(self):
         return "%d" % self.id
 
     def getDataDictionary(self):
         return {'targetEndpoint': self.target_endpoint,
-                'sourceEndpoint': self.source_endpoint,
-                'parameters': self.parameters}
+                'sourceEndpoint': self.source_endpoint }
 
 
 class Machine(Element):  # As a real machine
@@ -233,22 +231,22 @@ class WebServerNode(ServiceNode):
     def getDataDictionary(self):
         element_data = ServiceNode.getDataDictionary(self)
 
-        self_data = {'useSSL': self.useSSL,
-                     'listeningPort': self.listeningPort}
+        self_data = {'use-ssl': self.useSSL,
+                     'listeningport': self.listeningPort}
 
         element_data.update(self_data)
         return element_data
 
     def fromDataDictionary(self, data):
         ServiceNode.fromDataDictionary(self, data)
-        self.useSSL = data['useSSL']
-        self.listeningPort = data['listeningPort']
+        self.useSSL = data['use-ssl']
+        self.listeningPort = data['listeningport']
 
     @staticmethod
     def getInformation():
         superInformation = ServiceNode.getInformation()
-        ownInformation = {'useSSL': WebServerNode._meta.get_field('useSSL').get_internal_type(),
-                          'listeningPort': WebServerNode._meta.get_field('listeningPort').get_internal_type()}
+        ownInformation = {'use-ssl': WebServerNode._meta.get_field('useSSL').get_internal_type(),
+                          'listeningport': WebServerNode._meta.get_field('listeningport').get_internal_type()}
 
         ownInformation.update(superInformation)
         return ownInformation
@@ -316,7 +314,9 @@ class DatabaseNode(ServiceNode):
     def getDataDictionary(self):
         element_data = ServiceNode.getDataDictionary(self)
         self_data = {'admin_username': self.adminUserName,
-                     'admin_password': self.adminPassword, 'listeningPort': self.listeningPort}
+                     'admin_password': self.adminPassword, 
+                     'listeningport':  self.listeningPort }
+
         element_data.update(self_data)
         return element_data
 
@@ -324,14 +324,14 @@ class DatabaseNode(ServiceNode):
         ServiceNode.fromDataDictionary(self, data)
         self.adminUserName = data['admin_username']
         self.adminPassword = data['admin_password']
-        self.listeningPort = data['listeningPort']
+        self.listeningPort = data['listeningport']
 
     @staticmethod
     def getInformation():
         superInformation = ServiceNode.getInformation()
         ownInformation = {'admin_username': DatabaseNode._meta.get_field('adminUserName').get_internal_type(),
                           'admin_password': DatabaseNode._meta.get_field('adminPassword').get_internal_type(),
-                          'listeningPort':  DatabaseNode._meta.get_field('listeningPort').get_internal_type()}
+                          'listeningport':  DatabaseNode._meta.get_field('listeningPort').get_internal_type()}
         ownInformation.update(superInformation)
         return ownInformation
 
