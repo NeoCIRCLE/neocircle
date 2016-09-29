@@ -37,6 +37,7 @@ function vmCreateLoaded() {
 
   /* start vm button clicks */
   $('.vm-create-start').click(function() {
+    $(this).prop("disabled", true).find("i").prop("class", "fa fa-spinner fa-spin");
     template = $(this).data("template-pk");
     $.ajax({
       url: '/dashboard/vm/create/',
