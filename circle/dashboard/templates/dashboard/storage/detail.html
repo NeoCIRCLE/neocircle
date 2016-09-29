@@ -1,5 +1,6 @@
 {% extends "dashboard/base.html" %}
-{% load staticfiles %}
+{% load pipeline %}
+{% load sizefieldtags %}
 {% load i18n %}
 {% load render_table from django_tables2 %}
 {% load crispy_forms_tags %}
@@ -105,4 +106,58 @@
   </div>
 </div>
 
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin">
+          <i class="fa fa-pie-chart"></i>
+          {% trans "Disk usage breakdown" %}
+        </h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-9">
+            <canvas id="datastore-chart"></canvas>
+          </div>
+          <div class="col-md-3">
+            <div id="datastore-chart-legend"></div>
+          </div>
+        </div>
+        <div id="chart-data" data-data='{
+          "data": [{{stats.template_actual_size}},
+                   {{stats.vm_actual_size}},
+                   {{stats.dumps}},
+                   {{stats.iso_raw}},
+                   {{stats.trash}}],
+          "readable_data": ["{{stats.template_actual_size|filesize}}",
+                            "{{stats.vm_actual_size|filesize}}",
+                            "{{stats.dumps|filesize}}",
+                            "{{stats.dumps|filesize}}",
+                            "{{stats.iso_raw|filesize}}",
+                            "{{stats.trash|filesize}}"],
+          "labels": ["{% trans "Templates" %}",
+                     "{% trans "Virtual machines" %}",
+                     "{% trans "Memory dumps" %}",
+                     "{% trans "ISO + Raw images" %}",
+                     "{% trans "Trash" %}"]
+          }
+          '>
+        </div>
+        <div>
+          {% trans "Total virtual machine disk usage" %}:
+          <strong>{{ stats.vm_actual_size|filesize }}</strong>
+          <br />
+          {% trans "Actual virtual machine disk usage" %}:
+          <strong>{{ stats.vm_size|filesize}}</strong>
+        </div>
+      </div><!-- .panel-body -->
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+  {% javascript "datastore" %}
 {% endblock %}
