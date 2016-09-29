@@ -9,7 +9,7 @@ $(function() {
       data: {
         labels: labels,
         datasets: [{
-          data: data['data'],
+          data: data.data,
           backgroundColor: [
               "#57b257",
               "#538ccc",
@@ -26,7 +26,7 @@ $(function() {
         tooltips: {
           callbacks: {
             label: function(item, chartData) {
-              return data['labels'][item.index] + ": " + data['readable_data'][item.index];
+              return data.labels[item.index] + ": " + data.readable_data[item.index];
             }
           }
         },
