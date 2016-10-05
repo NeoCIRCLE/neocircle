@@ -4,7 +4,7 @@ arrow==0.7.0
 billiard==3.3.0.20
 bpython==0.14.1
 celery==3.1.18
-Django==1.8.12
+Django==1.8.15
 django-appconf==1.0.1
 django-autocomplete-light==2.1.1
 django-braces==1.8.0
