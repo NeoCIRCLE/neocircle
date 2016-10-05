@@ -1,0 +1,6 @@
+{% for t in templates %}
+  <a href="{{ t.get_absolute_url }}">
+    {{ t.name }}</a>{% if not forloop.last %},{% endif %}
+{% empty %}
+  -
+{% endfor %}

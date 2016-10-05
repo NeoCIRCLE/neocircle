@@ -245,6 +245,12 @@ PIPELINE_JS = {
     ),
         "output_filename": "vm-detail.js",
     },
+    "datastore": {"source_filenames": (
+        "chart.js/dist/Chart.min.js",
+        "dashboard/datastore-details.js"
+    ),
+        "output_filename": "datastore.js",
+    },
 }
 
 
