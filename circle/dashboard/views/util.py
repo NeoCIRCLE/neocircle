@@ -32,7 +32,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core import signing
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.urlresolvers import reverse
-from django.db.models import Q
+from django.db.models import Q, Count, Sum
 from django.http import (
     HttpResponse, Http404, HttpResponseRedirect, JsonResponse
 )
@@ -54,6 +54,7 @@ from celery.exceptions import TimeoutError
 from common.models import HumanReadableException, HumanReadableObject
 from ..models import GroupProfile, Profile
 from ..forms import TransferOwnershipForm
+
 
 logger = logging.getLogger(__name__)
 saml_available = hasattr(settings, "SAML_CONFIG")
@@ -167,14 +168,31 @@ class FilterMixin(object):
 
     def create_acl_queryset(self, model):
         cleaned_data = self.search_form.cleaned_data
-        stype = cleaned_data.get('stype', "all")
-        superuser = stype == "all"
-        shared = stype == "shared" or stype == "all"
-        level = "owner" if stype == "owned" else "user"
+        stype = cleaned_data.get('stype', 'all')
+        superuser = stype == 'all'
+        shared = stype == 'shared' or stype == 'all'
+        level = 'owner' if stype == 'owned' else 'user'
+        user = self.request.user
         queryset = model.get_objects_with_level(
-            level, self.request.user,
-            group_also=shared, disregard_superuser=not superuser,
-        )
+            level, user, group_also=shared, disregard_superuser=not superuser)
+        if stype == 'owned':
+            queryset = queryset.filter(owner=user)
+        elif stype == 'shared':
+            queryset = queryset.filter(owner=user)
+
+            pk_list = []
+            for record in queryset:
+                count = record.object_level_set.annotate(
+                    Count('users'), Count('groups')).aggregate(
+                        Sum('users__count'), Sum('groups__count'))
+                if (count['users__count__sum'] > 1 or
+                   count['groups__count__sum'] > 0):
+
+                    pk_list.append(record.pk)
+
+            queryset = queryset.filter(pk__in=pk_list)
+        elif stype == 'shared_with_me':
+            queryset = queryset.exclude(owner=user)
         return queryset
 
 
