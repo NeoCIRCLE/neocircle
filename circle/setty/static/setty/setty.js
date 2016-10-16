@@ -803,7 +803,7 @@ jsPlumb.ready(function() {
 
 
 /* Registering events concerning persistence. */
-    $('body').on('click', '#saveService',function() {
+    $('body').on('click', '#deployService',function() {
         $.post("", {
             event: "deploy",
         }, function(result) {
