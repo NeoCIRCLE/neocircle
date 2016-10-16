@@ -1,0 +1,115 @@
+body{
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;    
+}
+
+textarea {
+    resize: none;
+    width: 100%;
+    height: auto;
+}
+
+#dropContainer{
+  position: relative !important;
+  overflow: none !important;
+  margin: 12px !important;
+  height: 700px !important;
+  text-align: justify !important;
+  user-select: none;
+  -moz-user-select: none;
+  background-color: #DDD;
+}
+
+#dragContainer{
+  position: relative !important;
+  margin: 12px !important;
+  overflow: hidden !important;
+  height: 590px !important;
+}
+
+.initHidden{
+  display: none;
+}
+
+.noScroll{
+  overflow: hidden;
+  height: 100%;
+}
+
+.elementTemplate{
+  position: relative;
+  display: inline;
+  width: 100px;
+  height: 100px;
+  background: grey;
+  border-radius: 10px;
+  border-color: black;
+  -webkit-border-radius: 10px;
+  border-style: solid;
+  border-width: 5px;
+  z-index: 40;
+  cursor: pointer;
+}
+
+.elementTemplate:hover{
+  border: 5px solid #123456;
+  box-shadow: 2px 2px 19px #444;
+  -o-box-shadow: 2px 2px 19px #444;
+  -webkit-box-shadow: 2px 2px 19px #444;
+  -moz-box-shadow: 2px 2px 19px #fff;
+  opacity: 0.9;
+  filter: alpha(opacity=90);
+  z-index: 2000;
+}
+
+.elementTemplate:active, .elementSelected{
+  border: 5px solid red !important;
+}
+
+.element{
+  position: absolute;
+  left: 10px;
+  display: inline;
+  width: 75px;
+  height: 75px;
+  background: grey;
+  border-radius: 8px;
+  border-color: black;
+  -webkit-border-radius: 8px;
+  border-style: solid;
+  border-width: 5px;
+  z-index: 40;
+  cursor: grab;
+}
+
+.element:hover{
+  border: 5px solid #123456;
+  box-shadow: 2px 2px 19px #444;
+  -o-box-shadow: 2px 2px 19px #444;
+  -webkit-box-shadow: 2px 2px 19px #444;
+  -moz-box-shadow: 2px 2px 19px #fff;
+  opacity: 0.9;
+  filter: alpha(opacity=90);
+  z-index: 2000;
+}
+
+._jsPlumb_connector{
+  z-index: 10;
+}
+
+._jsPlumb_endpoint{
+  z-index: 20;
+}
+
+._jsPlumb_overlay{
+  z-index: 30;
+}
+
+.cmdLink{
+  font-size: 0.80em;
+}
+
