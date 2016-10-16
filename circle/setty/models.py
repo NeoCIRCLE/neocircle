@@ -16,7 +16,7 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.db import models
-from django.db.models import Model
+from django.db.models import Model, Q
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 from taggit.managers import TaggableManager
@@ -28,6 +28,7 @@ import os
 # TODO: exceptions
 
 SALTSTACK_STATE_FOLDER = "/srv/salt"
+
 
 def replaceParameter(config, parameterToReplace, newValue):
     configEdited = config.replace(parameterToReplace, str(newValue))
@@ -54,6 +55,9 @@ class ElementCategory(models.Model):
 
     def __unicode__(self):
         return self.name
+
+# Defines a model for ElementTemplates which are used to create real elements on the GUI
+# Hold
 
 
 class ElementTemplate(models.Model):
@@ -128,7 +132,7 @@ class ElementConnection(models.Model):
 
     def getDataDictionary(self):
         return {'targetEndpoint': self.target_endpoint,
-                'sourceEndpoint': self.source_endpoint }
+                'sourceEndpoint': self.source_endpoint}
 
 
 class Machine(Element):  # As a real machine
@@ -140,7 +144,6 @@ class Machine(Element):  # As a real machine
         Service, on_delete=models.CASCADE, related_name="service_id")
     hostname = models.TextField(null=False)  # also serves as salt-minion id
     alias = models.CharField(max_length=50)
-    #config_file = models.FileField(default=None,upload_to='setty/machine_configs/', storage=OverwriteStorage())
     description = models.TextField(default="")
     status = models.CharField(choices=MACHINE_STATUS_CHOICES, max_length=1)
 
@@ -210,6 +213,23 @@ class ServiceNode(Element):
     def clone():
         raise PermissionDenied
 
+    def checkDependenciesAndAttributes(self):
+        return []
+
+    def checkDependecy(self, ObjOther):
+        elementConnections = ElementConnection.objects.filter(
+            Q(target=self) | Q(source=self))
+
+        for connection in elementConnections:
+            serviceNode = None
+            if connection.target.cast() == self:
+                if isinstance(connection.source.cast(), ObjOther):
+                    return True
+            elif connection.source.cast() == self:
+                if isinstance(connection.target.cast(), ObjOther):
+                    return True
+        return False
+
     def __cmp__(self, other):
         return self.getDeploymentPriority(self).__cmp__(other.getDeploymentPriority(other))
 
@@ -222,6 +242,123 @@ class ServiceNode(Element):
 
     def generateConfigurationRecursively(self):
         raise PermissionDenied
+
+
+class WordpressNode(ServiceNode):
+    # DB related fields
+    databaseListeningPort = models.PositiveIntegerField()
+    databaseHost = models.TextField()
+    databaseUser = models.TextField()
+    databasePass = models.TextField()
+
+    # admin user
+    adminUsername = models.TextField()
+    adminPassword = models.TextField()
+    adminEmail = models.TextField()
+
+    # site related fields
+    siteTitle = models.TextField()
+    siteUrl = models.TextField()
+
+    def getDataDictionary(self):
+        element_data = ServiceNode.getDataDictionary(self)
+        self_data = {'database-listening-port': self.databaseListeningPort,
+                     'database-host': self.databaseHost,
+                     'database-user': self.databaseUser,
+                     'database-pass': self.databasePass,
+                     'admin-username': self.adminUsername,
+                     'admin-password': self.adminPassword,
+                     'admin-email': self.adminEmail,
+                     'site-title': self.siteTitle,
+                     'site-url': self.siteUrl}
+
+        element_data.update(self_data)
+        return element_data
+
+    def fromDataDictionary(self, data):
+        ServiceNode.fromDataDictionary(self, data)
+        self.databaseListeningPort = data['database-listening-port']
+        self.databaseHost = data['database-host']
+        self.databaseUser = data['database-user']
+        self.databasePass = data['database-pass']
+        self.adminUsername = data['admin-username']
+        self.adminPassword = data['admin-password']
+        self.adminEmail = data['admin-email']
+        self.siteTitle = data['site-title']
+        self.siteUrl = data['site-url']
+
+    @staticmethod
+    def getInformation():
+        superInformation = ServiceNode.getInformation()
+        ownInformation = {'use-ssl': WebServerNode._meta.get_field('useSSL').get_internal_type(),
+                          'listeningport': WebServerNode._meta.get_field('listeningport').get_internal_type()}
+
+        ownInformation = {'database-listening-port': WordpressNode._meta.get_field('databaseListeningPort').get_internal_type(),
+                          'database-host': WordpressNode._meta.get_field('databaseHost').get_internal_type(),
+                          'database-user': WordpressNode._meta.get_field('databaseUser').get_internal_type(),
+                          'database-pass': WordpressNode._meta.get_field('databasePass').get_internal_type(),
+                          'admin-username': WordpressNode._meta.get_field('adminUsername').get_internal_type(),
+                          'admin-password': WordpressNode._meta.get_field('adminPassword').get_internal_type(),
+                          'admin-email': WordpressNode._meta.get_field('adminEmail').get_internal_type(),
+                          'site-title': WordpressNode._meta.get_field('siteTitle').get_internal_type(),
+                          'site-url': WordpressNode._meta.get_field('siteUrl').get_internal_type()}
+
+        ownInformation.update(superInformation)
+        return ownInformation
+
+    def checkDependenciesAndAttributes(self):
+        errorMessages = ServiceNode.checkDependenciesAndAttributes(self)
+
+        if self.databaseListeningPort == 0:
+            errorMessages.append("LISTENING_PORT_NOT_SET")
+        if not self.databaseHost:
+            errorMessage.append("DATABASEHOST_NOT_SET")
+        if not self.databaseUser:
+            errorMessage.append("DATABASEUSER_NOT_SET")
+        if not self.databasePass:
+            errorMessage.append("DATABASEPASS_NOT_SET")
+        if not self.adminUsername:
+            errorMessage.append("ADMINUSERNAME_NOT_SET")
+        if not self.adminPassword:
+            errorMessage.append("ADMINPASSWORD_NOT_SET")
+        if not self.adminEmail:
+            errorMessage.append("ADMINEMAIL_NOT_SET")
+        if not self.siteTitle:
+            errorMessage.append("SITETITLE_NOT_SET")
+        if not self.siteUrl:
+            errorMessage.append("SITEURL_NOT_SET")
+
+        if not self.checkDependecy(MySQLNode):
+            errorMessage.append("NODE_NOT_CONNECTED")
+
+        if not self.checkDependecy(WebServerNode):
+            errorMessage.append("NODE_NOT_CONNECTED")
+
+        return errorMessages
+
+    @staticmethod
+    def getDeploymentPriority(self):
+        return 10
+
+    def generateConfiguration(self, config=""):
+
+        config = replaceParameter(
+            config, r'%%DATABASE_LISTENING_PORT%%', self.databaseListeningPort)
+        config = replaceParameter(
+            config, r'%%DATABASE_HOST%%', self.databaseHost)
+        config = replaceParameter(
+            config, r'%%DATABASE_USER%%', self.databaseUser)
+        config = replaceParameter(
+            config, r'%%DATABASE_PASS%%', self.databasePass)
+        config = replaceParameter(
+            config, r'%%ADMIN_USERNAME%%', self.adminUsername)
+        config = replaceParameter(
+            config, r'%%ADMIN_PASSWORD%%', self.adminPassword)
+        config = replaceParameter(config, r'%%ADMIN_EMAIL%%', self.adminEmail)
+        config = replaceParameter(config, r'%%SITE_TITLE%%', self.siteTitle)
+        config = replaceParameter(config, r'%%SITE_URL%%', self.siteUrl)
+
+        return config
 
 
 class WebServerNode(ServiceNode):
@@ -242,6 +379,16 @@ class WebServerNode(ServiceNode):
         self.useSSL = data['use-ssl']
         self.listeningPort = data['listeningport']
 
+    def checkDependenciesAndAttributes(self):
+        errorMessages = ServiceNode.checkDependenciesAndAttributes(self)
+        if self.listeningPort == 0:
+            errorMessages.append("LISTENING_PORT_NOT_SET")
+
+        if not self.checkDependecy(Machine):
+            errorMessages.append("NO_MACHINE_CONNECTED")
+
+        return errorMessages
+
     @staticmethod
     def getInformation():
         superInformation = ServiceNode.getInformation()
@@ -258,8 +405,32 @@ class WebServerNode(ServiceNode):
     def generateConfiguration(self, config=""):
         config = replaceParameter(config, r"%%USE_SSL%%", self.useSSL)
         config = replaceParameter(config,
-                         r"%%LISTENING_PORT%%", self.listeningPort)
+                                  r"%%LISTENING_PORT%%", self.listeningPort)
         return config
+
+
+class ApacheNode(WebServerNode):
+
+    @staticmethod
+    def clone():
+        return ApacheNode()
+
+    def generateConfigurationRecursively(self):
+        config = str()
+        exampleFilePath = os.path.join(
+            SALTSTACK_STATE_FOLDER, "apache.example")
+        with open(exampleFilePath, 'r') as configFile:
+            config = configFile.read()
+            config = WebServerNode.generateConfiguration(self, config)
+
+        self.generatedConfig = "apache_%s.sls" % self.machine.hostname
+        with open(os.path.join(SALTSTACK_STATE_FOLDER, self.generatedConfig), 'w') as generatedConfigFile:
+            generatedConfigFile.write(config)
+
+        configuredNodes = []
+        configuredNodes.append(self)
+
+        return configuredNodes
 
 
 class NginxNode(WebServerNode):
@@ -275,6 +446,13 @@ class NginxNode(WebServerNode):
         WebServerNode.fromDataDictionary(self, data)
         self.worker_connections = data['worker_connections']
 
+    def checkDependenciesAndAttributes(self):
+        errorMessages = WebServerNode.checkDependenciesAndAttributes(self)
+        if self.worker_connections == 0:
+            errorMessages.append("WORKER_CONNECTIONS_NOT_SET")
+
+        return errorMessages
+
     @staticmethod
     def getInformation():
         superInformation = WebServerNode.getInformation()
@@ -289,12 +467,12 @@ class NginxNode(WebServerNode):
 
     def generateConfigurationRecursively(self):
         config = str()
-        exampleFilePath = os.path.join( SALTSTACK_STATE_FOLDER, "nginx.example" )
+        exampleFilePath = os.path.join(SALTSTACK_STATE_FOLDER, "nginx.example")
         with open(exampleFilePath, 'r') as configFile:
             config = configFile.read()
             config = WebServerNode.generateConfiguration(self, config)
             config = replaceParameter(config,
-                             r"%%WORKER_CONNECTIONS%%", self.worker_connections)
+                                      r"%%WORKER_CONNECTIONS%%", self.worker_connections)
 
         self.generatedConfig = "nginx_%s.sls" % self.machine.hostname
         with open(os.path.join(SALTSTACK_STATE_FOLDER, self.generatedConfig), 'w') as generatedConfigFile:
@@ -314,8 +492,8 @@ class DatabaseNode(ServiceNode):
     def getDataDictionary(self):
         element_data = ServiceNode.getDataDictionary(self)
         self_data = {'admin_username': self.adminUserName,
-                     'admin_password': self.adminPassword, 
-                     'listeningport':  self.listeningPort }
+                     'admin_password': self.adminPassword,
+                     'listeningport':  self.listeningPort}
 
         element_data.update(self_data)
         return element_data
@@ -325,6 +503,20 @@ class DatabaseNode(ServiceNode):
         self.adminUserName = data['admin_username']
         self.adminPassword = data['admin_password']
         self.listeningPort = data['listeningport']
+
+    def checkDependenciesAndAttributes(self):
+        errorMessages = ServiceNode.checkDependenciesAndAttributes(self)
+        if not self.adminUserName:
+            errorMessages.append("ADMIN_USER_NAME_NOT_SET")
+        if not self.adminPassword:
+            errorMessages.append("ADMIN_PASSWORD_NAME_NOT_SET")
+        if self.listeningPort == 0:
+            errorMessages.append("LISTENING_PORT_NOT_SET")
+
+        if not self.checkDependecy(Machine):
+            errorMessages.append("NO_MACHINE_CONNECTED")
+
+        return errorMessages
 
     @staticmethod
     def getInformation():
@@ -341,11 +533,11 @@ class DatabaseNode(ServiceNode):
 
     def generateConfiguration(self, config=""):
         config = replaceParameter(config,
-                         r"%%ADMIN_USERNAME%%", self.adminUserName)
+                                  r"%%ADMIN_USERNAME%%", self.adminUserName)
         config = replaceParameter(config,
-                         r"%%ADMIN_PASSWORD%%", self.adminUserName)
+                                  r"%%ADMIN_PASSWORD%%", self.adminUserName)
         config = replaceParameter(config,
-                         r'%%LISTENING_PORT%%', self.listeningPort)
+                                  r'%%LISTENING_PORT%%', self.listeningPort)
         return config
 
 
@@ -357,8 +549,9 @@ class PostgreSQLNode(DatabaseNode):
 
     def generateConfigurationRecursively(self):
         config = str()
-        exampleFilePath = os.path.join( SALTSTACK_STATE_FOLDER, "postgres.example" )
-        with open( exampleFilePath, 'r') as configFile:
+        exampleFilePath = os.path.join(
+            SALTSTACK_STATE_FOLDER, "postgres.example")
+        with open(exampleFilePath, 'r') as configFile:
             config = configFile.read()
             config = DatabaseNode.generateConfiguration(self, config)
 
@@ -377,7 +570,7 @@ class MySQLNode(DatabaseNode):
 
     def generateConfigurationRecursively(self):
         config = str()
-        exampleFilePath = os.path.join( SALTSTACK_STATE_FOLDER, "mysql.example" )
+        exampleFilePath = os.path.join(SALTSTACK_STATE_FOLDER, "mysql.example")
         with open(exampleFilePath, 'r') as configFile:
             config = configFile.read()
             config = DatabaseNode.generateConfiguration(self, config)

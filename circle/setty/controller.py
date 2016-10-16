@@ -5,196 +5,217 @@ from django.db.models.loading import get_model
 from django.db import transaction
 from saltstackhelper import *
 import os
+from vm.models import Instance
 
 class SettyController:
 
-	@staticmethod
-	@transaction.atomic
-	def saveService( serviceId, serviceName, serviceNodes, machines, elementConnections ):
-		service = None
-		try:
-		    service = Service.objects.get(id=serviceId)
-		except Service.DoesNotExist:
-		    return JsonResponse( {'error': 'Service not found'})
+    @staticmethod
+    @transaction.atomic
+    def saveService(serviceId, serviceName, serviceNodes, machines, elementConnections):
+        service = None
+        try:
+            service = Service.objects.get(id=serviceId)
+        except Service.DoesNotExist:
+            return JsonResponse({'error': 'Service not found'})
 
-		service.name = serviceName
-		service.save()
+        service.name = serviceName
+        service.save()
 
-		Machine.objects.filter(service=service).delete()
-		for machineData in machines:
-		    machineSaved = Machine(service=service)
-		    machineSaved.fromDataDictionary( machineData )
-		    machineSaved.save()
+        Machine.objects.filter(service=service).delete()
+        for machineData in machines:
+            machineSaved = Machine(service=service)
+            machineSaved.fromDataDictionary(machineData)
+            machineSaved.save()
 
-		ServiceNode.objects.filter(service=service).delete()
+        ServiceNode.objects.filter(service=service).delete()
 
-		for node in serviceNodes:
-		    elementTemplateId = node["displayId"].split("_")[1]
-		    elementTemplate = ElementTemplate.objects.get(id=elementTemplateId)
-		    newNode = get_model('setty', elementTemplate.prototype ).clone()
+        for node in serviceNodes:
+            elementTemplateId = node["displayId"].split("_")[1]
+            elementTemplate = ElementTemplate.objects.get(id=elementTemplateId)
+            newNode = get_model('setty', elementTemplate.prototype).clone()
 
-		    newNode.service = service
-		    newNode.fromDataDictionary( node )
-		    newNode.save()
+            newNode.service = service
+            newNode.fromDataDictionary(node)
+            newNode.save()
 
-		for elementConnection in elementConnections:
-		    sourceId = elementConnection['sourceId']
-		    targetId = elementConnection['targetId']
-		    sourceEndpoint = elementConnection['sourceEndpoint']
-		    targetEndpoint = elementConnection['targetEndpoint']
+        for elementConnection in elementConnections:
+            sourceId = elementConnection['sourceId']
+            targetId = elementConnection['targetId']
+            sourceEndpoint = elementConnection['sourceEndpoint']
+            targetEndpoint = elementConnection['targetEndpoint']
 
-		    targetObject = Element.objects.get(
-		        display_id=targetId)
+            targetObject = Element.objects.get(
+                display_id=targetId)
 
-		    sourceObject = Element.objects.get(
-		        display_id=sourceId)
+            sourceObject = Element.objects.get(
+                display_id=sourceId)
 
-		    connectionObject = ElementConnection(
-		        target=targetObject,
-		        source=sourceObject,
-		        target_endpoint=targetEndpoint,
-		        source_endpoint=sourceEndpoint
-		    )
+            connectionObject = ElementConnection(
+                target=targetObject,
+                source=sourceObject,
+                target_endpoint=targetEndpoint,
+                source_endpoint=sourceEndpoint
+            )
 
-		    connectionObject.save()
+            connectionObject.save()
 
-    		return {"serviceName": serviceName}
+        return {"serviceName": serviceName}
 
-	@staticmethod
-	def loadService(serviceId):
-	    service = None
-	    try:
-	        service = Service.objects.get(id=serviceId)
-	    except Service.DoesNotExist:
-	        return JsonResponse({'error': 'Service not found'})
+    @staticmethod
+    def loadService(serviceId):
+        service = None
 
-	    machineList = Machine.objects.filter(service=service)
-	    serviceNodes = []
-	    elementConnections = []
-	    machines = []
+        try:
+            service = Service.objects.get(id=serviceId)
+        except Service.DoesNotExist:
+            return JsonResponse({'error': 'Service not found'})
 
-	    for machine in machineList:
-	    	machines.append(machine.getDataDictionary())
+        machineList = Machine.objects.filter(service=service)
+        serviceNodes = []
+        elementConnections = []
+        machines = []
 
-	    serviveNodeList = ServiceNode.objects.filter(service=service)
-	    elementConnectionList = ElementConnection.objects.filter(
-	        Q(target__in=serviveNodeList) | Q(source__in=serviveNodeList))
+        for machine in machineList:
+            machines.append(machine.getDataDictionary())
 
-	    for servideNode in serviveNodeList:
-	        serviceNodes.append( servideNode.cast().getDataDictionary() )
+        serviveNodeList = ServiceNode.objects.filter(service=service)
+        elementConnectionList = ElementConnection.objects.filter(
+            Q(target__in=serviveNodeList) | Q(source__in=serviveNodeList))
 
-	    for elementConnection in elementConnectionList:
-	        elementConnections.append( elementConnection.getDataDictionary() )
+        for servideNode in serviveNodeList:
+            serviceNodes.append(servideNode.cast().getDataDictionary())
 
-	    return {'serviceName': service.name,
-	             'elementConnections': elementConnections,
-	             'serviceNodes': serviceNodes,
-	             'machines': machines}
+        for elementConnection in elementConnectionList:
+            elementConnections.append(elementConnection.getDataDictionary())
 
-	@staticmethod
-	def getInformation(elementTemplateId, hostname):
-	        if elementTemplateId:
-	            try:
-	                elementTemplate = ElementTemplate.objects.get(
-	                    id=elementTemplateId)
-	                model = get_model('setty', elementTemplate.prototype)
-	                return model.getInformation()
-	            except ElementTemplate.DoesNotExist:
-	                return
-	            except LookupError:
-	                return
-	        elif hostname:
-	            return Machine.getInformation()
-	        elif hostname and elementTemplateId:
-	            raise PermissionDenied  # TODO: something more meaningful
-	        else:
-	            raise PermissionDenied  # TODO: something more meaningful
+        return {'serviceName': service.name,
+                'elementConnections': elementConnections,
+                'serviceNodes': serviceNodes,
+                'machines': machines}
 
-	@staticmethod
-	def getMachineAvailableList(service_id, used_hostnames):
-	    all_minions = SettyController.salthelper.getAllMinionsGrouped()
-	    result = []
-	    #TODO: filter out used ones
-	    for item in all_minions["up"]:
-	        result.append( {'hostname': item,
-	                        'hardware-info': SettyController.salthelper.getMinionBasicHardwareInfo( item ),
-	                        'status': 'up'} )
+    @staticmethod
+    def getInformation(elementTemplateId, hostname):
+        if elementTemplateId:
+            try:
+                elementTemplate = ElementTemplate.objects.get(
+                    id=elementTemplateId)
+                model = get_model('setty', elementTemplate.prototype)
+                return model.getInformation()
+            except ElementTemplate.DoesNotExist:
+                return
+            except LookupError:
+                return
+        elif hostname:
+            return Machine.getInformation()
+        elif hostname and elementTemplateId:
+            raise PermissionDenied  # TODO: something more meaningful
+        else:
+            raise PermissionDenied  # TODO: something more meaningful
 
-	    for item in all_minions["down"]:
-	        result.append( {'hostname': item, 'status': 'down' })
+    @staticmethod
+    def getMachineAvailableList(serviceId, used_hostnames, current_user):
+        all_minions = SettyController.salthelper.getAllMinionsUngrouped()
+        usedMachines = Machine.objects.get(service=serviceId)
+        user_instances = Instance.objects.get(owner=current_user)
 
-	    return { 'machinedata': result }
+        userMachines = []
+        for instance in user_instances:
+            if user_instances.vm_name():
+                userMachines.append(user_instances.vm_name())
 
-	@staticmethod
-	def addMachine(hostname):
-	    try:
-	        Machine.objects.get(hostname=hostname)
-	        return {'error': 'already added or doesnt exists'}
-	    except:
-	        pass
-	    if SettyController.salthelper.checkMinionExists(hostname):
-	        machine = Machine.clone()
-	        machine.hostname = hostname
-	        return machine.getDataDictionary()
-	    else:
-	        return {'error': 'already added or doesnt exists'}
+        result = []
+        for machine in usedMachines:
+            if machine.hostname not in userMachines:
+                result.append(machine.hostname)
 
-	@staticmethod
-	def addServiceNode(elementTemplateId):
-	    if elementTemplateId:
-	        try:
-	            elementTemplate = ElementTemplate.objects.get(id=elementTemplateId)
-	            model = get_model('setty', elementTemplate.prototype )
-	            return model.clone().getDataDictionary()
-	        except ElementTemplate.DoesNotExist:
-	            return {'error': "ElementTemplate doesn't exists" }
-	        except:
-	            return {'error': 'Can not get prototype'}
-	    else:
-	        return {'error': 'templateid'}
+        return {'machinedata': result}
 
-	@staticmethod
-	def deploy(serviceId):
-		service  = Service.objects.get(id=serviceId)
-		machines = Machine.objects.filter(service=service)
-		elementConnections = ElementConnection.objects.filter(
-	        Q(target__in=machines) | Q(source__in=machines) )
+    @staticmethod
+    def addMachine(hostname):
+        try:
+            Machine.objects.get(hostname=hostname)
+            return {'error': 'already added or doesnt exists'}
+        except:
+            pass
+        if SettyController.salthelper.checkMinionExists(hostname):
+            machine = Machine.clone()
+            machine.hostname = hostname
+            return machine.getDataDictionary()
+        else:
+            return {'error': 'already added or doesnt exists'}
 
-		firstLevelServiceNodes = []
-		#phase one: set the machine ptr in serviceNodes which can be accessed by
-		# connections from machines
-		for machine in machines:
-			for connection in elementConnections:
-				serviceNode = None
-				if connection.target.cast() == machine:
-					serviceNode = connection.source.cast()
-					serviceNode.setMachineForDeploy( machine )
+    @staticmethod
+    def addServiceNode(elementTemplateId):
+        if elementTemplateId:
+            try:
+                elementTemplate = ElementTemplate.objects.get(
+                    id=elementTemplateId)
+                model = get_model('setty', elementTemplate.prototype)
+                return model.clone().getDataDictionary()
+            except ElementTemplate.DoesNotExist:
+                return {'error': "ElementTemplate doesn't exists"}
+            except:
+                return {'error': 'Can not get prototype'}
+        else:
+            return {'error': 'templateid'}
 
-				elif connection.source.cast() == machine:
-					serviceNode = connection.target.cast()
-					serviceNode.setMachineForDeploy( machine )
-				else:
-					raise PermissionDenied
-				firstLevelServiceNodes.append( serviceNode )
+    @staticmethod
+    def deploy(serviceId):
+        service = Service.objects.get(id=serviceId)
+        machines = Machine.objects.filter(service=service)
 
-		#phase two: let the nodes create configurations recursively
-		configuratedNodes = list()
-		for serviceNode in firstLevelServiceNodes:
-			generatedNodes = serviceNode.generateConfigurationRecursively()
-			if isinstance( generatedNodes, list ):
-				configuratedNodes = configuratedNodes + generatedNodes
-			else:
-				configuratedNodes.append( generatedNodes )
+        serviveNodeList = ServiceNode.objects.filter(service=service)
+        errorMessages = []
+        for serviceNode in serviveNodeList:
+            errorMessage = serviceNode.cast().checkDependenciesAndAttributes()
+            if errorMessage:
+                errorMessages.append(errorMessage)
 
-		#phase three: sort the nodes by deployment priority(lower the prio, later in the deployement)
+        if errorMessages:
+            return {'status': 'error',
+                    'errors': errorMessages }
 
-		configuratedNodes.sort(reverse=True)
+        elementConnections = ElementConnection.objects.filter(
+            Q(target__in=machines) | Q(source__in=machines))
+        firstLevelServiceNodes = []
 
-		#deploy the nodes
-		for node in configuratedNodes:
-			SettyController.salthelper.deploy( node.machine.hostname, node.generatedConfig )
-		return {'status': 'deployed'}
+        # phase one: set the machine ptr in serviceNodes which can be accessed by
+        # connections from machines
+        for machine in machines:
+            for connection in elementConnections:
+                serviceNode = None
+                if connection.target.cast() == machine:
+                    serviceNode = connection.source.cast()
+                    serviceNode.setMachineForDeploy(machine)
 
-		#cleanup the temporary data
-'''		for node in configuratedNodes:
-			node.deployCleanUp()'''
+                elif connection.source.cast() == machine:
+                    serviceNode = connection.target.cast()
+                    serviceNode.setMachineForDeploy(machine)
+                else:
+                    raise PermissionDenied
+                firstLevelServiceNodes.append(serviceNode)
+
+        # phase two: let the nodes create configurations recursively
+        configuratedNodes = list()
+        for serviceNode in firstLevelServiceNodes:
+            generatedNodes = serviceNode.generateConfigurationRecursively()
+            if isinstance(generatedNodes, list):
+                configuratedNodes = configuratedNodes + generatedNodes
+            else:
+                configuratedNodes.append(generatedNodes)
+
+        # phase three: sort the nodes by deployment priority(lower the prio,
+        # later in the deployement)
+
+        configuratedNodes.sort(reverse=True)
+        return {'status': 'success'}
+
+        # deploy the nodes
+#        for node in configuratedNodes:
+#            SettyController.salthelper.deploy(
+#                node.machine.hostname, node.generatedConfig)
+#        return {'status': 'deployed'}
+
+        # cleanup the temporary data
+'''     for node in configuratedNodes:
+            node.deployCleanUp()'''

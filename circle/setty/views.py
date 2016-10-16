@@ -54,7 +54,7 @@ class DetailView(LoginRequiredMixin, TemplateView):
         else:
             raise PermissionDenied
 
-    #def get(self, request, *args, **kwargs):
+    # def get(self, request, *args, **kwargs):
 #   #    service = Service.objects.get(id=kwargs['pk'])
 #   #    if self.request.user != service.user or not self.request.user.is_superuser:
 #   #        raise PermissionDenied
@@ -65,21 +65,20 @@ class DetailView(LoginRequiredMixin, TemplateView):
 #    #        result = SettyController.getPictureName( data["elementTemplateId"] )
 #
     #    return JsonResponse(result)
-        
 
     def post(self, request, *args, **kwargs):
         service = Service.objects.get(id=kwargs['pk'])
         if self.request.user != service.user or not self.request.user.is_superuser:
             raise PermissionDenied
-            
+
         result = {}
         eventName = self.request.POST.get('event')
         serviceId = kwargs['pk']
-        
+
         if eventName == 'loadService':
             result = SettyController.loadService(serviceId)
         elif eventName == "deploy":
-            result = SettyController.deploy(serviceId) 
+            result = SettyController.deploy(serviceId)
         else:
             data = json.loads(self.request.POST.get('data'))
             if eventName == "saveService":
@@ -87,7 +86,7 @@ class DetailView(LoginRequiredMixin, TemplateView):
                                                      'serviceNodes'], data['machines'], data['elementConnections'])
             elif eventName == "getMachineAvailableList":
                 result = SettyController.getMachineAvailableList(
-                    serviceId, data["usedHostnames"])
+                    serviceId, data["usedHostnames"], self.request.user )
             elif eventName == "addServiceNode":
                 result = SettyController.addServiceNode(
                     data["elementTemplateId"])
@@ -95,7 +94,7 @@ class DetailView(LoginRequiredMixin, TemplateView):
                 result = SettyController.addMachine(data["hostname"])
             elif eventName == "getInformation":
                 templateId = ""
-                hostname   = ""
+                hostname = ""
 
                 if "elementTemplateId" in data.keys():
                     templateId = data['elementTemplateId']
@@ -103,8 +102,10 @@ class DetailView(LoginRequiredMixin, TemplateView):
                     hostname = data['hostname']
 
                 result = SettyController.getInformation(
-                    templateId, hostname )
-
+                    templateId, hostname)
+        print '------------'
+        print result
+        print '------------'
         return JsonResponse(result)
 
 
@@ -124,6 +125,7 @@ class DeleteView(LoginRequiredMixin, DeleteView):
 
 
 class CreateView(LoginRequiredMixin, TemplateView):
+
     def get_template_names(self):
         if self.request.is_ajax():
             return ['dashboard/_modal.html']

@@ -803,7 +803,17 @@ jsPlumb.ready(function() {
 
 
 /* Registering events concerning persistence. */
-
+    $('body').on('click', '#saveService',function() {
+        $.post("", {
+            event: "deploy",
+        }, function(result) {
+            if ( result.status == 'error' ) 
+                alert( result.errors );
+            else
+                alert("Deploying....");
+        });
+    })
+    
     $('body').on('click', '#saveService', function() {
         serviceName = $("#serviceName").text();
         connectionSet = [];
