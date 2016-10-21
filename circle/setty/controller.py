@@ -112,23 +112,21 @@ class SettyController:
         else:
             raise PermissionDenied  # TODO: something more meaningful
 
+
     @staticmethod
     def getMachineAvailableList(serviceId, used_hostnames, current_user):
-        all_minions = SettyController.salthelper.getAllMinionsUngrouped()
-        usedMachines = Machine.objects.get(service=serviceId)
-        user_instances = Instance.objects.get(owner=current_user)
+        all_minions = []# SettyController.salthelper.getAllMinionsUngrouped()
+        usedMachines = Machine.objects.filter(service=serviceId)
+        user_instances = Instance.objects.filter(owner=current_user)
+        userMachines = []
 
         userMachines = []
         for instance in user_instances:
-            if user_instances.vm_name():
-                userMachines.append(user_instances.vm_name())
+            if instance.vm_name:
+                print instance.vm_name
+                userMachines.append(instance.vm_name)
 
-        result = []
-        for machine in usedMachines:
-            if machine.hostname not in userMachines:
-                result.append(machine.hostname)
-
-        return {'machinedata': result}
+        return {'machinedata': userMachines}
 
     @staticmethod
     def addMachine(hostname):
