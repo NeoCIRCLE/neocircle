@@ -152,9 +152,9 @@ class Machine(Element):  # As a real machine
 
     @staticmethod
     def getInformation():
-        return {'hostname': hostname.get_internal_type(),
-                'alias': alias.get_internal_type(),
-                'description': description.get_internal_type()}
+        return {'hostname': Machine._meta.get_field('hostname').get_internal_type(),
+                'alias': Machine._meta.get_field('alias').get_internal_type(),
+                'description': Machine._meta.get_field('description').get_internal_type()}
 
     def getDataDictionary(self):
         element_data = self.getDisplayData()

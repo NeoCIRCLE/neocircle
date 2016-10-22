@@ -114,19 +114,27 @@ class SettyController:
 
 
     @staticmethod
-    def getMachineAvailableList(serviceId, used_hostnames, current_user):
-        all_minions = []# SettyController.salthelper.getAllMinionsUngrouped()
-        usedMachines = Machine.objects.filter(service=serviceId)
-        user_instances = Instance.objects.filter(owner=current_user)
-        userMachines = []
+    def getMachineAvailableList(serviceId, usedHostnames, current_user):
+        saltMinions = []#SettyController.salthelper.getAllMinionsUngrouped()
+        savedMachines = Machine.objects.filter(service=serviceId)
 
+        savedHostNames = []
+        for machine in savedMachines:
+            savedHostNames.append( machine.hostname )
+
+        userInstances = Instance.objects.filter(owner=current_user)
         userMachines = []
-        for instance in user_instances:
+        for instance in userInstances:
             if instance.vm_name:
-                print instance.vm_name
                 userMachines.append(instance.vm_name)
 
-        return {'machinedata': userMachines}
+        usedHostnamesByUser = set( savedHostNames + usedHostnames )
+
+        if not usedHostnamesByUser:
+            return {'machinedata':userMachines}#{'machinedata': [machineName for machineName in userMachines if machineName in saltMinions] }
+
+        availableInstanceNames = list( set(userMachines) - usedHostnamesByUser )
+        return {'machinedata': availableInstanceNames}#[ machineName for machineName in availableInstanceNames if machineName in saltMinions ]}
 
     @staticmethod
     def addMachine(hostname):
@@ -135,12 +143,12 @@ class SettyController:
             return {'error': 'already added or doesnt exists'}
         except:
             pass
-        if SettyController.salthelper.checkMinionExists(hostname):
-            machine = Machine.clone()
-            machine.hostname = hostname
-            return machine.getDataDictionary()
-        else:
-            return {'error': 'already added or doesnt exists'}
+        #if SettyController.salthelper.checkMinionExists(hostname):
+        machine = Machine.clone()
+        machine.hostname = hostname
+        return machine.getDataDictionary()
+    #    else:
+     #       return {'error': 'already added or doesnt exists'}
 
     @staticmethod
     def addServiceNode(elementTemplateId):

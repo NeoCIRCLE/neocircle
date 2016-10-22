@@ -70,6 +70,7 @@ jsPlumb.ready(function() {
     };
     var elementConnections = [];
     var elementIndex = 0;
+    var machineIndex = 0;
     var dragContainerScroll = 0;
     var workspaceWidth = $("#dropContainer").width();
     var workspaceHeight = $("#dropContainer").height();
@@ -94,94 +95,67 @@ jsPlumb.ready(function() {
         }
     };
 
-    addInfo = function(title, info, type, object) {
+    addMachineClicked = function( machineButton ){
+        machineHostname = $(machineButton.currentTarget).attr("data-hostname");
+        $.post("", {
+            event: "addMachine",
+            data: JSON.stringify({ "hostname": machineHostname } )
+        }, function(result) {
+            addMachine( result );
+            undoStack.splice(stackIndexer, 0, removeElement);
+            redoStack.splice(stackIndexer, 0, addElement);
+            objectStack.splice(stackIndexer, 0, newInstance);
+            stackSize++;
+            stackIndexer++;
+        });
+    }
+
+    addInfo = function(title, object) {
         id = object.attr("id").split("_")[1];
         information = undefined;
         $.post("", {
             event: "getInformation",
             data: JSON.stringify({
-                "elementTemplateId": object.attr("id").split("_")[1] ,
-                "hostname": object.attr("hostname")} )
+                "elementTemplateId": object.attr("data-hostname") ? "" : object.attr("id").split("_")[1] ,
+                "hostname": object.attr("data-hostname")? object.attr("data-hostname") : "" } )
         }, function(result) {
 
         $("#informationContainer").empty();
-        switch(type){
-        /*case "connection":
-            div =
-                '<div class="row">' +
-                    '<div class="col-xs-12 text-center">' +
-                        '<h4>' + title + '</h4>' +
-                    '</div>' +
-                '</div>&nbsp;' +
-                '<div class="row">' +
-                    '<div class="col-xs-12">' +
-                        '<textarea class="form-control" rows="28" id="infoInput" placeholder="Config data"></textarea>' +
-                    '</div>' +
-                '</div>&nbsp;' +
-                '<div class="row">' +
-                    '<div class="col-xs-12 text-center">' +
-                        '<button id="removeConnection" class="btn btn-info">Remove connection</button>' +
-                    '</div>' +
-                '</div>';
-            break;*/
-        case "element":
-            $.each( result, function(fieldName, fieldType)
-            {   
-                form_group = $("<div class='form-group'></div>");
-                label = $("<label></label>").attr("for",fieldName).append( fieldName );
-                switch( fieldType )
-                {
-                    //#TODO: Gaben: handle additional types
-                    case 'PositiveIntegerField':
-                        input = $("<input>").prop("type","number" ).prop("min",0).addClass("form-control");
-                        value = object.attr( "data-"+ fieldName );
-                        if( value )
-                            input.prop("value",value );
-                        break;
-                    case 'TextField':
-                    case 'CharField':
-                        input = $("<input>").prop("type","text" ).addClass("form-control");
-                        value = object.attr( "data-"+ fieldName );
-                        if( value )
-                            input.prop("value",value );
-                        break;
-                    case 'BooleanField':
-                        input = $("<input>").prop("type","checkbox" );
-                        break;
-                    default:
-                        alert( "unknown field type: " + fieldType );
-                        break;
-                }
+        $.each( result, function(fieldName, fieldType)
+        {   
+            form_group = $("<div class='form-group'></div>");
+            label = $("<label></label>").attr("for",fieldName).append( fieldName );
+            switch( fieldType )
+            {
+                //#TODO: Gaben: handle additional types
+                case 'PositiveIntegerField':
+                    input = $("<input>").prop("type","number" ).prop("min",0).addClass("form-control");
+                    value = object.attr( "data-"+ fieldName );
+                    if( value )
+                        input.prop("value",value );
+                    break;
+                case 'TextField':
+                case 'CharField':
+                    input = $("<input>").prop("type","text" ).addClass("form-control");
+                    value = object.attr( "data-"+ fieldName );
+                    if( value )
+                        input.prop("value",value );
+                    break;
+                case 'BooleanField':
+                    input = $("<input>").prop("type","checkbox" );
+                    break;
+                default:
+                    alert( "unknown field type: " + fieldType );
+                    break;
+            }
 
-                input.attr("attribute-name", "data-" + fieldName );
-                input.prop("id", "input-data-" + fieldName)
+            input.attr("attribute-name", "data-" + fieldName );
+            input.prop("id", "input-data-" + fieldName)
 
-                form_group.append( label );
-                form_group.append( input );
-                $("#informationContainer").append( form_group )
-            } );
-            break;
-        /*case "elementTemplate":
-            div =
-                '<div class="row">' +
-                    '<div class="col-xs-12 text-center">' +
-                        '<h4>' + title + '</h4>' +
-                    '</div>' +
-                '</div>&nbsp;' +
-                '<div class="row">' +
-                    '<div class="col-xs-12">' +
-                        '<textarea class="form-control" rows="28" id="infoInput" placeholder="Config data"></textarea>' +
-                    '</div>' +
-                '</div>&nbsp;' +
-                '<div class="row">' +
-                    '<div class="col-xs-12 text-center">' +
-                        '<button id="addElementToWorkspace" class="btn btn-success">Add to workspace</button>' +
-                    '</div>' +
-                '</div>';
-            break;*/
-        }
-
-        $("#infoInput").val(info);
+            form_group.append( label );
+            form_group.append( input );
+            $("#informationContainer").append( form_group )
+        } );
 
         $("#changeInformationDialog").modal('show');
         
@@ -443,35 +417,6 @@ jsPlumb.ready(function() {
         return newInstance;
     };
 
-    addMachine = function(idOrInstance, newId, newPositionY, endpoints, parameters, newPositionX) {
-        newInstance = "";
-
-        newInstance = $('<div>')
-            .prop("id", newId)
-            .prop("title", "Right click to delete")
-            .removeClass()
-            .addClass("element")
-            .attr("anchors", 0)
-            .attr("parameters", parameters)
-            .css("top", newPositionY)
-            .css("left", newPositionX);
-
-        $("#dropContainer").append(newInstance);
-                
-        for (i = 0; i <= endpoints; i++) {
-            addEndpoint(newInstance);
-        }
-        
-        jsPlumbInstance.draggable(jsPlumb.getSelector(".element"), {
-            containment: $("#dropContainer")
-        });
-
-        setServiceStatus("unsaved");
-
-        jsPlumbInstance.repaintEverything();
-        
-        return newInstance;
-    }
     removeElement = function(object) {
         jsPlumbInstance.detachAllConnections(object);
         jsPlumbInstance.remove(object.attr("id"));
@@ -529,13 +474,16 @@ jsPlumb.ready(function() {
 
     jsPlumbInstance.bind("dblclick", function(info) {
         info.setPaintStyle({strokeStyle:"red", lineWidth: 8});
-        addInfo($("#" + info.sourceId.split('_')[1]).attr("alt") + ' - ' + $("#" + info.targetId.split('_')[1]).attr("alt"),
-            info.parameters,
-            "connection",
-            info);
+        //addInfo($("#" + info.sourceId.split('_')[1]).attr("alt") + ' - ' + $("#" + info.targetId.split('_')[1]).attr("alt"),
+        //    info.parameters,
+        //    "connection",
+        //    info);
     });
 
     jsPlumbInstance.draggable(jsPlumb.getSelector(".element"), {
+        containment: $("#dropContainer")
+    });
+    jsPlumbInstance.draggable(jsPlumb.getSelector(".machine"), {
         containment: $("#dropContainer")
     });
 
@@ -571,19 +519,35 @@ jsPlumb.ready(function() {
         });
 
 /* ---------------------------------------- */
-
-
     
     $('body').on('dblclick', '.element', function() {
         element = $(this);
         element.addClass("elementSelected");
-        addInfo(element.attr("alt"),
-            element.attr("parameters"),
-            "element", element);
+        addInfo(element.attr("alt"), element);
+        $(document).scrollTop(0);
+    });
+
+    $('body').on('dblclick', '.machine', function() {
+        element = $(this);
+        element.addClass("elementSelected");
+        addInfo(element.attr("alt"), element);
         $(document).scrollTop(0);
     });
 
     $('body').on('contextmenu', '.element', function(event) {
+        setServiceStatus("unsaved");
+        removeElement($(this));
+
+        undoStack.splice(stackIndexer, 0, addElement);
+        redoStack.splice(stackIndexer, 0, removeElement);
+        objectStack.splice(stackIndexer, 0, $(this));
+        
+        nextStepConstraint = 0;
+        stackSize++;
+        stackIndexer++;
+    });
+
+    $('body').on('contextmenu', '.machine', function(event) {
         setServiceStatus("unsaved");
         removeElement($(this));
 
@@ -680,18 +644,36 @@ jsPlumb.ready(function() {
         clickEvent = 0;
     });
     
-    $('body').on('click', '#addMachineDialog', function() {
-        // Here comes the ajax post of getMachineAvailableList
-        // posting usedhostnames
-        //
-        //
-        // after it, appending obtained content to addmachinedialogbody
+    $('body').on('click', '#showAddMachineDialog', function() {
+        usedHostnames = []
+        $(".machine").each( function() {
+            usedHostnames.push($(this).attr("data-hostname"))
+        } );
+
+        $.post("", {
+            event: "getMachineAvailableList",
+            data: JSON.stringify({ "usedHostnames": usedHostnames } )
+        }, function(result) {
+            $("#availableMachineListContainer").empty();
+
+            $.each( result.machinedata, function(key, hostname)
+            {   
+                listItem = $("<button/>")//.class("list-group-item").data("hostname",hostname);
+                listItem.addClass("list-group-item").attr("data-hostname",hostname).attr("data-dismiss","modal").attr("type","button");
+                listItem.append( hostname );
+                listItem.on("click", {hostname: listItem}, addMachineClicked );
+
+                $("#availableMachineListContainer").append( listItem );
+            });
+
+            $("#addMachineDialog").modal('show');    
+        });
     });
 
-    $('body').on('click', '.elementTemplateInfo', function() {
-        id = $(this).attr("element");
-        addInfo($("#" + id).attr("alt"), $("#" + id).attr("desc"), "elementTemplate", $("#" + id));
-    });
+    //$('body').on('click', '.elementTemplateInfo', function() {
+    //    id = $(this).attr("element");
+    //    addInfo($("#" + id).attr("alt"), $("#" + id).attr("desc"), "elementTemplate", $("#" + id));
+    //});
 
     $('body').on('click', '#serviceName', function() {
         $('#serviceName').hide();
@@ -818,6 +800,7 @@ jsPlumb.ready(function() {
         serviceName = $("#serviceName").text();
         connectionSet = [];
         instanceSet = [];
+        machineSet = [];
 
         $.each(elementConnections, function(index) {
             connectionSet.push({
@@ -834,7 +817,6 @@ jsPlumb.ready(function() {
                            "displayId":    $(item).prop("id") };
             attributes = item.attributes
             $.each( attributes, function(key,attribute){
-             
                 if( attribute.name.indexOf("data-") != -1 ){
                     basic_data[ attribute.name.substring( attribute.name.indexOf('-') + 1 ) ] = attribute.value || "";
                 }
@@ -843,13 +825,28 @@ jsPlumb.ready(function() {
             instanceSet.push( basic_data );
         });
 
+        $.each($(".machine"), function( index, item ) {
+            basic_data = { "anchorNumber": $(item).attr("anchors"),
+                           "positionLeft": $(item).position().left/workspaceWidth,
+                           "positionTop":  $(item).position().top/workspaceHeight,
+                           "displayId":    $(item).prop("id") };
+            attributes = item.attributes
+            $.each( attributes, function(key,attribute){
+                if( attribute.name.indexOf("data-") != -1 ){
+                    basic_data[ attribute.name.substring( attribute.name.indexOf('-') + 1 ) ] = attribute.value || "";
+                }
+            });
+
+            machineSet.push( basic_data );
+        });
+
         $.post("", {
             event: "saveService",
             data: JSON.stringify({
                 "serviceName": serviceName,
                 "elementConnections": connectionSet,
                 "serviceNodes": instanceSet,
-                "machines": []})
+                "machines": machineSet })
         }, function(result) {
             addMessage(result.serviceName + gettext(" saved successfully."),"success");
             setServiceStatus("saved");
@@ -866,7 +863,7 @@ jsPlumb.ready(function() {
             $("#serviceName").text( result.serviceName );
 
             $.each(result.serviceNodes, function(i, element) {
-                addElement2( element );
+                addElementOnLoad( element );
             
                 if (elementIndex < element.displayId.split('_')[0])
                     elementIndex = element.displayId.split('_')[0];
@@ -874,15 +871,11 @@ jsPlumb.ready(function() {
             });
 
             $.each(result.machines, function(i, element) {
-                addMachine(element.displayId.split('_')[1],
-                    element.displayId,
-                    (element.positionTop*workspaceHeight) + "px",
-                    element.anchorNumber,
-                    element.parameters,
-                    (element.positionLeft*workspaceWidth) + "px");
-                if (elementIndex < element.displayId.split('_')[0])
-                    elementIndex = element.displayId.split('_')[0];
-                elementIndex++;
+                addMachineOnLoad(element);
+
+                if (machineIndex < element.displayId.split('_')[1])
+                    machineIndex = element.displayId.split('_')[1];
+                machineIndex++;
             });
 
             clickEvent = 1;
@@ -896,11 +889,87 @@ jsPlumb.ready(function() {
         });
     });
 
-    addElement2 = function(elementData) {
+    addMachine = function(elementData){
+        newInstance = $('<img id="machine_' + machineIndex + '"/>')
+            .prop("title", "Right click to delete")
+            .removeClass()
+            .attr("anchors", 0)
+            .addClass("machine");
+
+        var skippedVariables = ["anchorNumber", "displayId"] 
+        $.each(elementData, function(key, value) 
+        {
+            if (skippedVariables.indexOf(key) == -1 )
+            {
+                if (key === "positionTop")
+                    newInstance.css("top", value * workspaceHeight);
+                else if(key === "positionLeft")
+                    newInstance.css("left", value * workspaceWidth);
+                else
+                    newInstance.attr("data-"+key, value);
+            }
+        });
+
+        $("#dropContainer").append(newInstance);
+        for (idx = 0; idx < 4; idx++) 
+            addEndpoint(newInstance);
+
+        setServiceStatus("unsaved");
+
+        jsPlumbInstance.draggable(jsPlumb.getSelector(".machine"), {
+            containment: $("#dropContainer")
+        });
+
+
+        jsPlumbInstance.repaintEverything();
+    
+        machineIndex++;
+
+        return newInstance;
+    }
+
+    addMachineOnLoad = function(elementData){
+        newInstance = $('<img id="' + elementData["displayId"] + '"/>')
+            .prop("title", "Right click to delete")
+            .removeClass()
+            .attr("anchors", 0)
+            .addClass("machine");
+
+        var skippedVariables = ["anchorNumber", "displayId"] 
+        $.each(elementData, function(key, value) 
+        {
+            if (skippedVariables.indexOf(key) == -1 )
+            {
+                if (key === "positionTop")
+                    newInstance.css("top", value * workspaceHeight);
+                else if(key === "positionLeft")
+                    newInstance.css("left", value * workspaceWidth);
+                else
+                    newInstance.attr("data-"+key, value);
+            }
+        });
+
+        $("#dropContainer").append(newInstance);
+        for (idx = 0; idx < elementData["anchorNumber"]; idx++) 
+            addEndpoint(newInstance);
+
+        setServiceStatus("unsaved");
+
+        jsPlumbInstance.draggable(jsPlumb.getSelector(".machine"), {
+            containment: $("#dropContainer")
+        });
+
+
+        jsPlumbInstance.repaintEverything();
+    
+        return newInstance;
+    }
+
+    addElementOnLoad = function(elementData) {
         templateId = elementData.displayId.split('_')[1]
         template = $(".elementTemplate").filter( "#" + templateId );
         
-        id = elementData.displayId.split('_')[0]
+        //id = elementData.displayId.split('_')[0]
         newInstance = $('<img id="' + elementData["displayId"] + '"/>')
             .prop("title", "Right click to delete")
             .removeClass()
