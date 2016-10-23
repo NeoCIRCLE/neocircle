@@ -23,13 +23,12 @@ from taggit.managers import TaggableManager
 from django.utils.translation import ugettext_lazy as _
 from storage import OverwriteStorage
 import os
+import yaml
+from saltstackhelper import SaltCommand
 
-# TODO: derive from object or keep the tricky base function calling?
-# TODO: exceptions
+SALTSTACK_PILLAR_FOLDER = "/srv/pillar"
 
-SALTSTACK_STATE_FOLDER = "/srv/salt"
-
-
+# Replacer method for configuration generation
 def replaceParameter(config, parameterToReplace, newValue):
     configEdited = config.replace(parameterToReplace, str(newValue))
     return configEdited
@@ -114,6 +113,9 @@ class Element(InheritanceCastModel):
         self.position_top = data["positionTop"]
         self.anchor_number = data["anchorNumber"]
 
+# ElementConnection represents connection between Elements. Has a source
+# and a target endpoint.
+
 
 class ElementConnection(models.Model):
     target = models.ForeignKey(
@@ -134,8 +136,11 @@ class ElementConnection(models.Model):
         return {'targetEndpoint': self.target_endpoint,
                 'sourceEndpoint': self.source_endpoint}
 
+# Represents an CIRCLE VM Instance which is known by Salt-Master and used
+# in Setty configuration
 
-class Machine(Element):  # As a real machine
+
+class Machine(Element):
     MACHINE_STATUS_CHOICES = (
         (1, 'Running'),
         (2, 'Unreachable'))
@@ -185,7 +190,7 @@ class ServiceNode(Element):
         default=None, upload_to='setty/node_configs/', storage=OverwriteStorage())
     description = models.TextField(default="")
     machine = None  # for deploying
-    generatedConfig = None
+    generatedCommands = []
 
     def __unicode__(self):
         return "%s" % self.name
@@ -224,11 +229,11 @@ class ServiceNode(Element):
             serviceNode = None
             if connection.target.cast() == self:
                 if isinstance(connection.source.cast(), ObjOther):
-                    return True
+                    return connection.source.cast()
             elif connection.source.cast() == self:
                 if isinstance(connection.target.cast(), ObjOther):
-                    return True
-        return False
+                    return connection.target.cast()
+        return None
 
     def __cmp__(self, other):
         return self.getDeploymentPriority(self).__cmp__(other.getDeploymentPriority(other))
@@ -240,29 +245,36 @@ class ServiceNode(Element):
     def getDeploymentPriority(self):
         return 0
 
-    def generateConfigurationRecursively(self):
+    def generateSaltCommands(self):
+        raise PermissionDenied
+
+    def replacePillarParameters(self, pillar):
         raise PermissionDenied
 
 
 class WordpressNode(ServiceNode):
     # DB related fields
-    databaseListeningPort = models.PositiveIntegerField()
-    databaseHost = models.TextField()
-    databaseUser = models.TextField()
-    databasePass = models.TextField()
+    databaseName = models.TextField(default="")
+    databaseHost = models.TextField(default="")
+    databaseUser = models.TextField(default="")
+    databasePass = models.TextField(default="")
 
     # admin user
-    adminUsername = models.TextField()
-    adminPassword = models.TextField()
-    adminEmail = models.TextField()
+    adminUsername = models.TextField(default="")
+    adminPassword = models.TextField(default="")
+    adminEmail = models.TextField(default="")
 
     # site related fields
-    siteTitle = models.TextField()
-    siteUrl = models.TextField()
+    siteTitle = models.TextField(default="")
+    siteUrl = models.TextField(default="")
+
+    @staticmethod
+    def clone():
+        return WordpressNode()
 
     def getDataDictionary(self):
         element_data = ServiceNode.getDataDictionary(self)
-        self_data = {'database-listening-port': self.databaseListeningPort,
+        self_data = {'database-name': self.databaseName,
                      'database-host': self.databaseHost,
                      'database-user': self.databaseUser,
                      'database-pass': self.databasePass,
@@ -277,7 +289,7 @@ class WordpressNode(ServiceNode):
 
     def fromDataDictionary(self, data):
         ServiceNode.fromDataDictionary(self, data)
-        self.databaseListeningPort = data['database-listening-port']
+        self.databaseName = data['database-name']
         self.databaseHost = data['database-host']
         self.databaseUser = data['database-user']
         self.databasePass = data['database-pass']
@@ -290,10 +302,7 @@ class WordpressNode(ServiceNode):
     @staticmethod
     def getInformation():
         superInformation = ServiceNode.getInformation()
-        ownInformation = {'use-ssl': WebServerNode._meta.get_field('useSSL').get_internal_type(),
-                          'listeningport': WebServerNode._meta.get_field('listeningport').get_internal_type()}
-
-        ownInformation = {'database-listening-port': WordpressNode._meta.get_field('databaseListeningPort').get_internal_type(),
+        ownInformation = {'database-name': WordpressNode._meta.get_field('databaseName').get_internal_type(),
                           'database-host': WordpressNode._meta.get_field('databaseHost').get_internal_type(),
                           'database-user': WordpressNode._meta.get_field('databaseUser').get_internal_type(),
                           'database-pass': WordpressNode._meta.get_field('databasePass').get_internal_type(),
@@ -309,8 +318,8 @@ class WordpressNode(ServiceNode):
     def checkDependenciesAndAttributes(self):
         errorMessages = ServiceNode.checkDependenciesAndAttributes(self)
 
-        if self.databaseListeningPort == 0:
-            errorMessages.append("LISTENING_PORT_NOT_SET")
+        if not self.databaseHost:
+            errorMessage.append("DATABASENAME_NOT_SET")
         if not self.databaseHost:
             errorMessage.append("DATABASEHOST_NOT_SET")
         if not self.databaseUser:
@@ -341,9 +350,8 @@ class WordpressNode(ServiceNode):
         return 10
 
     def generateConfiguration(self, config=""):
-
         config = replaceParameter(
-            config, r'%%DATABASE_LISTENING_PORT%%', self.databaseListeningPort)
+            config, r'%%DATABASE_NAME%%', self.databaseName)
         config = replaceParameter(
             config, r'%%DATABASE_HOST%%', self.databaseHost)
         config = replaceParameter(
@@ -359,6 +367,30 @@ class WordpressNode(ServiceNode):
         config = replaceParameter(config, r'%%SITE_URL%%', self.siteUrl)
 
         return config
+
+    def generateSaltCommands(self):
+        pillarFilePath = os.path.join(
+            SALTSTACK_PILLAR_FOLDER, "wordpress.sls")
+        with open(pillarFilePath, 'r') as pillar:
+            mysqlNode = self.checkDependecy(MySQLNode)
+            apacheNode = self.checkDependecy(ApacheNode)
+            if not mysqlNode:
+                raise PermissionDenied
+            if not apacheNode:
+                raise PermissionDenied
+
+            self.machine = apacheNode.machine
+
+            createMySQLUserCommand = mysqlNode.makeCreateDatabaseCommand(
+                self.databaseName)
+            createMySQLUserCommand = mysqlNode.makeCreateUserCommand(
+                self.databaseUser, self.databasePass)
+            config = str(yaml.load(pillar))
+            config = replacePillarParameters(pillar)
+            saltCommand = SaltCommand(
+                hostname=machine.hostname, command="wordpress", parameters=[eval(config)])
+
+            self.generatedCommands = [createMySQLUserCommand, saltCommand]
 
 
 class WebServerNode(ServiceNode):
@@ -393,7 +425,7 @@ class WebServerNode(ServiceNode):
     def getInformation():
         superInformation = ServiceNode.getInformation()
         ownInformation = {'use-ssl': WebServerNode._meta.get_field('useSSL').get_internal_type(),
-                          'listeningport': WebServerNode._meta.get_field('listeningport').get_internal_type()}
+                          'listeningport': WebServerNode._meta.get_field('listeningPort').get_internal_type()}
 
         ownInformation.update(superInformation)
         return ownInformation
@@ -408,6 +440,12 @@ class WebServerNode(ServiceNode):
                                   r"%%LISTENING_PORT%%", self.listeningPort)
         return config
 
+    def replacePillarParameters(self, pillar):
+        config = replaceParameter(config, r"%%USE_SSL%%", self.useSSL)
+        config = replaceParameter(config,
+                                  r"%%LISTENING_PORT%%", self.listeningPort)
+        return config
+
 
 class ApacheNode(WebServerNode):
 
@@ -415,22 +453,15 @@ class ApacheNode(WebServerNode):
     def clone():
         return ApacheNode()
 
-    def generateConfigurationRecursively(self):
-        config = str()
-        exampleFilePath = os.path.join(
-            SALTSTACK_STATE_FOLDER, "apache.example")
-        with open(exampleFilePath, 'r') as configFile:
-            config = configFile.read()
-            config = WebServerNode.generateConfiguration(self, config)
-
-        self.generatedConfig = "apache_%s.sls" % self.machine.hostname
-        with open(os.path.join(SALTSTACK_STATE_FOLDER, self.generatedConfig), 'w') as generatedConfigFile:
-            generatedConfigFile.write(config)
-
-        configuredNodes = []
-        configuredNodes.append(self)
-
-        return configuredNodes
+    def generateSaltCommands(self):
+        pillarFilePath = os.path.join(
+            SALTSTACK_PILLAR_FOLDER, "apache.sls")
+        with open(pillarFilePath, 'r') as pillar:
+            config = str(yaml.load(pillar))
+            config = WebServerNode.replacePillarParameters(self, pillar)
+            saltCommand = SaltCommand(
+                hostname=machine.hostname, command="apache", parameters=eval(config))
+            self.generatedCommands = [saltCommand]
 
 
 class NginxNode(WebServerNode):
@@ -465,23 +496,19 @@ class NginxNode(WebServerNode):
     def clone():
         return NginxNode()
 
-    def generateConfigurationRecursively(self):
-        config = str()
-        exampleFilePath = os.path.join(SALTSTACK_STATE_FOLDER, "nginx.example")
-        with open(exampleFilePath, 'r') as configFile:
-            config = configFile.read()
-            config = WebServerNode.generateConfiguration(self, config)
+    def generateSaltCommands(self):
+        pillarFilePath = os.path.join(
+            SALTSTACK_PILLAR_FOLDER, "nginx.sls")
+        with open(pillarFilePath, 'r') as pillar:
+            config = str(yaml.load(pillar))
+            config = WebServerNode.replacePillarParameters(self, pillar)
             config = replaceParameter(config,
                                       r"%%WORKER_CONNECTIONS%%", self.worker_connections)
 
-        self.generatedConfig = "nginx_%s.sls" % self.machine.hostname
-        with open(os.path.join(SALTSTACK_STATE_FOLDER, self.generatedConfig), 'w') as generatedConfigFile:
-            generatedConfigFile.write(config)
+            saltCommand = SaltCommand(
+                hostname=machine.hostname, command="nginx", parameters=eval(config))
 
-        configuredNodes = []
-        configuredNodes.append(self)
-
-        return configuredNodes
+            self.generatedCommands = [saltCommand]
 
 
 class DatabaseNode(ServiceNode):
@@ -531,14 +558,14 @@ class DatabaseNode(ServiceNode):
     def getDeploymentPriority(self):
         return 10
 
-    def generateConfiguration(self, config=""):
-        config = replaceParameter(config,
+    def replacePillarParameters(self, pillar):
+        pillar = replaceParameter(pillar,
                                   r"%%ADMIN_USERNAME%%", self.adminUserName)
-        config = replaceParameter(config,
+        pillar = replaceParameter(pillar,
                                   r"%%ADMIN_PASSWORD%%", self.adminUserName)
-        config = replaceParameter(config,
+        pillar = replaceParameter(pillar,
                                   r'%%LISTENING_PORT%%', self.listeningPort)
-        return config
+        return pillar
 
 
 class PostgreSQLNode(DatabaseNode):
@@ -547,19 +574,15 @@ class PostgreSQLNode(DatabaseNode):
     def clone():
         return PostgreSQLNode()
 
-    def generateConfigurationRecursively(self):
-        config = str()
-        exampleFilePath = os.path.join(
-            SALTSTACK_STATE_FOLDER, "postgres.example")
-        with open(exampleFilePath, 'r') as configFile:
-            config = configFile.read()
-            config = DatabaseNode.generateConfiguration(self, config)
-
-        self.generatedConfig = "postgres_%s.sls" % self.machine.hostname
-        with open(os.path.join(SALTSTACK_STATE_FOLDER, self.generatedConfig), 'w') as generatedConfigFile:
-            generatedConfigFile.write(config)
-
-        return self
+    def generateSaltCommands(self):
+        pillarFilePath = os.path.join(
+            SALTSTACK_PILLAR_FOLDER, "nginx.sls")
+        with open(pillarFilePath, 'r') as pillar:
+            config = str(yaml.load(pillar))
+            config = DatabaseNode.replacePillarParameters(self, pillar)
+            saltCommand = SaltCommand(
+                hostname=machine.hostname, command="postgresql", parameters=eval(config))
+            self.generatedCommands = [saltCommand]
 
 
 class MySQLNode(DatabaseNode):
@@ -568,15 +591,25 @@ class MySQLNode(DatabaseNode):
     def clone():
         return MySQLNode()
 
-    def generateConfigurationRecursively(self):
-        config = str()
-        exampleFilePath = os.path.join(SALTSTACK_STATE_FOLDER, "mysql.example")
-        with open(exampleFilePath, 'r') as configFile:
-            config = configFile.read()
-            config = DatabaseNode.generateConfiguration(self, config)
+    def makeCreateDatabaseCommand(self, databaseName):
+        saltCommand = SaltCommand()
+        saltCommand.hostname = self.machine.hostname
+        saltCommand.command = "mysql.database"
+        saltCommand.parameters = [databaseName]
 
-        self.generatedConfig = "mysql_%s.sls" % self.machine.hostname
-        with open(os.path.join(SALTSTACK_STATE_FOLDER, self.generatedConfig), 'w') as generatedConfigFile:
-            generatedConfigFile.write(config)
+    def makeCreateUserCommand(self, databaseUser, databasePass, availableDatabases):
+        saltCommand = SaltCommand()
+        saltCommand.hostname = self.machine.hostname
+        saltCommand.command = "mysql.user"
+        saltCommand.parameters = {databaseUser: {'password': databasePass, 'host': 'localhost', 'databases': [
+            {'database': availableDatabases, 'grants': ['all privileges']}]}}
 
-        return self
+    def generateSaltCommands(self):
+        pillarFilePath = os.path.join(
+            SALTSTACK_PILLAR_FOLDER, "nginx.sls")
+        with open(pillarFilePath, 'r') as pillar:
+            config = str(yaml.load(pillar))
+            config = DatabaseNode.replacePillarParameters(self, pillar)
+            saltCommand = SaltCommand(
+                hostname=machine.hostname, command="mysql.server", parameters=eval(config))
+            self.generatedCommands = [saltCommand]

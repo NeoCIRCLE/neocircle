@@ -3,8 +3,16 @@ import salt.config
 import salt.runner
 import salt.client
 
+class SaltCommand:
+    def __init__(self):
+        self.hostname = ""
+        self.command = ""
+        self.parameters = ""
 
-SALTSTACK_STATE_FOLDER = "/srv/salt"
+    # For debugging purposes only
+    def __str__(self):
+	   return "Command: " + self.hostname + " - " + self.command + " - " + str(self.parameters)
+
 class SaltStackHelper:
     def __init__(self):
         self.master_opts = salt.config.client_config('/etc/salt/master')
@@ -38,9 +46,7 @@ class SaltStackHelper:
 
     def checkMinionExists(self, hostname):
         query_res = self.salt_localclient.cmd( hostname,'network.get_hostname' );
-        print query_res
         return query_res != {}
 
-    def deploy(self, hostname, configFilePath ):
-        print configFilePath
-        self.salt_localclient.cmd(hostname, 'state.apply', [configFilePath.split('.')[0]] )
+    def executeCommand(self, saltCommand):
+       return self.salt_localclient.cmd(saltCommand.hostname, "state.sls",[saltCommand.command],kwarg={"pillar":saltCommand.parameters} )

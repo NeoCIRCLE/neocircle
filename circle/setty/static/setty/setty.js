@@ -501,7 +501,7 @@ jsPlumb.ready(function() {
         $.post("", {
             event: "addServiceNode",
             data: JSON.stringify({
-                "elementTemplateId": $(this).attr("id") })
+                "elementTemplateId": $(elementTemplate).attr("id") })
         }, function(result) {
             addElement($(elementTemplate).attr("id"),
             (++elementIndex) + "_" + $(elementTemplate).attr("id"),
@@ -791,10 +791,15 @@ jsPlumb.ready(function() {
 
 /* Registering events concerning persistence. */
     $('body').on('click', '#deployService',function() {
+
+        if($("#serviceStatus").text() == "Unsaved") {
+            alert("Only saved services can be deployed");
+            return;
+        }
         $.post("", {
             event: "deploy",
         }, function(result) {
-            if ( result.error ) 
+            if ( result.status ) 
                 alert( result.errors );
             else
                 alert("Deploying....");

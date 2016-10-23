@@ -6,6 +6,7 @@ from django.db import transaction
 from saltstackhelper import *
 import os
 from vm.models import Instance
+import logging
 
 class SettyController:
     salthelper = SaltStackHelper()
@@ -113,7 +114,6 @@ class SettyController:
         else:
             raise PermissionDenied  # TODO: something more meaningful
 
-
     @staticmethod
     def getMachineAvailableList(serviceId, usedHostnames, current_user):
         saltMinions = SettyController.salthelper.getAllMinionsUngrouped()
@@ -121,21 +121,23 @@ class SettyController:
 
         savedHostNames = []
         for machine in savedMachines:
-            savedHostNames.append( machine.hostname )
+            savedHostNames.append(machine.hostname)
 
-        userInstances = Instance.objects.filter(owner=current_user)
+        userInstances = Instance.objects.filter(
+            owner=current_user, destroyed_at=None)
         userMachines = []
         for instance in userInstances:
             if instance.vm_name:
                 userMachines.append(instance.vm_name)
 
-        usedHostnamesByUser = set( savedHostNames + usedHostnames )
+        usedHostnamesByUser = set(savedHostNames + usedHostnames)
 
         if not usedHostnamesByUser:
-            return {'machinedata':userMachines}#{'machinedata': [machineName for machineName in userMachines if machineName in saltMinions] }
+            
+            return {'machinedata': [machineName for machineName in userMachines if machineName in saltMinions] }
 
-        availableInstanceNames = list( set(userMachines) - usedHostnamesByUser )
-        return {'machinedata': availableInstanceNames}#[ machineName for machineName in availableInstanceNames if machineName in saltMinions ]}
+        availableInstances = list(set(userMachines) - usedHostnamesByUser)
+        return {'machinedata': [ machineName for machineName in availableInstances if machineName in saltMinions ]}
 
     @staticmethod
     def addMachine(hostname):
@@ -180,49 +182,57 @@ class SettyController:
 
         if errorMessages:
             return {'status': 'error',
-                    'errors': errorMessages }
+                    'errors': errorMessages}
 
         elementConnections = ElementConnection.objects.filter(
             Q(target__in=machines) | Q(source__in=machines))
-        firstLevelServiceNodes = []
 
         # phase one: set the machine ptr in serviceNodes which can be accessed by
         # connections from machines
+        logger = logging.getLogger('project.interesting.stuff')
         for machine in machines:
             for connection in elementConnections:
                 serviceNode = None
                 if connection.target.cast() == machine:
                     serviceNode = connection.source.cast()
                     serviceNode.setMachineForDeploy(machine)
-
                 elif connection.source.cast() == machine:
                     serviceNode = connection.target.cast()
                     serviceNode.setMachineForDeploy(machine)
-                else:
-                    raise PermissionDenied
-                firstLevelServiceNodes.append(serviceNode)
 
         # phase two: let the nodes create configurations recursively
         configuratedNodes = list()
-        for serviceNode in firstLevelServiceNodes:
-            generatedNodes = serviceNode.generateConfigurationRecursively()
-            if isinstance(generatedNodes, list):
-                configuratedNodes = configuratedNodes + generatedNodes
-            else:
-                configuratedNodes.append(generatedNodes)
+        for serviceNode in serviveNodeList:
+            node = serviceNode.cast()
+            node.generateSaltCommands()
+            configuratedNodes.append( node )
 
         # phase three: sort the nodes by deployment priority(lower the prio,
         # later in the deployement)
 
         configuratedNodes.sort(reverse=True)
-        return {'status': 'success'}
 
-        # deploy the nodes
+#        dbgCheck = []
 #        for node in configuratedNodes:
-#            SettyController.salthelper.deploy(
-#                node.machine.hostname, node.generatedConfig)
-#        return {'status': 'deployed'}
+#            commandDict = []
+#            for command in node.generatedCommands:
+#                commandDict.append( command.__dict__ )
+#            dbgCheck.append({ "nodeName": my_instance.__class__.__name__,
+#                "commands": commandDict })
+#        return dbgCheck
+        # phase four: deploy the nodes
+        for node in configuratedNodes:
+            deployErrorMessages = SettyController.salthelper.executeCommand(
+                node.generatedCommands)
+            if errorMessages:
+                errorMessages.append(deployErrorMessages)
 
-        # cleanup the temporary data
-'''     for node in configuratedNodes:
-            node.deployCleanUp()'''
+        # phase five: cleanup generated commands
+        for serviceNode in firstLevelServiceNodes:
+            serviceNode.generatedCommands = None
+
+        if errorMessages:
+            return {'status': 'error',
+                    'errors': errorMessages}
+
+        return {'status': 'success'}
