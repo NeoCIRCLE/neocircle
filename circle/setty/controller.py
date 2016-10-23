@@ -8,6 +8,7 @@ import os
 from vm.models import Instance
 
 class SettyController:
+    salthelper = SaltStackHelper()
 
     @staticmethod
     @transaction.atomic
@@ -115,7 +116,7 @@ class SettyController:
 
     @staticmethod
     def getMachineAvailableList(serviceId, usedHostnames, current_user):
-        saltMinions = []#SettyController.salthelper.getAllMinionsUngrouped()
+        saltMinions = SettyController.salthelper.getAllMinionsUngrouped()
         savedMachines = Machine.objects.filter(service=serviceId)
 
         savedHostNames = []
@@ -143,12 +144,12 @@ class SettyController:
             return {'error': 'already added or doesnt exists'}
         except:
             pass
-        #if SettyController.salthelper.checkMinionExists(hostname):
-        machine = Machine.clone()
-        machine.hostname = hostname
-        return machine.getDataDictionary()
-    #    else:
-     #       return {'error': 'already added or doesnt exists'}
+        if SettyController.salthelper.checkMinionExists(hostname):
+            machine = Machine.clone()
+            machine.hostname = hostname
+            return machine.getDataDictionary()
+        else:
+            return {'error': 'already added or doesnt exists'}
 
     @staticmethod
     def addServiceNode(elementTemplateId):

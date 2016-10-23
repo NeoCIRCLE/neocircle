@@ -101,6 +101,11 @@ jsPlumb.ready(function() {
             event: "addMachine",
             data: JSON.stringify({ "hostname": machineHostname } )
         }, function(result) {
+            if(result.error)
+            {
+                alert(result.error)
+                return;
+            }
             addMachine( result );
             undoStack.splice(stackIndexer, 0, removeElement);
             redoStack.splice(stackIndexer, 0, addElement);
@@ -789,7 +794,7 @@ jsPlumb.ready(function() {
         $.post("", {
             event: "deploy",
         }, function(result) {
-            if ( result.status == 'error' ) 
+            if ( result.error ) 
                 alert( result.errors );
             else
                 alert("Deploying....");

@@ -6,11 +6,10 @@ import salt.client
 
 SALTSTACK_STATE_FOLDER = "/srv/salt"
 class SaltStackHelper:
-  #  def __init__(self):
-        #self.master_opts = salt.config.client_config('/etc/salt/master')
-        #self.salt_runner = salt.runner.RunnerClient(self.master_opts)
-        #self.salt_localclient = salt.client.LocalClient()
-        #self.salt_caller = salt.client.Caller()
+    def __init__(self):
+        self.master_opts = salt.config.client_config('/etc/salt/master')
+        self.salt_runner = salt.runner.RunnerClient(self.master_opts)
+        self.salt_localclient = salt.client.LocalClient()
 
     def getAllMinionsGrouped(self):
         query_result = self.salt_runner.cmd('manage.status', []);
@@ -39,7 +38,8 @@ class SaltStackHelper:
 
     def checkMinionExists(self, hostname):
         query_res = self.salt_localclient.cmd( hostname,'network.get_hostname' );
-        return query_res != None
+        print query_res
+        return query_res != {}
 
     def deploy(self, hostname, configFilePath ):
         print configFilePath
