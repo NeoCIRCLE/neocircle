@@ -171,12 +171,14 @@ class SettyController:
     @staticmethod
     def deploy(serviceId):
         service = Service.objects.get(id=serviceId)
-        machines = Machine.objects.filter(service=service)
-
         serviveNodeList = ServiceNode.objects.filter(service=service)
         errorMessages = []
+
+        nodesToBeDeployed = []
         for serviceNode in serviveNodeList:
-            errorMessage = serviceNode.cast().checkDependenciesAndAttributes()
+            castedServiceNode = serviceNode.cast()
+            nodesToBeDeployed.append( castedServiceNode )
+            errorMessage = castedServiceNode.checkDependenciesAndAttributes()
             if errorMessage:
                 errorMessages.append(errorMessage)
 
@@ -184,52 +186,39 @@ class SettyController:
             return {'status': 'error',
                     'errors': errorMessages}
 
-        elementConnections = ElementConnection.objects.filter(
-            Q(target__in=machines) | Q(source__in=machines))
+        # phase one: ask the servicenodes to generate their needed salt commands
+        
+        for serviceNode in nodesToBeDeployed:
+            serviceNode.generateSaltCommands()
 
-        # phase one: set the machine ptr in serviceNodes which can be accessed by
-        # connections from machines
-        logger = logging.getLogger('project.interesting.stuff')
-        for machine in machines:
-            for connection in elementConnections:
-                serviceNode = None
-                if connection.target.cast() == machine:
-                    serviceNode = connection.source.cast()
-                    serviceNode.setMachineForDeploy(machine)
-                elif connection.source.cast() == machine:
-                    serviceNode = connection.target.cast()
-                    serviceNode.setMachineForDeploy(machine)
-
-        # phase two: let the nodes create configurations recursively
-        configuratedNodes = list()
-        for serviceNode in serviveNodeList:
-            node = serviceNode.cast()
-            node.generateSaltCommands()
-            configuratedNodes.append( node )
-
-        # phase three: sort the nodes by deployment priority(lower the prio,
+        # phase two: sort the nodes by deployment priority(lower the prio,
         # later in the deployement)
 
-        configuratedNodes.sort(reverse=True)
+        nodesToBeDeployed.sort(reverse=True)
 
 #        dbgCheck = []
-#        for node in configuratedNodes:
-#            commandDict = []
+#        for node in nodesToBeDeployed:
+#            commandArray = []
 #            for command in node.generatedCommands:
-#                commandDict.append( command.__dict__ )
-#            dbgCheck.append({ "nodeName": my_instance.__class__.__name__,
-#                "commands": commandDict })
-#        return dbgCheck
-        # phase four: deploy the nodes
-        for node in configuratedNodes:
+#                commandArray.append( command.toDict() )
+#
+#            dbgCheck.append({ "nodeName": str(node.__class__.__name__),
+#                "hostingMachineName": str(node.hostingMachine.hostname),
+#                "commands": commandArray })
+#
+#        return {"status": "error", "errors":dbgCheck}
+
+        # phase three: deploy the nodes
+        for node in nodesToBeDeployed:
             deployErrorMessages = SettyController.salthelper.executeCommand(
                 node.generatedCommands)
             if errorMessages:
                 errorMessages.append(deployErrorMessages)
 
-        # phase five: cleanup generated commands
-        for serviceNode in firstLevelServiceNodes:
+        # phase four: cleanup generated commands
+        for serviceNode in nodesToBeDeployed:
             serviceNode.generatedCommands = None
+            serviceNode.hostingMachine = None
 
         if errorMessages:
             return {'status': 'error',

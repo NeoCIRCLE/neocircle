@@ -103,9 +103,7 @@ class DetailView(LoginRequiredMixin, TemplateView):
 
                 result = SettyController.getInformation(
                     templateId, hostname)
-        print '------------'
-        print result
-        print '------------'
+                
         return JsonResponse(result)
 
 

@@ -13,6 +13,10 @@ class SaltCommand:
     def __str__(self):
 	   return "Command: " + self.hostname + " - " + self.command + " - " + str(self.parameters)
 
+    def toDict(self):
+        return { 'hostname': self.hostname, 'command': self.command, 'parameters': self.parameters }
+
+
 class SaltStackHelper:
     def __init__(self):
         self.master_opts = salt.config.client_config('/etc/salt/master')
@@ -48,5 +52,6 @@ class SaltStackHelper:
         query_res = self.salt_localclient.cmd( hostname,'network.get_hostname' );
         return query_res != {}
 
-    def executeCommand(self, saltCommand):
-       return self.salt_localclient.cmd(saltCommand.hostname, "state.sls",[saltCommand.command],kwarg={"pillar":saltCommand.parameters} )
+    def executeCommand(self, saltCommands):
+        for saltCommand in saltCommands:
+            self.salt_localclient.cmd(saltCommand.hostname, "state.sls",[saltCommand.command],kwarg={"pillar":saltCommand.parameters} )
