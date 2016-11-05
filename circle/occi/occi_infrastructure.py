@@ -56,6 +56,7 @@ class Compute(Resource):
         """ Sets the attributes of the Compute object based on the VM
             instance. """
         attributes = {}
+        attributes["occi.core.title"] = self.vm.name
         attributes["occi.compute.architecture"] = (
             COMPUTE_ARCHITECTURES.get(self.vm.arch))
         attributes["occi.compute.cores"] = self.vm.num_cores
