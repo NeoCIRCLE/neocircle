@@ -18,14 +18,13 @@
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from braces.views import LoginRequiredMixin
 from django.views.generic import TemplateView, DeleteView
 from django_tables2 import SingleTableView
-from saltstackhelper import *
-from controller import *
+from controller import SettyController
+from models import Service, ElementTemplate
 from dashboard.views.util import FilterMixin
 from django.utils.translation import ugettext as _
 import json
@@ -86,7 +85,7 @@ class DetailView(LoginRequiredMixin, TemplateView):
                                                      'serviceNodes'], data['machines'], data['elementConnections'])
             elif eventName == "getMachineAvailableList":
                 result = SettyController.getMachineAvailableList(
-                    serviceId, data["usedHostnames"], self.request.user )
+                    serviceId, data["usedHostnames"], self.request.user)
             elif eventName == "addServiceNode":
                 result = SettyController.addServiceNode(
                     data["elementTemplateId"])
@@ -103,7 +102,7 @@ class DetailView(LoginRequiredMixin, TemplateView):
 
                 result = SettyController.getInformation(
                     templateId, hostname)
-                
+
         return JsonResponse(result)
 
 
@@ -151,7 +150,7 @@ class CreateView(LoginRequiredMixin, TemplateView):
             service_name = "Noname"
 
         try:
-            serviceNameAvailable = Service.objects.get(name=service_name)
+            Service.objects.get(name=service_name)
             raise PermissionDenied
         except Service.DoesNotExist:
             pass

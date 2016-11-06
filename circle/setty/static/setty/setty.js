@@ -29,6 +29,15 @@ $.ajaxSetup({
     }
 });
 
+showErrorDialog = function( errors ){
+    $("#errorListContainer").empty();
+    $.each( errors, function(index, message){
+        icon = $("<i/>").addClass("fa").addClass("fa-remove");
+        item = $("<li/>").addClass("list-group-item").addClass("list-group-item-danger").append(icon).append( message );
+        $("#errorListContainer").append( item );
+    });
+    $("#errorDialog").modal('show');
+}
 
 /* Setty implementation starts here. */
 
@@ -101,11 +110,12 @@ jsPlumb.ready(function() {
             event: "addMachine",
             data: JSON.stringify({ "hostname": machineHostname } )
         }, function(result) {
-            if(result.error)
+            if(result.errors)
             {
-                alert(result.error)
+                showErrorDialog( result.errors );
                 return;
             }
+            
             addMachine( result );
             undoStack.splice(stackIndexer, 0, removeElement);
             redoStack.splice(stackIndexer, 0, addElement);
@@ -793,14 +803,14 @@ jsPlumb.ready(function() {
     $('body').on('click', '#deployService',function() {
 
         if($("#serviceStatus").text() == "Unsaved") {
-            alert("Only saved services can be deployed");
+            showErrorDialog( ["Only saved services can be deployed"]);
             return;
         }
         $.post("", {
             event: "deploy",
         }, function(result) {
-            if ( result.status ) 
-                alert( result.errors );
+            if ( result.errors ) 
+                showErrorDialog( result.errors );
             else
                 alert("Deploying....");
         });
