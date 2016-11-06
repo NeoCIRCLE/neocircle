@@ -216,9 +216,6 @@ class ServiceNode(Element):
         Service, on_delete=models.CASCADE, default=None)
 
     name = models.CharField(max_length=50)
-    # TODO: Remove this
-    config_file = models.FileField(
-        default=None, upload_to='setty/node_configs/', storage=OverwriteStorage())
     # User's description for the ServiceNode
     description = models.TextField(default="")
 
@@ -312,15 +309,9 @@ class ServiceNode(Element):
     def generateSaltCommands(self):
         raise PermissionDenied
 
-    # Replace the parameters in the given pillar with the stored values
-    def replacePillarParameters(self, pillar):
-        raise PermissionDenied
-
-
 class WordpressNode(ServiceNode):
     # DB related fields
     databaseName = models.TextField(default="")
-    databaseHost = models.TextField(default="")  # todo: remove this
     databaseUser = models.TextField(default="")
     databasePass = models.TextField(default="")
 
@@ -340,7 +331,6 @@ class WordpressNode(ServiceNode):
     def getDataDictionary(self):
         element_data = ServiceNode.getDataDictionary(self)
         self_data = {'database-name': self.databaseName,
-                     'database-host': self.databaseHost,
                      'database-user': self.databaseUser,
                      'database-pass': self.databasePass,
                      'admin-username': self.adminUsername,
@@ -355,7 +345,6 @@ class WordpressNode(ServiceNode):
     def fromDataDictionary(self, data):
         ServiceNode.fromDataDictionary(self, data)
         self.databaseName = data['database-name']
-        self.databaseHost = data['database-host']
         self.databaseUser = data['database-user']
         self.databasePass = data['database-pass']
         self.adminUsername = data['admin-username']
@@ -385,10 +374,8 @@ class WordpressNode(ServiceNode):
     def checkDependenciesAndAttributes(self):
         errorMessages = ServiceNode.checkDependenciesAndAttributes(self)
 
-        if not self.databaseHost:
+        if not self.databaseName:
             errorMessages.append("DATABASENAME_NOT_SET")
-        if not self.databaseHost:
-            errorMessages.append("DATABASEHOST_NOT_SET")
         if not self.databaseUser:
             errorMessages.append("DATABASEUSER_NOT_SET")
         if not self.databasePass:
@@ -403,10 +390,12 @@ class WordpressNode(ServiceNode):
             errorMessages.append("SITETITLE_NOT_SET")
         if not self.siteUrl:
             errorMessages.append("SITEURL_NOT_SET")
+
         if not self.checkDependecy(MySQLNode):
-            errorMessages.append("NODE_NOT_CONNECTED")
-        if not self.checkDependecy(WebServerNode):
-            errorMessages.append("NODE_NOT_CONNECTED")
+            errorMessages.append("MYSQL_NOT_CONNECTED")
+
+        if not self.checkDependecy(ApacheNode):
+            errorMessages.append("WEBSERVER_NOT_CONNECTED")
 
         return errorMessages
 
@@ -425,26 +414,6 @@ class WordpressNode(ServiceNode):
     @staticmethod
     def getDeploymentPriority(self):
         return 1
-
-    def replacePillarParameters(self, pillar):
-        pillar = replaceParameter(
-            pillar, r'DATABASE_NAME', self.databaseName)
-        pillar = replaceParameter(
-            pillar, r'DATABASE_HOST', self.databaseHost)
-        pillar = replaceParameter(
-            pillar, r'DATABASE_USER', self.databaseUser)
-        pillar = replaceParameter(
-            pillar, r'DATABASE_PASS', self.databasePass)
-        pillar = replaceParameter(
-            pillar, r'ADMIN_USERNAME', self.adminUsername)
-        pillar = replaceParameter(
-            pillar, r'ADMIN_PASSWORD', self.adminPassword)
-
-        pillar = replaceParameter(pillar, r'ADMIN_EMAIL', self.adminEmail)
-        pillar = replaceParameter(pillar, r'SITE_TITLE', self.siteTitle)
-        pillar = replaceParameter(pillar, r'SITE_URL', self.siteUrl)
-
-        return pillar
 
     def generateSaltCommands(self):
         mysqlNode = self.checkDependecy(MySQLNode)
@@ -497,51 +466,18 @@ class WordpressNode(ServiceNode):
 
 
 class WebServerNode(ServiceNode):
-    useSSL = models.BooleanField(default=False)  # todo: remove this
-    listeningPort = models.PositiveIntegerField()  # todo: remove this
-
-    def getDataDictionary(self):
-        element_data = ServiceNode.getDataDictionary(self)
-
-        self_data = {'use-ssl': self.useSSL,
-                     'listeningport': self.listeningPort}
-
-        element_data.update(self_data)
-        return element_data
-
-    def fromDataDictionary(self, data):
-        ServiceNode.fromDataDictionary(self, data)
-        self.useSSL = data['use-ssl']
-        self.listeningPort = data['listeningport']
-
-    def checkDependenciesAndAttributes(self):
-        errorMessages = ServiceNode.checkDependenciesAndAttributes(self)
-        if self.listeningPort == 0:
-            errorMessages.append("LISTENING_PORT_NOT_SET")
-
-        if not self.checkDependecy(Machine):
-            errorMessages.append("NO_MACHINE_CONNECTED")
-
-        return errorMessages
-
-    @staticmethod
-    def getInformation():
-        superInformation = ServiceNode.getInformation()
-        ownInformation = {'use-ssl': WebServerNode._meta.get_field('useSSL').get_internal_type(),
-                          'listeningport': WebServerNode._meta.get_field('listeningPort').get_internal_type()}
-
-        ownInformation.update(superInformation)
-        return ownInformation
 
     @staticmethod
     def getDeploymentPriority(self):
         return 10
 
-    def replacePillarParameters(self, pillar):
-        pillar = replaceParameter(pillar, r"USE_SSL", self.useSSL)
-        pillar = replaceParameter(pillar,
-                                  r"LISTENING_PORT", self.listeningPort)
-        return pillar
+    def checkDependenciesAndAttributes(self):
+        errorMessages = ServiceNode.checkDependenciesAndAttributes(self)
+    
+        if not self.checkDependecy(Machine):
+            errorMessages.append("NO_MACHINE_CONNECTED")
+
+        return errorMessages
 
 
 class ApacheNode(WebServerNode):
@@ -555,7 +491,6 @@ class ApacheNode(WebServerNode):
         saltCommand.hostname = self.getHostingMachine().hostname
         saltCommand.command = "apache"
 
-        self.generatedCommands = []
         self.generatedCommands.append(saltCommand)
 
     def makeInstallPhpCommand(self):
@@ -574,83 +509,38 @@ class ApacheNode(WebServerNode):
 
 
 class NginxNode(WebServerNode):
-    worker_connections = models.PositiveIntegerField()
-
-    def getDataDictionary(self):
-        element_data = WebServerNode.getDataDictionary(self)
-        self_data = {'worker_connections': self.worker_connections}
-        element_data.update(self_data)
-        return element_data
-
-    def fromDataDictionary(self, data):
-        WebServerNode.fromDataDictionary(self, data)
-        self.worker_connections = data['worker_connections']
-
-    def checkDependenciesAndAttributes(self):
-        errorMessages = WebServerNode.checkDependenciesAndAttributes(self)
-        if self.worker_connections == 0:
-            errorMessages.append("WORKER_CONNECTIONS_NOT_SET")
-
-        return errorMessages
-
-    @staticmethod
-    def getInformation():
-        superInformation = WebServerNode.getInformation()
-        ownInformation = {'worker_connections': NginxNode._meta.get_field(
-            'worker_connections').get_internal_type()}
-        ownInformation.update(superInformation)
-        return ownInformation
 
     @staticmethod
     def clone():
         return NginxNode()
 
     def generateSaltCommands(self):
-        pillarFilePath = os.path.join(
-            SALTSTACK_PILLAR_FOLDER, "nginx.sls")
-        with open(pillarFilePath, 'r') as pillarFile:
-            pillar = str(yaml.load(pillarFile))
-            pillar = WebServerNode.replacePillarParameters(self, pillar)
-            pillar = replaceParameter(pillar,
-                                      r"WORKER_CONNECTIONS", self.worker_connections)
+        saltCommand = SaltCommand()
+        saltCommand.hostname = self.getHostingMachine().hostname
+        saltCommand.command = "nginx"
 
-            saltCommand = SaltCommand()
-            saltCommand.hostname = self.getHostingMachine().hostname
-            saltCommand.command = "nginx"
-            saltCommand.parameters = [eval(pillar)]
-
-            self.generatedCommands = []
-            self.generatedCommands.append(saltCommand)
+        self.generatedCommands.append(saltCommand)
 
 
 class DatabaseNode(ServiceNode):
-    adminUserName = models.CharField(max_length=50)  # todo: remove this
     adminPassword = models.CharField(max_length=50)
-    listeningPort = models.PositiveIntegerField()  # todo: remove this
 
     def getDataDictionary(self):
         element_data = ServiceNode.getDataDictionary(self)
-        self_data = {'admin_username': self.adminUserName,
-                     'admin_password': self.adminPassword,
-                     'listeningport':  self.listeningPort}
+        self_data = {'admin_password': self.adminPassword}
 
         element_data.update(self_data)
         return element_data
 
     def fromDataDictionary(self, data):
         ServiceNode.fromDataDictionary(self, data)
-        self.adminUserName = data['admin_username']
         self.adminPassword = data['admin_password']
-        self.listeningPort = data['listeningport']
 
     def checkDependenciesAndAttributes(self):
         errorMessages = ServiceNode.checkDependenciesAndAttributes(self)
-        if not self.adminUserName:
-            errorMessages.append("ADMIN_USER_NAME_NOT_SET")
+        
         if not self.adminPassword:
             errorMessages.append("ADMIN_PASSWORD_NAME_NOT_SET")
-        if self.listeningPort == 0:
-            errorMessages.append("LISTENING_PORT_NOT_SET")
 
         if not self.checkDependecy(Machine):
             errorMessages.append("NO_MACHINE_CONNECTED")
@@ -660,25 +550,13 @@ class DatabaseNode(ServiceNode):
     @staticmethod
     def getInformation():
         superInformation = ServiceNode.getInformation()
-        ownInformation = {'admin_username': DatabaseNode._meta.get_field('adminUserName').get_internal_type(),
-                          'admin_password': DatabaseNode._meta.get_field('adminPassword').get_internal_type(),
-                          'listeningport':  DatabaseNode._meta.get_field('listeningPort').get_internal_type()}
+        ownInformation = {'admin_password': DatabaseNode._meta.get_field('adminPassword').get_internal_type()}
         ownInformation.update(superInformation)
         return ownInformation
 
     @staticmethod
     def getDeploymentPriority(self):
         return 10
-
-    def replacePillarParameters(self, pillar):
-        pillar = replaceParameter(pillar,
-                                  r"ADMIN_USERNAME", self.adminUserName)
-        pillar = replaceParameter(pillar,
-                                  r"ADMIN_PASSWORD", self.adminUserName)
-        pillar = replaceParameter(pillar,
-                                  r'LISTENING_PORT', self.listeningPort)
-        return pillar
-
 
 class PostgreSQLNode(DatabaseNode):
 
@@ -687,19 +565,11 @@ class PostgreSQLNode(DatabaseNode):
         return PostgreSQLNode()
 
     def generateSaltCommands(self):
-        pillarFilePath = os.path.join(
-            SALTSTACK_PILLAR_FOLDER, "postgresql.sls")
-        with open(pillarFilePath, 'r') as pillarFile:
-            pillar = str(yaml.load(pillarFile))
-            pillar = DatabaseNode.replacePillarParameters(self, pillar)
+        saltCommand = SaltCommand()
+        saltCommand.hostname = self.getHostingMachine().hostname
+        saltCommand.command = "postgresql"
 
-            saltCommand = SaltCommand()
-            saltCommand.hostname = self.getHostingMachine().hostname
-            saltCommand.command = "postgresql"
-            saltCommand.parameters = [eval(pillar)]
-
-            self.generatedCommands = []
-            self.generatedCommands.append(saltCommand)
+        self.generatedCommands.append(saltCommand)
 
 
 class MySQLNode(DatabaseNode):
@@ -750,5 +620,4 @@ class MySQLNode(DatabaseNode):
         saltCommand.parameters = {
             'mysql': {'server': {'root_password': self.adminPassword, 'mysqld':{'bind-address' : '0.0.0.0'}}}}
 
-        self.generatedCommands = []
         self.generatedCommands.append(saltCommand)
