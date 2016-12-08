@@ -131,6 +131,8 @@ class SettyController:
 
     @staticmethod
     def getInformation(elementTemplateId, hostname):
+        if hostname and elementTemplateId:
+            return {'status': 'error', 'errors': 'BOTH_ELEMENTEMPLATE_HOSTNAME_FILLED'}
         if elementTemplateId:
             try:
                 elementTemplate = ElementTemplate.objects.get(
@@ -143,8 +145,6 @@ class SettyController:
                 return {'status': 'error', 'errors': 'ELEMENTTEMPLATE_COULDNT_GET_PROTOTYPE'}
         elif hostname:
             return Machine.getInformation()
-        elif hostname and elementTemplateId:
-            return {'status': 'error', 'errors': 'BOTH_ELEMENTEMPLATE_HOSTNAME_FILLED'}
         else:
             return {'status': 'error', 'errors': 'UNKNOWN_ERROR'}
 
@@ -155,13 +155,7 @@ class SettyController:
     '''
 
     @staticmethod
-    def getMachineAvailableList(serviceId, usedHostnames, current_user):
-        savedMachines = Machine.objects.filter(service=serviceId)
-
-        savedHostNames = []
-        for machine in savedMachines:
-            savedHostNames.append(machine.hostname)
-
+    def getMachineAvailableList( usedHostnames, current_user):
         userInstances = Instance.objects.filter(
             owner=current_user, destroyed_at=None)
         userMachines = []
@@ -169,14 +163,17 @@ class SettyController:
             if instance.vm_name:
                 userMachines.append(instance.vm_name)
 
-        usedHostnamesByUser = set(savedHostNames + usedHostnames)
-        availableInstances = set(set(userMachines) - usedHostnamesByUser)
-
         saltMinions = SettyController.salthelper.getAllMinionsUngrouped()
-        if not usedHostnamesByUser:
-            return {'machinedata': [machineName for machineName in userMachines if machineName in saltMinions]}
+        if not usedHostnames:
+            return {'machinedata': [machineName for machineName 
+                     in userMachines if machineName in saltMinions]}
 
-        return {'machinedata': [machineName for machineName in availableInstances if machineName in saltMinions]}
+        availableInstances = set(set(userMachines) - usedHostnames)
+
+        return {'machinedata':
+               [machineName for machineName 
+                in availableInstances if machineName in saltMinions]}
+
 
     '''
     Add a machine with the given hostname to the Service. If there is a 
@@ -185,13 +182,8 @@ class SettyController:
     back the new Machine instance 
     '''
 
-     #TODO: addMachine requires usedHostnames too for safety
     @staticmethod
     def addMachine(hostname):
-        try:
-            Machine.objects.get(hostname=hostname)
-        except:
-            return {'status': 'error', 'errors': 'MACHINE_ALREADY_ADDED'}
         if SettyController.salthelper.checkMinionExists(hostname):
             machine = Machine.clone()
             machine.hostname = hostname
@@ -251,19 +243,6 @@ class SettyController:
 
         nodesToBeDeployed.sort(reverse=True)
 
-        dbgCheck = []
-#        for node in nodesToBeDeployed:
-#            commandArray = []
-#
-#            for command in node.generatedCommands:
-#                logger.error( "salt '"+ command.hostname +"' state.sls " + command.command + " pillar=\"" + str(command.parameters) + '"'  )
-#                commandArray.append( command.toDict() )
-#
-#            dbgCheck.append({ "nodeName": str(node.__class__.__name__),
-#                "hostingMachineName": str(node.getHostingMachine().hostname ),
-#                "commands": commandArray })
-
-        #return {"status": "error", "errors":dbgCheck}
 
         # phase three: deploy the nodes
         for node in nodesToBeDeployed:

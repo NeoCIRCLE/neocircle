@@ -19,6 +19,7 @@ from django.db import models
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
+from django.utils.translation import ugettext
 from storage import OverwriteStorage
 import os
 import yaml
@@ -30,9 +31,18 @@ SALTSTACK_PILLAR_FOLDER = "/srv/pillar"
 
 salthelper = SaltStackHelper()
 
+
 def replaceParameter(pillar, parameterToReplace, newValue):
     pillarEdited = pillar.replace(parameterToReplace, str(newValue))
     return pillarEdited
+
+
+def createErrorMessage(errorMessage, nodeType, nodeName):
+    message = nodeType
+    if(nodeName):
+        message = message + "(" + nodeName + ")"
+    message = message + ": " + errorMessage
+    return message
 
 
 class Service(models.Model):
@@ -214,7 +224,6 @@ class ServiceNode(Element):
     # The Service which the ServiceNode belongs to
     service = models.ForeignKey(
         Service, on_delete=models.CASCADE, default=None)
-
     name = models.CharField(max_length=50)
     # User's description for the ServiceNode
     description = models.TextField(default="")
@@ -309,6 +318,7 @@ class ServiceNode(Element):
     def generateSaltCommands(self):
         raise PermissionDenied
 
+
 class WordpressNode(ServiceNode):
     # DB related fields
     databaseName = models.TextField(default="")
@@ -359,7 +369,6 @@ class WordpressNode(ServiceNode):
         ownInformation = {'database-name':
                           WordpressNode._meta.get_field(
                               'databaseName').get_internal_type(),
-                          'database-host': WordpressNode._meta.get_field('databaseHost').get_internal_type(),
                           'database-user': WordpressNode._meta.get_field('databaseUser').get_internal_type(),
                           'database-pass': WordpressNode._meta.get_field('databasePass').get_internal_type(),
                           'admin-username': WordpressNode._meta.get_field('adminUsername').get_internal_type(),
@@ -375,27 +384,37 @@ class WordpressNode(ServiceNode):
         errorMessages = ServiceNode.checkDependenciesAndAttributes(self)
 
         if not self.databaseName:
-            errorMessages.append("DATABASENAME_NOT_SET")
+            errorMessages.append(createErrorMessage(
+                ugettext("Database name is not set"), "WordPress", self.name))
         if not self.databaseUser:
-            errorMessages.append("DATABASEUSER_NOT_SET")
+            errorMessages.append(createErrorMessage(
+                ugettext("Database username is not set"), "WordPress", self.name))
         if not self.databasePass:
-            errorMessages.append("DATABASEPASS_NOT_SET")
+            errorMessages.append(createErrorMessage(
+                ugettext("Database password is not set"), "WordPress", self.name))
         if not self.adminUsername:
-            errorMessages.append("ADMINUSERNAME_NOT_SET")
+            errorMessages.append(createErrorMessage(
+                ugettext("Administrator's username is not set"), "WordPress", self.name))
         if not self.adminPassword:
-            errorMessages.append("ADMINPASSWORD_NOT_SET")
+            errorMessages.append(createErrorMessage(
+                ugettext("Administrator's password is not set"), "WordPress", self.name))
         if not self.adminEmail:
-            errorMessages.append("ADMINEMAIL_NOT_SET")
+            errorMessages.append(createErrorMessage(
+                ugettext("Administrator's email is not set"), "WordPress", self.name))
         if not self.siteTitle:
-            errorMessages.append("SITETITLE_NOT_SET")
+            errorMessages.append(createErrorMessage(
+                ugettext("Site's title is not set"), "WordPress", self.name))
         if not self.siteUrl:
-            errorMessages.append("SITEURL_NOT_SET")
+            errorMessages.append(createErrorMessage(
+                ugettext("Site's url is not set"), "WordPress", self.name))
 
         if not self.checkDependecy(MySQLNode):
-            errorMessages.append("MYSQL_NOT_CONNECTED")
+            errorMessages.append(createErrorMessage(
+                ugettext("No MySQL server connected to service"), "WordPress", self.name))
 
         if not self.checkDependecy(ApacheNode):
-            errorMessages.append("WEBSERVER_NOT_CONNECTED")
+            errorMessages.append(createErrorMessage(
+                ugettext("No Apache webserver connected to service"), "WordPress", self.name))
 
         return errorMessages
 
@@ -435,23 +454,23 @@ class WordpressNode(ServiceNode):
         installWordpressCommand.hostname = self.getHostingMachine().hostname
         installWordpressCommand.command = "wordpress"
         installWordpressCommand.parameters = {'wordpress':
-         {'cli':
-          {'source':
-           'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar',
-           'hash':
-           'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar.sha512'},
-          'lookup': {'docroot': '/var/www/html'},
-             'sites':
-             {'mysitename.com':
-              {'username': self.adminUsername,
-               'password': self.adminPassword,
-               'database': self.databaseName,
-               'dbhost': salthelper.getIpAddressOfMinion( mysqlNode.getHostingMachine().hostname ),
-               'dbuser': self.databaseUser,
-               'dbpass': self.databasePass,
-               'url': self.siteUrl,
-               'title': self.siteTitle,
-               'email': self.adminEmail}}}}
+                                              {'cli':
+                                               {'source':
+                                                'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar',
+                                                'hash':
+                                                'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar.sha512'},
+                                                  'lookup': {'docroot': '/var/www/html'},
+                                                  'sites':
+                                                  {'mysitename.com':
+                                                   {'username': self.adminUsername,
+                                                    'password': self.adminPassword,
+                                                    'database': self.databaseName,
+                                                    'dbhost': salthelper.getIpAddressOfMinion(mysqlNode.getHostingMachine().hostname),
+                                                    'dbuser': self.databaseUser,
+                                                    'dbpass': self.databasePass,
+                                                    'url': self.siteUrl,
+                                                    'title': self.siteTitle,
+                                                    'email': self.adminEmail}}}}
 
         installMySqlClientCommand = SaltCommand()
         installMySqlClientCommand.hostname = self.getHostingMachine().hostname
@@ -473,9 +492,9 @@ class WebServerNode(ServiceNode):
 
     def checkDependenciesAndAttributes(self):
         errorMessages = ServiceNode.checkDependenciesAndAttributes(self)
-    
+
         if not self.checkDependecy(Machine):
-            errorMessages.append("NO_MACHINE_CONNECTED")
+            errorMessages.append(createErrorMessage(ugettext("Machine is not connected"), "WebServer", self.name))
 
         return errorMessages
 
@@ -538,25 +557,29 @@ class DatabaseNode(ServiceNode):
 
     def checkDependenciesAndAttributes(self):
         errorMessages = ServiceNode.checkDependenciesAndAttributes(self)
-        
+
         if not self.adminPassword:
-            errorMessages.append("ADMIN_PASSWORD_NAME_NOT_SET")
+            errorMessages.append(createErrorMessage(
+                ugettext("No admin password set"), "Database", self.name))
 
         if not self.checkDependecy(Machine):
-            errorMessages.append("NO_MACHINE_CONNECTED")
+            errorMessages.append(createErrorMessage(
+                ugettext("No machine connected"), "Database", self.name))
 
         return errorMessages
 
     @staticmethod
     def getInformation():
         superInformation = ServiceNode.getInformation()
-        ownInformation = {'admin_password': DatabaseNode._meta.get_field('adminPassword').get_internal_type()}
+        ownInformation = {'admin_password': DatabaseNode._meta.get_field(
+            'adminPassword').get_internal_type()}
         ownInformation.update(superInformation)
         return ownInformation
 
     @staticmethod
     def getDeploymentPriority(self):
         return 10
+
 
 class PostgreSQLNode(DatabaseNode):
 
@@ -588,18 +611,18 @@ class MySQLNode(DatabaseNode):
         return saltCommand
 
     # Generate SaltCommand for user creation on the current MySQL instance
-    def makeCreateUserCommand(self, databaseUser, databasePass, availableDatabases):
+    def makeCreateUserCommand(self, databaseUser, databasePass, grantPrivilageDatabase):
         saltCommand = SaltCommand()
         saltCommand.hostname = self.getHostingMachine().hostname
         saltCommand.command = "mysql.user"
         databaseGrants = [{'database': '*', 'grants': ['all privileges']}]
-        if isinstance(availableDatabases, list):
-            for dbAccess in availableDatabases:
+        if isinstance(grantPrivilageDatabase, list):
+            for dbAccess in grantPrivilageDatabase:
                 databaseGrants.append(
                     {'database': dbAccess, 'grants': ['all privileges']})
         else:
             databaseGrants.append(
-                    {'database': availableDatabases, 'grants': ['all privileges']})
+                {'database': grantPrivilageDatabase, 'grants': ['all privileges']})
 
         saltCommand.parameters = {'mysql': {
             'server': {
@@ -618,6 +641,6 @@ class MySQLNode(DatabaseNode):
         saltCommand.hostname = self.getHostingMachine().hostname
         saltCommand.command = "mysql.server"
         saltCommand.parameters = {
-            'mysql': {'server': {'root_password': self.adminPassword, 'mysqld':{'bind-address' : '0.0.0.0'}}}}
+            'mysql': {'server': {'root_password': self.adminPassword, 'mysqld': {'bind-address': '0.0.0.0'}}}}
 
         self.generatedCommands.append(saltCommand)

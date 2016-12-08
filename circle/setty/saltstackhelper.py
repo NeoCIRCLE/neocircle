@@ -31,13 +31,6 @@ class SaltCommand:
         self.command = ""
         self.parameters = None
 
-    # For debugging purposes only
-    def toDict(self):
-        return {'hostname': self.hostname,
-                'command': self.command,
-                'parameters': self.parameters}
-
-
 class SaltStackHelper:
 
     def __init__(self):
