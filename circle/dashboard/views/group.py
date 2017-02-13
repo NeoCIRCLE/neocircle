@@ -42,7 +42,7 @@ from ..models import FutureMember, GroupProfile
 from vm.models import Instance, InstanceTemplate
 from ..tables import GroupListTable
 from .util import (CheckedDetailView, AclUpdateView, search_user,
-                   saml_available, DeleteViewBase)
+                   saml_available, DeleteViewBase, external_auth_available)
 
 logger = logging.getLogger(__name__)
 
@@ -145,7 +145,7 @@ class GroupDetailView(CheckedDetailView):
             entity = search_user(name)
             self.object.user_set.add(entity)
         except User.DoesNotExist:
-            if saml_available:
+            if external_auth_available():
                 FutureMember.objects.get_or_create(org_id=name.upper(),
                                                    group=self.object)
             else:

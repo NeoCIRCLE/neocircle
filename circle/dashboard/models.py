@@ -341,22 +341,23 @@ def create_profile_hook(sender, user, request, **kwargs):
 user_logged_in.connect(create_profile_hook)
 
 if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
-    logger.debug("Register save_org_id to djangosaml2 pre_user_save")
+    logger.debug("Register saml_save_org_id to djangosaml2 pre_user_save")
     from djangosaml2.signals import pre_user_save
 
-    def save_org_id(sender, **kwargs):
-        logger.debug("save_org_id called by %s", sender.username)
+    def saml_save_org_id(sender, **kwargs):
+        logger.debug("saml_save_org_id called by %s", sender.username)
         attributes = kwargs.pop('attributes')
         atr = settings.SAML_ORG_ID_ATTRIBUTE
         try:
             value = attributes[atr][0].upper()
         except Exception as e:
             value = None
-            logger.info("save_org_id couldn't find attribute. %s", unicode(e))
+            logger.info("saml_save_org_id couldn't find attribute. %s",
+                        unicode(e))
 
         if sender.pk is None:
             sender.save()
-            logger.debug("save_org_id saved user %s", unicode(sender))
+            logger.debug("saml_save_org_id saved user %s", unicode(sender))
 
         profile, created = Profile.objects.get_or_create(user=sender)
         if created or profile.org_id != value:
@@ -397,7 +398,55 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
 
         return False  # User did not change
 
-    pre_user_save.connect(save_org_id)
+    pre_user_save.connect(saml_save_org_id)
+
+
+if hasattr(settings, 'LDAP_ORG_ID_ATTRIBUTE'):
+    logger.debug("Register ldap_save_org_id to django-ldap-auth populate user")
+    from django_auth_ldap.backend import populate_user
+
+    def ldap_save_org_id(sender, user, ldap_user, **kwargs):
+        logger.debug("ldap_save_org_id called by %s", user.username)
+        attributes = ldap_user.attrs
+        attr = settings.LDAP_ORG_ID_ATTRIBUTE
+        try:
+            value = attributes[attr][0].upper()
+        except Exception as e:
+            value = None
+            logger.info("ldap_save_org_id couldn't find attribute. %s",
+                        unicode(e))
+
+        if user.pk is None:
+            user.save()
+            logger.debug("ldap_save_org_id saved user %s", unicode(user))
+
+        profile, created = Profile.objects.get_or_create(user=user)
+        if created or profile.org_id != value:
+            logger.info("org_id of %s added to user %s's profile",
+                        value, user.username)
+            profile.org_id = value
+            profile.save()
+        else:
+            logger.debug("org_id of %s already added to user %s's profile",
+                         value, user.username)
+        logger.error(ldap_user.group_dns)
+        for group in ldap_user.group_names:
+            try:
+                g = GroupProfile.search(group)
+            except Group.DoesNotExist:
+                logger.debug('cant find membergroup %s', group)
+            else:
+                logger.debug('could find membergroup %s (%s)',
+                             group, unicode(g))
+                g.user_set.add(user)
+
+        for i in FutureMember.objects.filter(org_id__iexact=value):
+            i.group.user_set.add(user)
+            i.delete()
+
+        return False  # User did not change
+
+    populate_user.connect(ldap_save_org_id)
 
 
 def update_store_profile(sender, **kwargs):

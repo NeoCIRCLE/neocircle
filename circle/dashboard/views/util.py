@@ -60,6 +60,10 @@ logger = logging.getLogger(__name__)
 saml_available = hasattr(settings, "SAML_CONFIG")
 
 
+def external_auth_available():
+    return saml_available or hasattr(settings, "AUTH_LDAP_SERVER_URI")
+
+
 class RedirectToLoginMixin(AccessMixin):
 
     redirect_exception_classes = (PermissionDenied, )

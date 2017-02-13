@@ -42,3 +42,5 @@ pika==0.9.14
 django-pipeline==1.4.7
 Fabric==1.10.1
 lxml==3.4.4
+django-auth-ldap==1.2.8
+python-ldap==2.4.30

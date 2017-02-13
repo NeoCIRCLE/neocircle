@@ -413,6 +413,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+        'django_auth_ldap': {
+            'handlers': ['syslog'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
     }
 }
 ########## END LOGGING CONFIGURATION
@@ -446,6 +451,12 @@ CACHES = {
 }
 
 
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+######### SAML2 AUTHENTICATION
 if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
     try:
         from shutil import which  # python >3.4
@@ -456,8 +467,7 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
     INSTALLED_APPS += (
         'djangosaml2',
     )
-    AUTHENTICATION_BACKENDS = (
-        'django.contrib.auth.backends.ModelBackend',
+    AUTHENTICATION_BACKENDS += (
         'common.backends.Saml2Backend',
     )
 
@@ -575,3 +585,72 @@ REQUEST_HOOK_URL = get_env_variable("REQUEST_HOOK_URL", "")
 SSHKEY_EMAIL_ADD_KEY = False
 
 TWO_FACTOR_ISSUER = get_env_variable("TWO_FACTOR_ISSUER", "CIRCLE")
+
+
+######### LDAP AUTHENTICATION
+if get_env_variable('LDAP_AUTH', 'FALSE') == 'TRUE':
+    import ldap
+    from django_auth_ldap.config import (
+        LDAPSearch, GroupOfNamesType, PosixGroupType, ActiveDirectoryGroupType
+    )
+
+    LDAP_SCOPE_MAP = {
+        "SUBTREE": ldap.SCOPE_SUBTREE,
+        "BASE": ldap.SCOPE_BASE,
+        "ONELEVEL": ldap.SCOPE_SUBTREE
+    }
+
+    LDAP_GROUP_MAP = {
+        "POSIX": PosixGroupType(),
+        "AD": ActiveDirectoryGroupType(),
+        "GROUP_OF_NAMES": GroupOfNamesType(),
+    }
+
+    # Baseline configuration.
+    AUTH_LDAP_SERVER_URI = get_env_variable("LDAP_SERVER_URI", "")
+    AUTH_LDAP_BIND_DN = get_env_variable("LDAP_BIND_DN", "")
+    AUTH_LDAP_BIND_PASSWORD = get_env_variable("LDAP_BIND_PASSWORD", "")
+
+    LDAP_USER_BASE_DN = get_env_variable("LDAP_USER_BASE_DN")
+    LDAP_USER_SCOPE = LDAP_SCOPE_MAP.get(
+        get_env_variable("LDAP_USER_SCOPE", ""))
+    LDAP_USER_FILTER = get_env_variable("LDAP_USER_FILTER")
+
+    AUTH_LDAP_USER_SEARCH = LDAPSearch(LDAP_USER_BASE_DN,
+                                       LDAP_USER_SCOPE,
+                                       LDAP_USER_FILTER)
+
+    # Set up the basic group parameters.
+    LDAP_GROUP_BASE_DN = get_env_variable("LDAP_GROUP_BASE_DN")
+    LDAP_GROUP_SCOPE = LDAP_SCOPE_MAP.get(
+        get_env_variable("LDAP_GROUP_SCOPE", ""))
+    LDAP_GROUP_FILTER = get_env_variable("LDAP_GROUP_FILTER")
+
+    AUTH_LDAP_GROUP_SEARCH = LDAPSearch(LDAP_GROUP_BASE_DN,
+                                        LDAP_GROUP_SCOPE,
+                                        LDAP_GROUP_FILTER)
+
+    LDAP_GROUP_TYPE = get_env_variable("LDAP_GROUP_TYPE", "")
+    AUTH_LDAP_GROUP_TYPE = LDAP_GROUP_MAP.get(LDAP_GROUP_TYPE, "POSIX")
+
+    # Populate the Django user from the LDAP directory.
+    AUTH_LDAP_USER_ATTR_MAP = loads(get_env_variable("LDAP_USER_ATTR_MAP",
+        '{"first_name": "givenName", "last_name": "sn", "email": "mail"}'))
+
+    AUTH_LDAP_FIND_GROUP_PERMS = False
+
+    # Cache group memberships for an hour to minimize LDAP traffic
+    AUTH_LDAP_GROUP_CACHE_TIMEOUT = int(get_env_variable(
+        "LDAP_GROUP_CACHE_TIMEOUT", 0))
+    if AUTH_LDAP_GROUP_CACHE_TIMEOUT != 0:
+        AUTH_LDAP_CACHE_GROUPS = False
+
+    # Add LDAP backend
+    AUTHENTICATION_BACKENDS += (
+        'django_auth_ldap.backend.LDAPBackend',
+    )
+
+    # org_id attribute
+    if get_env_variable('LDAP_ORG_ID_ATTRIBUTE', False):
+        LDAP_ORG_ID_ATTRIBUTE = get_env_variable(
+            'LDAP_ORG_ID_ATTRIBUTE')
