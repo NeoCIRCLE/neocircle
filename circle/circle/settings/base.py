@@ -651,6 +651,8 @@ if get_env_variable('LDAP_AUTH', 'FALSE') == 'TRUE':
     )
 
     # org_id attribute
-    if get_env_variable('LDAP_ORG_ID_ATTRIBUTE', False):
-        LDAP_ORG_ID_ATTRIBUTE = get_env_variable(
-            'LDAP_ORG_ID_ATTRIBUTE')
+    LDAP_ORG_ID_ATTRIBUTE = (
+        get_env_variable('LDAP_ORG_ID_ATTRIBUTE', "") == "TRUE")
+
+    LDAP_GROUP_OWNER_ATTRIBUTE = get_env_variable("LDAP_GROUP_OWNER_ATTRIBUTE",
+                                                  "owner")
