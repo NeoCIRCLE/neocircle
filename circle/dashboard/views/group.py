@@ -41,8 +41,11 @@ from ..forms import (
 from ..models import FutureMember, GroupProfile
 from vm.models import Instance, InstanceTemplate
 from ..tables import GroupListTable
-from .util import (CheckedDetailView, AclUpdateView, search_user,
-                   saml_available, DeleteViewBase, external_auth_available)
+from .util import (
+    CheckedDetailView, AclUpdateView, search_user,
+    saml_available, DeleteViewBase, external_auth_available, ldap_available
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +79,23 @@ class GroupCodeMixin(object):
                     try:
                         GroupProfile.search(group)
                     except Group.DoesNotExist:
+                        newgroups.append(group)
+
+        if ldap_available:
+            ldap_user = getattr(request.user, "ldap_user", None)
+            if ldap_user is None:
+                return newgroups
+            from ..ldap_utils import owns, ldap_connect
+            user_dn = ldap_user.dn.upper()
+            group_dns = map(unicode.upper, ldap_user.group_dns)
+            # connection will close, when object destroys
+            # https://www.python-ldap.org/doc/html/ldap.html#ldap-objects
+            conn = ldap_connect()
+            for group in group_dns:
+                try:
+                    GroupProfile.search(group)
+                except Group.DoesNotExist:
+                    if owns(conn, user_dn, group):
                         newgroups.append(group)
 
         return newgroups
