@@ -4,12 +4,14 @@ from django.contrib.auth.models import Group
 from .models import GroupProfile, FutureMember, Profile
 import ldap
 from django_auth_ldap.backend import LDAPSettings
+from django_auth_ldap.config import LDAPSearch
 
 
 logger = logging.getLogger(__name__)
 
 
-def ldap_connect(ldap_settings):
+def ldap_connect():
+    ldap_settings = LDAPSettings()
     conn = ldap.initialize(ldap_settings.SERVER_URI)
     for opt, value in ldap_settings.CONNECTION_OPTIONS.items():
         conn.set_option(opt, value)
@@ -17,13 +19,14 @@ def ldap_connect(ldap_settings):
     return conn
 
 
-def owns(conn, ldap_settings, ownerattr, user_dn, group_name):
-    group = ldap_settings.GROUP_SEARCH.search_with_additional_term_string(
-        "(cn=%s)" % group_name).execute(conn)
+def owns(conn, user_dn, group_dn):
+    ownerattr = settings.LDAP_GROUP_OWNER_ATTRIBUTE
+    group = LDAPSearch(group_dn.lower(), ldap.SCOPE_BASE, "cn=*").execute(conn)
     if len(group) == 0:
         return False
     group = group[0]
     owners = group[1].get(ownerattr, [])
+    logger.error(owners)
     return user_dn in map(unicode.upper, owners)
 
 
@@ -60,22 +63,20 @@ def ldap_save_org_id(sender, user, ldap_user, **kwargs):
         i.group.user_set.add(user)
         i.delete()
 
-    ownerattr = settings.LDAP_GROUP_OWNER_ATTRIBUTE
-    ldap_settings = LDAPSettings()
     # connection will close, when object destroys
     # https://www.python-ldap.org/doc/html/ldap.html#ldap-objects
-    conn = ldap_connect(ldap_settings)
-    for group in zip(group_dns, ldap_user.group_names):
+    conn = ldap_connect()
+    for group in group_dns:
         try:
-            g = GroupProfile.search(group[0])
+            g = GroupProfile.search(group)
         except Group.DoesNotExist:
-            logger.debug('cant find ownergroup %s', group[0])
+            logger.debug('cant find ownergroup %s', group)
         else:
-            if owns(conn, ldap_settings, ownerattr, user_dn, group[1]):
+            if owns(conn, user_dn, group):
                 logger.debug('could find ownergroup %s (%s)',
-                             group[0], unicode(g))
+                             group, unicode(g))
                 g.profile.set_level(user, 'owner')
             else:
-                logger.debug('cant find ownergroup %s', group[0])
+                logger.debug('cant find ownergroup %s', group)
 
     return False  # User did not change
