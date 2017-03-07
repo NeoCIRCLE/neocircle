@@ -591,19 +591,25 @@ TWO_FACTOR_ISSUER = get_env_variable("TWO_FACTOR_ISSUER", "CIRCLE")
 if get_env_variable('LDAP_AUTH', 'FALSE') == 'TRUE':
     import ldap
     from django_auth_ldap.config import (
-        LDAPSearch, GroupOfNamesType, PosixGroupType, ActiveDirectoryGroupType
+        LDAPSearch, PosixGroupType, NISGroupType, MemberDNGroupType,
+        GroupOfNamesType, GroupOfUniqueNamesType, ActiveDirectoryGroupType,
+        OrganizationalRoleGroupType,
     )
 
     LDAP_SCOPE_MAP = {
         "SUBTREE": ldap.SCOPE_SUBTREE,
         "BASE": ldap.SCOPE_BASE,
-        "ONELEVEL": ldap.SCOPE_SUBTREE
+        "ONELEVEL": ldap.SCOPE_SUBTREE,
     }
 
     LDAP_GROUP_MAP = {
         "POSIX": PosixGroupType(),
-        "AD": ActiveDirectoryGroupType(),
+        "NIS": NISGroupType(),
+        "MEMBER_DN": MemberDNGroupType(),
         "GROUP_OF_NAMES": GroupOfNamesType(),
+        "GROUP_OF_UNIQUE_NAMES": GroupOfUniqueNamesType(),
+        "AD": ActiveDirectoryGroupType(),
+        "ORG_ROLE": OrganizationalRoleGroupType(),
     }
 
     # Baseline configuration.
@@ -650,9 +656,8 @@ if get_env_variable('LDAP_AUTH', 'FALSE') == 'TRUE':
         'django_auth_ldap.backend.LDAPBackend',
     )
 
-    # org_id attribute
     LDAP_ORG_ID_ATTRIBUTE = (
-        get_env_variable('LDAP_ORG_ID_ATTRIBUTE', "") == "TRUE")
+        get_env_variable("LDAP_ORG_ID_ATTRIBUTE", "") == "TRUE")
 
     LDAP_GROUP_OWNER_ATTRIBUTE = get_env_variable("LDAP_GROUP_OWNER_ATTRIBUTE",
                                                   "owner")
