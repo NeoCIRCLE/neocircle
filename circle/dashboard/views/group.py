@@ -82,22 +82,23 @@ class GroupCodeMixin(object):
                         newgroups.append(group)
 
         if ldap_available:
+            from ..ldap_utils import owns, ldap_connect, get_group_org_id
             ldap_user = getattr(request.user, "ldap_user", None)
             if ldap_user is None:
                 return newgroups
-            from ..ldap_utils import owns, ldap_connect
-            user_dn = ldap_user.dn.upper()
-            group_dns = map(unicode.upper, ldap_user.group_dns)
+            user_dn = ldap_user.dn
             # connection will close, when object destroys
             # https://www.python-ldap.org/doc/html/ldap.html#ldap-objects
             conn = ldap_connect()
-            for group in group_dns:
+            for group_dn in ldap_user.group_dns:
+                group_org_id = get_group_org_id(conn, group_dn)
+                if group_org_id is None:
+                    continue
                 try:
-                    GroupProfile.search(group)
+                    GroupProfile.search(group_org_id)
                 except Group.DoesNotExist:
-                    if owns(conn, user_dn, group):
-                        newgroups.append(group)
-
+                    if owns(conn, user_dn, group_dn):
+                        newgroups.append(group_org_id)
         return newgroups
 
 

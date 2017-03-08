@@ -175,7 +175,7 @@ class Profile(Model):
                                    max_length=32,
                                    default=settings.LANGUAGE_CODE, blank=False)
     org_id = CharField(  # may be populated from eduPersonOrgId field
-        unique=True, blank=True, null=True, max_length=64,
+        unique=True, blank=True, null=True, max_length=255,
         help_text=_('Unique identifier of the person, e.g. a student number.'))
     instance_limit = IntegerField(default=5)
     use_gravatar = BooleanField(

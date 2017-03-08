@@ -602,10 +602,13 @@ if get_env_variable('LDAP_AUTH', 'FALSE') == 'TRUE':
         "ONELEVEL": ldap.SCOPE_SUBTREE,
     }
 
+    LDAP_GROUP_MEMBER_ATTRIBUTE = (
+        get_env_variable("LDAP_GROUP_MEMBER_ATTRIBUTE", "member"))
+
     LDAP_GROUP_MAP = {
         "POSIX": PosixGroupType(),
         "NIS": NISGroupType(),
-        "MEMBER_DN": MemberDNGroupType(),
+        "MEMBER_DN": MemberDNGroupType(LDAP_GROUP_MEMBER_ATTRIBUTE),
         "GROUP_OF_NAMES": GroupOfNamesType(),
         "GROUP_OF_UNIQUE_NAMES": GroupOfUniqueNamesType(),
         "AD": ActiveDirectoryGroupType(),
@@ -658,6 +661,12 @@ if get_env_variable('LDAP_AUTH', 'FALSE') == 'TRUE':
 
     LDAP_ORG_ID_ATTRIBUTE = (
         get_env_variable("LDAP_ORG_ID_ATTRIBUTE", "") == "TRUE")
+
+    LDAP_USER_ORG_ID_ATTRIBUTE = (
+        get_env_variable("LDAP_USER_ORG_ID_ATTRIBUTE", "DN"))
+
+    LDAP_GROUP_ORG_ID_ATTRIBUTE = (
+        get_env_variable("LDAP_GROUP_ORG_ID_ATTRIBUTE", "DN"))
 
     LDAP_GROUP_OWNER_ATTRIBUTE = get_env_variable("LDAP_GROUP_OWNER_ATTRIBUTE",
                                                   "owner")

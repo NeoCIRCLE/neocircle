@@ -58,7 +58,7 @@ from ..forms import TransferOwnershipForm
 
 logger = logging.getLogger(__name__)
 saml_available = hasattr(settings, "SAML_CONFIG")
-ldap_available = hasattr(settings, "AUTH_LDAP_SERVER_URI")
+ldap_available = getattr(settings, "LDAP_ORG_ID_ATTRIBUTE", False)
 
 
 def external_auth_available():
