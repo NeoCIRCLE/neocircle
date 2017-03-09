@@ -18,9 +18,10 @@ import logging
 from django.conf import settings
 from django.contrib.auth.models import Group
 from .models import GroupProfile, FutureMember, Profile
-import ldap
-from django_auth_ldap.backend import LDAPSettings
-from django_auth_ldap.config import LDAPSearch
+if getattr(settings, 'LDAP_ORG_ID_ATTRIBUTE', False):
+    import ldap
+    from django_auth_ldap.backend import LDAPSettings
+    from django_auth_ldap.config import LDAPSearch
 
 
 logger = logging.getLogger(__name__)
