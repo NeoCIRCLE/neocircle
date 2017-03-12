@@ -1,3 +1,21 @@
+# Copyright 2017 Budapest University of Technology and Economics (BME IK)
+#
+# This file is part of CIRCLE Cloud.
+#
+# CIRCLE is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# CIRCLE is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along
+# with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
+
+
 """ Required instances of the OCCI classes """
 
 from vm.models.instance import InstanceTemplate
@@ -211,12 +229,36 @@ CREDENTIALS_ATTRIBUTES = [
               "connect to the compute instance."),
 ]
 
-CREDENTIALS_MIXIN = Mixin("http://circlecloud.org/occi/infrastructure#",
+CREDENTIALS_MIXIN = Mixin("http://circlecloud.org/occi/infrastructure/" +
+                          "compute#",
                           "credentials",
                           title="Credentials Mixin",
                           attributes=CREDENTIALS_ATTRIBUTES,
                           applies="http://schemas.ogf.org/occi/" +
                           "infrastructure#compute")
+
+LEASETIME_ATTRIBUTES = [
+    Attribute("org.circlecloud.occi.leasetime.suspend", "String", False,
+              False, description="The time remaining until the compute " +
+              "instance is suspended."),
+    Attribute("org.circlecloud.occi.leasetime.remove", "String", False,
+              False, description="The time remaining until the compute " +
+              "instance is deleted."),
+
+]
+
+LEASETIME_ACTIONS = [
+    Action("http://circlecloud.org/occi/infrastructure/compute/action#",
+           "renew", title="Renew the lease time of the compute instance."),
+]
+
+LEASETIME_MIXIN = Mixin("http://circlecloud.org/occi/infrastucture/compute#",
+                        "leasetime",
+                        title="Compute Lease Time Mixin",
+                        attributes=LEASETIME_ATTRIBUTES,
+                        actions=LEASETIME_ACTIONS,
+                        applies="http://schemas.ogf.org/occi/infrastructure" +
+                        "#compute")
 
 OS_TPL_MIXIN = Mixin("http://schemas.ogf.org/occi/infrastructure#",
                      "os_tpl",
@@ -224,8 +266,9 @@ OS_TPL_MIXIN = Mixin("http://schemas.ogf.org/occi/infrastructure#",
 
 ACTION_ARRAYS = [
     COMPUTE_ACTIONS,
-    # NETWORK_ACTIONS,
-    # STORAGE_ACTIONS,
+    NETWORK_ACTIONS,
+    STORAGE_ACTIONS,
+    LEASETIME_ACTIONS,
 ]
 
 
@@ -235,9 +278,10 @@ def ALL_KINDS():
         RESOURCE_KIND,
         LINK_KIND,
         COMPUTE_KIND,
-        # NETWORK_KIND,
-        # STORAGE_KIND,
-        # NETWORKINTERFACE_KIND
+        NETWORK_KIND,
+        STORAGE_KIND,
+        NETWORKINTERFACE_KIND,
+        STORAGELINK_KIND,
     ]
 
 
@@ -255,10 +299,11 @@ def os_tpl_mixins(user):
 
 def ALL_MIXINS(user):
     mixins = [
-        # IPNETWORK_MIXIN,
-        # IPNETWORKINTERFACE_MIXIN,
+        IPNETWORK_MIXIN,
+        IPNETWORKINTERFACE_MIXIN,
         CREDENTIALS_MIXIN,
         OS_TPL_MIXIN,
+        LEASETIME_MIXIN,
     ]
     template_mixins = os_tpl_mixins(user)
     for template in template_mixins:

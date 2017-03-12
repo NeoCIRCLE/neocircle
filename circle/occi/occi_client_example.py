@@ -1,3 +1,20 @@
+# Copyright 2017 Budapest University of Technology and Economics (BME IK)
+#
+# This file is part of CIRCLE Cloud.
+#
+# CIRCLE is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# CIRCLE is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along
+# with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
+
 import requests
 import json
 # import urllib3
@@ -16,6 +33,7 @@ loginData = {"username": username, "password": password}
 # Csinalunk egy sessiont, hogy a cookie ami az auth-ert felelos
 # automatikusan benne maradjon az osszes keresunkben
 with requests.Session() as session:
+    session.timeout = None
     headers = {"Content-Type": "application/json", "Referer": server}
     # Csrf-Token a bejelentkezeshez
     req = session.get(server + "occi/login/", headers=headers,
@@ -68,7 +86,7 @@ with requests.Session() as session:
     vmid = json.loads(req.text)["resources"][0]["id"]
     req = session.get(server + "occi/compute/" + vmid + "/",
                       headers=headers, verify=False)
-    print("compute-"+str(vmid))
+    print("compute-" + str(vmid))
     print("------------")
     print("status_code: " + str(req.status_code))
     print
@@ -100,12 +118,12 @@ with requests.Session() as session:
         headers["X-CSRFToken"] = req.cookies['csrftoken']
     except:
         pass
-    actionatrs = {"method": "cold"}
+    actionatrs = {"method": "warm"}
     actioninv = {"action": action + "restart", "attributes": actionatrs}
     req = session.post(server + "occi/compute/" + vmid + "/",
                        headers=headers, verify=False,
                        data=json.dumps(actioninv))
-    print("compute-"+str(vmid) + "-restart")
+    print("compute-" + str(vmid) + "-restart")
     print("-----------------")
     print("status_code: " + str(req.status_code))
     print
@@ -118,12 +136,12 @@ with requests.Session() as session:
         headers["X-CSRFToken"] = req.cookies['csrftoken']
     except:
         pass
-    actioninv["action"] = action + "suspend"
-    actioninv["attributes"]["method"] = "suspend"
+    actioninv["action"] = action + "stop"
+    actioninv["attributes"]["method"] = "graceful"
     req = session.post(server + "occi/compute/" + vmid + "/",
                        headers=headers, verify=False,
                        data=json.dumps(actioninv))
-    print("compute-" + str(vmid) + "-suspend")
+    print("compute-" + str(vmid) + "-stop")
     print("-----------------")
     print("status_code: " + str(req.status_code))
     print
@@ -136,11 +154,11 @@ with requests.Session() as session:
         headers["X-CSRFToken"] = req.cookies["csrftoken"]
     except:
         pass
-    actioninv["action"] = action + "noaction"
+    actioninv["action"] = action + "renew"
     req = session.post(server + "occi/compute/" + vmid + "/",
                        headers=headers, verify=False,
                        data=json.dumps(actioninv))
-    print("compute-" + str(vmid) + "-noaction")
+    print("compute-" + str(vmid) + "-renew")
     print("-------------------")
     print("status_code: " + str(req.status_code))
     print
@@ -185,6 +203,50 @@ with requests.Session() as session:
     print(json.dumps(json.loads(req.text), sort_keys=True,
                      indent=4, separators=(",", ": ")))
     print
+
+    try:
+        headers["X-CSRFToken"] = req.cookies["csrftoken"]
+    except:
+        pass
+    req = session.get(server + "occi/network/1/", headers=headers,
+                      verify=False)
+    print("storage")
+    print("-------")
+    print("status_code " + str(req.status_code))
+    print
+    print(json.dumps(json.loads(req.text), sort_keys=True,
+                     indent=4, separators=(",", ": ")))
+
+    try:
+        headers["X-CSRFToken"] = req.cookies["csrftoken"]
+    except:
+        pass
+    req = session.post(server + "occi/network/1/", headers=headers,
+                       verify=False, data=json.dumps({"action": "online"}))
+    print("storage")
+    print("-------")
+    print("status_code " + str(req.status_code))
+    print
+    print(json.dumps(json.loads(req.text), sort_keys=True,
+                     indent=4, separators=(",", ": ")))
+
+    try:
+        headers["X-CSRFToken"] = req.cookies["csrftoken"]
+    except:
+        pass
+    req = session.post(server + "occi/compute/96/", headers=headers,
+                       verify=False, data=json.dumps(
+                           {
+                               "attributes": {
+                                "occi.compute.memory": 0.250
+                               }
+                           }))
+    print("computerehelelel")
+    print("-------")
+    print("status_code " + str(req.status_code))
+    print
+    print(json.dumps(json.loads(req.text), sort_keys=True,
+                     indent=4, separators=(",", ": ")))
 
     # Kijelentkezes
     req = session.get(server + "occi/logout/", headers=headers,

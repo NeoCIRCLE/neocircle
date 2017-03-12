@@ -1,3 +1,21 @@
+# Copyright 2017 Budapest University of Technology and Economics (BME IK)
+#
+# This file is part of CIRCLE Cloud.
+#
+# CIRCLE is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# CIRCLE is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along
+# with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
+
+
 """" Utilities for the OCCI implementation of CIRCLE """
 
 from django.http import HttpResponse
@@ -7,6 +25,7 @@ import json
 class OcciException(Exception):
     """ The superclass for OCCI exceptions. It creates a response to be
         returned when an error occures. """
+
     def __init__(self, *args, **kwargs):
         message = kwargs.get("message", "An error occured.")
         status = kwargs.get("status", 400)
@@ -17,6 +36,7 @@ class OcciException(Exception):
 class OcciResourceInstanceNotExist(OcciException):
     """ An exception to be raised when a resource instance which has been
         asked for does not exist. """
+
     def __init__(self, *args, **kwargs):
         if "message" not in kwargs:
             kwargs["message"] = "The resource instance does not exist."
@@ -26,6 +46,7 @@ class OcciResourceInstanceNotExist(OcciException):
 class OcciActionInvocationError(OcciException):
     """ An exception to be raised when an action could not be invoked on
         an entity instance for some reason """
+
     def __init__(self, *args, **kwargs):
         if "message" not in kwargs:
             kwargs["message"] = "Could not invoke action."
@@ -35,6 +56,7 @@ class OcciActionInvocationError(OcciException):
 class OcciResourceCreationError(OcciException):
     """ An exception to be raised when a resource instance could not be
         created for a reason. """
+
     def __init__(self, *args, **kwargs):
         if "message" not in kwargs:
             kwargs["message"] = "Could not create resource instance."
@@ -44,6 +66,7 @@ class OcciResourceCreationError(OcciException):
 class OcciResourceDeletionError(OcciException):
     """ An exception to be raised when a resource instance could not be
         deleted for some reason. """
+
     def __init__(self, *args, **kwargs):
         if "message" not in kwargs:
             kwargs["message"] = "Could not delete resource instance."
@@ -53,6 +76,7 @@ class OcciResourceDeletionError(OcciException):
 class OcciRequestNotValid(OcciException):
     """ An exception to be raised when the request sent by the client is
         not valid for a reason. (e.g, wrong content type, etc.) """
+
     def __init__(self, *args, **kwargs):
         if "message" not in kwargs:
             kwargs["message"] = "The request is not valid."
