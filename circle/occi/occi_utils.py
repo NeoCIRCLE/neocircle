@@ -102,7 +102,7 @@ def validate_request(request, authentication_required=True,
                      has_data=False, **kwargs):
     """ This function checks if the request's content type is
         application/json and if the data is a valid json object. If the
-        authentication_required parameter is True, it will also check if
+        authentication_required parameter is 'True', it will also check if
         the user is authenticated. """
     # checking if the user is authenticated
     if authentication_required:
