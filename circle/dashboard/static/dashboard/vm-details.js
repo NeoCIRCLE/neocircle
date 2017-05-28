@@ -252,4 +252,7 @@ $(function() {
     return e.preventDefault();
   });
 
+  // Clipboard for connection strings
+  if(Clipboard.isSupported())
+    new Clipboard(".vm-details-connection-string-copy");
 });
