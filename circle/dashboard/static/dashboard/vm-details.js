@@ -70,12 +70,12 @@ $(function() {
   });
 
   /* for js fallback */
-  $("#vm-details-pw-show").parent("div").children("input").prop("type", "password");
+  $(".vm-details-show-password").parent("div").children("input").prop("type", "password");
 
   /* show password */
-  $("#vm-details-pw-show").click(function() {
+  $(".vm-details-show-password").click(function() {
     var input = $(this).parent("div").children("input");
-    var eye = $(this).children("#vm-details-pw-eye");
+    var eye = $(this).children(".vm-details-password-eye");
     var span = $(this);
 
     span.tooltip("destroy");
@@ -253,6 +253,11 @@ $(function() {
   });
 
   // Clipboard for connection strings
-  if(Clipboard.isSupported())
-    new Clipboard(".vm-details-connection-string-copy");
+  if(Clipboard.isSupported()) {
+    new Clipboard(".vm-details-connection-string-copy", {
+      text: function(trigger) {
+        return $($(trigger).data("clipboard-target")).val();
+      }
+    });
+  }
 });

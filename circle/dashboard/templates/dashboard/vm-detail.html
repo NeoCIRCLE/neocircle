@@ -133,9 +133,9 @@
           <div class="input-group">
             <input type="text" id="vm-details-pw-input" class="form-control input-sm input-tags"
             value="{{ instance.pw }}" spellcheck="false" autocomplete="new-password"/>
-            <span class="input-group-addon btn btn-default input-tags" id="vm-details-pw-show"
+            <span class="input-group-addon btn btn-default input-tags vm-details-show-password"
               title="{% trans "Show password" %}" data-container="body">
-              <i class="fa fa-eye" id="vm-details-pw-eye"></i>
+              <i class="fa fa-eye vm-details-password-eye"></i>
             </span>
           </div>
         </dd>
@@ -160,6 +160,10 @@
         <input type="text" spellcheck="false"
         value="{{ c.cmd }}"
         id="vm-details-connection-string-{{ c.id }}" class="form-control input-tags" />
+        <span class="input-group-addon btn btn-default input-tags vm-details-show-password"
+          title="{% trans "Show password" %}" data-container="body">
+          <i class="fa fa-eye vm-details-password-eye"></i>
+        </span>
         <span class="input-group-addon input-tags btn btn-default vm-details-connection-string-copy"
           title="{% trans "Copy to clipboard" %}"
           data-container="body"
@@ -167,15 +171,11 @@
           <i class="fa fa-copy"></i>
         </span>
       </div>
-
       {% empty %}
       <div class="input-group dashboard-vm-details-connect-command">
         <span class="input-group-addon input-tags">{% trans "Command" %}</span>
         <input type="text" spellcheck="false" value="{% trans "Connection is not possible." %}"
         id="vm-details-connection-string" class="form-control input-tags" />
-        <span class="input-group-addon input-tags" id="vm-details-connection-string-copy">
-          <i class="fa fa-copy" title="{% trans "Select all" %}"></i>
-        </span>
       </div>
       {% endfor %}
       {% if instance.get_connect_uri %}
