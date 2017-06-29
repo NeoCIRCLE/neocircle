@@ -227,6 +227,7 @@ PIPELINE_JS = {
         "output_filename": "all.js",
     },
     "vm-detail": {"source_filenames": (
+        "clipboard/dist/clipboard.min.js",
         "dashboard/vm-details.js",
         "no-vnc/include/util.js",
         "no-vnc/include/webutil.js",

@@ -212,15 +212,16 @@ class Profile(Model):
             commands = self.user.command_set.filter(
                 access_method=instance.access_method)
             if commands.count() < 1:
-                return [single_command]
+                return [{'id': 0, 'cmd': single_command}]
             else:
-                return [
-                    command.template % {
+                return [{
+                    'id': command.id,
+                    'cmd': command.template % {
                         'port': instance.get_connect_port(use_ipv6=use_ipv6),
                         'host':  instance.get_connect_host(use_ipv6=use_ipv6),
                         'password': instance.pw,
                         'username': 'cloud',
-                    } for command in commands]
+                    }} for command in commands]
         else:
             return []
 
@@ -320,6 +321,7 @@ def get_or_create_profile(self):
     obj, created = GroupProfile.objects.get_or_create(group_id=self.pk)
     return obj
 
+
 Group.profile = property(get_or_create_profile)
 
 
@@ -337,6 +339,7 @@ def create_profile(user):
 
 def create_profile_hook(sender, user, request, **kwargs):
     return create_profile(user)
+
 
 user_logged_in.connect(create_profile_hook)
 
