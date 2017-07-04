@@ -38,7 +38,11 @@ INSTALLED_APPS += (
     'django_nose',
 )
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_ARGS = ['--with-doctest', '--exclude-dir=dashboard/tests/selenium']
+NOSE_ARGS = [
+    '--with-doctest',
+    '--exclude-dir=dashboard/tests/selenium',
+    '--exclude=circle'
+]
 PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
 
 CACHES = {
@@ -59,7 +63,7 @@ for i in LOCAL_APPS:
 
 # don't print SQL queries
 LOGGING['handlers']['null'] = {'level': "DEBUG",
-                               'class': "django.utils.log.NullHandler"}
+                               'class': "logging.NullHandler"}
 LOGGING['loggers']['django.db.backends'] = {
     'handlers': ['null'],
     'propagate': False,

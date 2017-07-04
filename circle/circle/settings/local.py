@@ -27,7 +27,7 @@ from base import *  # noqa
 DEBUG = True
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
-TEMPLATE_DEBUG = DEBUG
+TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
 ########## END DEBUG CONFIGURATION
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTOCOL', 'https')
@@ -110,8 +110,10 @@ if DEBUG:
     from django.dispatch import Signal
     Signal.send_robust = Signal.send
 
-PIPELINE_COMPILERS = (
+PIPELINE["COMPILERS"] = (
     'dashboard.compilers.DummyLessCompiler',
 )
 
 ADMIN_ENABLED = True
+
+ALLOWED_HOSTS = ['*']
