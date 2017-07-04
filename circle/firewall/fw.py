@@ -25,7 +25,7 @@ from .models import (Host, Rule, Vlan, Domain, Record, BlacklistItem,
                      SwitchPort)
 from .iptables import IptRule, IptChain
 import django.conf
-from django.template import loader, Context
+from django.template import loader
 from django.utils import timezone
 
 
@@ -152,9 +152,9 @@ class BuildFirewall:
 
         template = loader.get_template('firewall/iptables.conf')
         context['proto'] = 'ipv4'
-        ipv4 = unicode(template.render(Context(context)))
+        ipv4 = unicode(template.render(context))
         context['proto'] = 'ipv6'
-        ipv6 = unicode(template.render(Context(context)))
+        ipv6 = unicode(template.render(context))
         return (ipv4, ipv6)
 
 

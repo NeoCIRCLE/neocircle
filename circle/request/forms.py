@@ -69,7 +69,7 @@ class InitialFromFileMixin(object):
 
         self.initial['message'] = render_to_string(
             self.initial_template,
-            RequestContext(request, {}),
+            RequestContext(request, {}).flatten(),
         )
 
     def clean_message(self):

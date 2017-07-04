@@ -24,7 +24,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.template.defaultfilters import urlencode
-from django.core.cache import get_cache
+from django.core.cache import cache
 from django.core.exceptions import SuspiciousOperation
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
@@ -65,7 +65,7 @@ class StoreList(LoginRequiredMixin, TemplateView):
                 context = self.get_context_data(**kwargs)
                 return render_to_response(
                     "dashboard/store/_list-box.html",
-                    RequestContext(self.request, context),
+                    RequestContext(self.request, context).flatten(),
                 )
             else:
                 return super(StoreList, self).get(*args, **kwargs)
@@ -193,7 +193,6 @@ def store_new_directory(request):
 @login_required
 def store_refresh_toplist(request):
     cache_key = "files-%d" % request.user.pk
-    cache = get_cache("default")
     try:
         store = Store(request.user)
         toplist = store.toplist()

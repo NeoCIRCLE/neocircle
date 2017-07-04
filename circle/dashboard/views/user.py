@@ -231,7 +231,7 @@ class MyPreferencesView(UpdateView):
     def get(self, request, form=None, *args, **kwargs):
         # if this is not here, it won't work
         self.object = self.get_object()
-        context = self.get_context_data(*args, **kwargs)
+        context = self.get_context_data(form=form, *args, **kwargs)
         if form is not None:
             # a little cheating, users can't post invalid
             # language selection forms (without modifying the HTML)

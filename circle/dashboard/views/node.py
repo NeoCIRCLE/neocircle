@@ -331,7 +331,8 @@ class NodeActivityView(LoginRequiredMixin, SuperuserRequiredMixin, View):
             'activities': render_to_string(
                 "dashboard/node-detail/_activity-timeline.html",
                 RequestContext(request, {'activities': activities,
-                                         'show_show_all': show_show_all}))
+                                         'show_show_all': show_show_all}
+                               ).flatten())
         }
 
         return HttpResponse(

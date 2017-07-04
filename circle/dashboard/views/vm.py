@@ -1286,15 +1286,15 @@ def vm_activity(request, pk):
 
     response['activities'] = render_to_string(
         "dashboard/vm-detail/_activity-timeline.html",
-        RequestContext(request, context),
+        RequestContext(request, context).flatten(),
     )
     response['ops'] = render_to_string(
         "dashboard/vm-detail/_operations.html",
-        RequestContext(request, context),
+        RequestContext(request, context).flatten(),
     )
     response['disk_ops'] = render_to_string(
         "dashboard/vm-detail/_disk-operations.html",
-        RequestContext(request, context),
+        RequestContext(request, context).flatten(),
     )
 
     return HttpResponse(
