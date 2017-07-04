@@ -24,7 +24,7 @@
         <td>
             <select class="form-control" name="perm-u-{{i.user.id}}"{% if i.level not in acl.allowed_levels %} disabled{% endif %}>
             {% for id, name in acl.levels %}
-            <option{%if id = i.level%} selected="selected"{%endif%}
+            <option{%if id == i.level%} selected="selected"{%endif%}
             {% if id not in acl.allowed_levels %} disabled{% endif %}
                 value="{{id}}">{{name}}</option>
             {% endfor %}
@@ -46,7 +46,7 @@
         <td>
             <select class="form-control" name="perm-g-{{i.group.id}}{% if i.level not in acl.allowed_levels %} disabled{% endif %}">
             {% for id, name in acl.levels %}
-            <option{%if id = i.level%} selected="selected"{%endif%}
+            <option{%if id == i.level%} selected="selected"{%endif%}
             {% if id not in acl.allowed_levels %} disabled{% endif %}
                 value="{{id}}">{{name}}</option>
             {% endfor %}
