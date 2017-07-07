@@ -340,6 +340,10 @@ DJANGO_APPS = (
     # Useful template tags:
     # 'django.contrib.humanize',
 
+    # Django autocomplete light
+    # it needs registering before django admin
+    'dal',
+    'dal_select2',
     # Admin panel and documentation:
     'django.contrib.admin',
     # 'django.contrib.admindocs',
@@ -352,8 +356,6 @@ THIRD_PARTY_APPS = (
     'taggit',
     'statici18n',
     'django_sshkey',
-    'dal',
-    'dal_select2',
     'pipeline',
 )
 
