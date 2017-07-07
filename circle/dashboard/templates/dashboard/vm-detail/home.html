@@ -16,7 +16,7 @@
           <small class="vm-details-home-edit-name">{{ instance.name }}</small>
         </div>
         <div class="js-hidden vm-details-home-rename-form-div" id="vm-details-home-rename">
-          <form method="POST">
+          <form action="{{ op.rename.get_url }}" method="POST">
             {% csrf_token %}
             <div class="input-group">
               <input type="text" name="new_name" value="{{ instance.name }}" class="form-control input-sm"/>

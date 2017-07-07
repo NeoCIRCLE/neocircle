@@ -1538,6 +1538,10 @@ class VmResourcesForm(forms.ModelForm):
         fields = ('num_cores', 'priority', 'ram_size', )
 
 
+class VmRenameForm(forms.Form):
+    new_name = forms.CharField()
+
+
 vm_search_choices = (
     ("owned", _("owned")),
     ("shared", _("shared")),
