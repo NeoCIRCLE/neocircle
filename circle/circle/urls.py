@@ -15,13 +15,16 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.views.generic import TemplateView
 
 from django.conf import settings
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
+from django.contrib.auth.views import (
+    password_reset_confirm, password_reset
+)
 
 
 from circle.settings.base import get_env_variable
@@ -33,9 +36,7 @@ from firewall.views import add_blacklist_item
 
 admin.autodiscover()
 
-urlpatterns = patterns(
-    '',
-
+urlpatterns = [
     url(r'^$', lambda x: redirect(reverse("dashboard.index"))),
     url(r'^network/', include('network.urls')),
     url(r'^blacklist-add/', add_blacklist_item),
@@ -45,12 +46,11 @@ urlpatterns = patterns(
     # django/contrib/auth/urls.py (care when new version)
     url((r'^accounts/reset/(?P<uidb64>[0-9A-Za-z_\-]+)/'
          r'(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$'),
-        'django.contrib.auth.views.password_reset_confirm',
+        password_reset_confirm,
         {'set_password_form': CircleSetPasswordForm},
         name='accounts.password_reset_confirm'
         ),
-    url(r'^accounts/password/reset/$', ("django.contrib.auth.views."
-                                        "password_reset"),
+    url(r'^accounts/password/reset/$', password_reset,
         {'password_reset_form': CirclePasswordResetForm},
         name="accounts.password-reset",
         ),
@@ -73,27 +73,24 @@ urlpatterns = patterns(
         name="info.support"),
     url(r'^info/resize-how-to/$', ResizeHelpView.as_view(),
         name="info.resize"),
-)
+]
 
 
 if 'rosetta' in settings.INSTALLED_APPS:
-    urlpatterns += patterns(
-        '',
+    urlpatterns += [
         url(r'^rosetta/', include('rosetta.urls')),
-    )
+    ]
 
 if settings.ADMIN_ENABLED:
-    urlpatterns += patterns(
-        '',
+    urlpatterns += [
         url(r'^admin/', include(admin.site.urls)),
-    )
+    ]
 
 
 if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
-    urlpatterns += patterns(
-        '',
+    urlpatterns += [
         (r'^saml2/', include('djangosaml2.urls')),
-    )
+    ]
 
 handler500 = 'common.views.handler500'
 handler403 = 'common.views.handler403'
