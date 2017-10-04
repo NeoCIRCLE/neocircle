@@ -29,7 +29,6 @@ from django.core.exceptions import SuspiciousOperation
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.shortcuts import redirect, render_to_response, render
-from django.template import RequestContext
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import TemplateView
@@ -65,7 +64,7 @@ class StoreList(LoginRequiredMixin, TemplateView):
                 context = self.get_context_data(**kwargs)
                 return render_to_response(
                     "dashboard/store/_list-box.html",
-                    RequestContext(self.request, context).flatten(),
+                    context, self.request
                 )
             else:
                 return super(StoreList, self).get(*args, **kwargs)
