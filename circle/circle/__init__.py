@@ -17,4 +17,5 @@ def update_permissions_after_migration(sender, **kwargs):
 
     create_permissions(sender, apps.get_models(), 2 if settings.DEBUG else 0)
 
+
 post_migrate.connect(update_permissions_after_migration)
