@@ -32,7 +32,6 @@ from django.http import (
     HttpResponse, Http404, HttpResponseRedirect, JsonResponse
 )
 from django.shortcuts import redirect, get_object_or_404
-from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.translation import (
     ugettext as _, ugettext_noop, ungettext_lazy,
@@ -1286,15 +1285,15 @@ def vm_activity(request, pk):
 
     response['activities'] = render_to_string(
         "dashboard/vm-detail/_activity-timeline.html",
-        RequestContext(request, context).flatten(),
+        context, request
     )
     response['ops'] = render_to_string(
         "dashboard/vm-detail/_operations.html",
-        RequestContext(request, context).flatten(),
+        context, request
     )
     response['disk_ops'] = render_to_string(
         "dashboard/vm-detail/_disk-operations.html",
-        RequestContext(request, context).flatten(),
+        context, request
     )
 
     return HttpResponse(
