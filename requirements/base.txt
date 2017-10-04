@@ -42,3 +42,4 @@ sqlparse==0.1.15
 pika==0.9.14
 Fabric==1.10.1
 lxml==3.4.4
+python-memcached==1.58
