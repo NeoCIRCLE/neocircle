@@ -31,7 +31,7 @@ from django.contrib.auth.models import User, Group
 from django.core.validators import URLValidator
 from django.core.exceptions import PermissionDenied, ValidationError
 
-import autocomplete_light
+from dal import autocomplete
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
     Layout, Div, BaseInput, Field, HTML, Submit, TEMPLATE_PACK, Fieldset
@@ -43,7 +43,6 @@ from crispy_forms.bootstrap import FormActions
 from django import forms
 from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
 from django.forms.widgets import TextInput, HiddenInput
-from django.template import Context
 from django.template.loader import render_to_string
 from django.utils.html import escape, format_html
 from django.utils.safestring import mark_safe
@@ -66,6 +65,7 @@ from django.utils.translation import string_concat
 from .validators import domain_validator
 
 from dashboard.models import ConnectCommand, create_profile
+
 
 LANGUAGES_WITH_CODE = ((l[0], string_concat(l[1], " (", l[0], ")"))
                        for l in LANGUAGES)
@@ -1180,8 +1180,7 @@ class AnyTag(Div):
             fields += render_field(field, form, form_style, context,
                                    template_pack=template_pack)
 
-        return render_to_string(self.template, Context({'tag': self,
-                                                        'fields': fields}))
+        return render_to_string(self.template, {'tag': self, 'fields': fields})
 
 
 class WorkingBaseInput(BaseInput):
@@ -1334,27 +1333,31 @@ class UserEditForm(forms.ModelForm):
 
 
 class AclUserOrGroupAddForm(forms.Form):
-    name = forms.CharField(widget=autocomplete_light.TextWidget(
-        'AclUserGroupAutocomplete',
-        attrs={'class': 'form-control',
-               'placeholder': _("Name of group or user")}))
+    name = forms.CharField(
+        widget=autocomplete.ListSelect2(
+            url='autocomplete.acl.user-group',
+            attrs={'class': 'form-control',
+                   'data-html': 'true',
+                   'data-placeholder': _("Name of group or user")}))
 
 
 class TransferOwnershipForm(forms.Form):
     name = forms.CharField(
-        widget=autocomplete_light.TextWidget(
-            'AclUserAutocomplete',
+        widget=autocomplete.ListSelect2(
+            url='autocomplete.acl.user',
             attrs={'class': 'form-control',
-                   'placeholder': _("Name of user")}),
+                   'data-html': 'true',
+                   'data-placeholder': _("Name of user")}),
         label=_("E-mail address or identifier of user"))
 
 
 class AddGroupMemberForm(forms.Form):
     new_member = forms.CharField(
-        widget=autocomplete_light.TextWidget(
-            'AclUserAutocomplete',
+        widget=autocomplete.ListSelect2(
+            url='autocomplete.acl.user',
             attrs={'class': 'form-control',
-                   'placeholder': _("Name of user")}),
+                   'data-html': 'true',
+                   'data-placeholder': _("Name of user")}),
         label=_("E-mail address or identifier of user"))
 
 

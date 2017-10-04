@@ -1,6 +1,6 @@
 # Local development dependencies go here
 -r base.txt
 coverage==3.7.1
-django-debug-toolbar==1.3.0
-django-rosetta==0.7.6
+django-debug-toolbar==1.8
+django-rosetta==0.7.13
 Sphinx==1.3.1

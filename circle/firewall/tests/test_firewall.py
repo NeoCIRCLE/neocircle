@@ -80,7 +80,7 @@ class GetNewAddressTestCase(MockCeleryMixin, TestCase):
         self.vlan = Vlan(vid=1, name='test', network4='10.0.0.1/29',
                          network6='2001:738:2001:4031::/80', domain=d,
                          owner=self.u1)
-        self.vlan.clean()
+        self.vlan.full_clean()
         self.vlan.save()
         self.vlan.host_set.all().delete()
         for i in range(3, 6):

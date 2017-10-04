@@ -19,7 +19,6 @@ from django.forms import (
     Textarea, ValidationError
 )
 from django.utils.translation import ugettext_lazy as _
-from django.template import RequestContext
 from django.template.loader import render_to_string
 
 from sizefield.widgets import FileSizeWidget
@@ -68,8 +67,7 @@ class InitialFromFileMixin(object):
         super(InitialFromFileMixin, self).__init__(*args, **kwargs)
 
         self.initial['message'] = render_to_string(
-            self.initial_template,
-            RequestContext(request, {}),
+            self.initial_template, {}, request
         )
 
     def clean_message(self):

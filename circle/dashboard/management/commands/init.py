@@ -18,7 +18,6 @@
 from __future__ import unicode_literals, absolute_import
 
 import logging
-from optparse import make_option
 
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
@@ -32,19 +31,18 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--force', action="store_true"),
-        make_option('--external-net'),
-        make_option('--management-net'),
-        make_option('--vm-net'),
-        make_option('--external-if'),
-        make_option('--management-if'),
-        make_option('--vm-if'),
-        make_option('--datastore-queue'),
-        make_option('--firewall-queue'),
-        make_option('--admin-user'),
-        make_option('--admin-pass'),
-    )
+    def add_arguments(self, parser):
+        parser.add_argument('--force', action="store_true")
+        parser.add_argument('--external-net')
+        parser.add_argument('--management-net')
+        parser.add_argument('--vm-net')
+        parser.add_argument('--external-if')
+        parser.add_argument('--management-if')
+        parser.add_argument('--vm-if')
+        parser.add_argument('--datastore-queue')
+        parser.add_argument('--firewall-queue')
+        parser.add_argument('--admin-user')
+        parser.add_argument('--admin-pass')
 
     def create(self, model, field, **kwargs):
         value = kwargs[field]
@@ -59,14 +57,15 @@ class Command(BaseCommand):
 
 # http://docs.saltstack.com/en/latest/ref/states/all/salt.states.cmd.html
     def print_state(self):
-        print "\nchanged=%s" % ("yes" if self.changed else "no")
+        self.stdout.write("\nchanged=%s" % ("yes" if self.changed else "no"))
 
     def handle(self, *args, **options):
         self.changed = False
 
         if (DataStore.objects.exists() and Vlan.objects.exists() and
                 not options['force']):
-            return self.print_state()
+            self.print_state()
+            return
 
         admin = self.create(User, 'username', username=options['admin_user'],
                             is_superuser=True, is_staff=True)
@@ -153,4 +152,4 @@ class Command(BaseCommand):
                     direction='out', action='accept',
                     foreign_network=vg_net, vlan=man)
 
-        return self.print_state()
+        self.print_state()

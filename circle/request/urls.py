@@ -16,7 +16,7 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from .views import (
     RequestList, RequestDetail, RequestTypeList,
@@ -26,8 +26,7 @@ from .views import (
     LeaseTypeDelete, TemplateAccessTypeDelete, ResizeRequestView,
 )
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'^list/$', RequestList.as_view(),
         name="request.views.request-list"),
     url(r'^(?P<pk>\d+)/$', RequestDetail.as_view(),
@@ -62,4 +61,4 @@ urlpatterns = patterns(
         name="request.views.request-resource"),
     url(r'resize/(?P<vm_pk>\d+)/(?P<disk_pk>\d+)/$',
         ResizeRequestView.as_view(), name="request.views.request-resize"),
-)
+]

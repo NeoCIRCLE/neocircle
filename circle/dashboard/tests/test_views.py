@@ -1902,9 +1902,9 @@ class TwoFactorTest(LoginMixin, TestCase):
         response = c.get("/two-factor-login/", follow=True)
         self.assertItemsEqual(
             response.redirect_chain,
-            [('http://testserver/', 302),
-             ('http://testserver/dashboard/', 302),
-             ('http://testserver/accounts/login/?next=/dashboard/', 302)]
+            [('/', 302),
+             ('/dashboard/', 302),
+             ('/accounts/login/?next=/dashboard/', 302)]
         )
 
     def test_straight_to_2fa_as_user(self):
@@ -1913,6 +1913,6 @@ class TwoFactorTest(LoginMixin, TestCase):
         response = c.get("/two-factor-login/", follow=True)
         self.assertItemsEqual(
             response.redirect_chain,
-            [('http://testserver/', 302),
-             ('http://testserver/dashboard/', 302)]
+            [('/', 302),
+             ('/dashboard/', 302)]
         )

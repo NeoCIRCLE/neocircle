@@ -14,9 +14,10 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
+
 import os
 
-from .base import *  # noqa
+from .base import *  # flake8:noqa
 
 
 # fix https://github.com/django-nose/django-nose/issues/197

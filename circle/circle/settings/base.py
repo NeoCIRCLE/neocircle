@@ -166,94 +166,93 @@ if exists(p):
     STATICFILES_DIRS.append(p)
 
 STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
-PIPELINE_COMPILERS = (
-    'pipeline.compilers.less.LessCompiler',
-)
-PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.yuglify.YuglifyCompressor'
-# PIPELINE_JS_COMPRESSOR = 'pipeline.compressors.slimit.SlimItCompressor'
-PIPELINE_JS_COMPRESSOR = None
-PIPELINE_DISABLE_WRAPPER = True
-PIPELINE_LESS_ARGUMENTS = u'--include-path={}'.format(':'.join(STATICFILES_DIRS))
-PIPELINE_CSS = {
-    "all": {"source_filenames": (
-        "compile_bootstrap.less",
-        "bootstrap/dist/css/bootstrap-theme.css",
-        "fontawesome/css/font-awesome.css",
-        "jquery-simple-slider/css/simple-slider.css",
-        "intro.js/introjs.css",
-        "template.less",
-        "dashboard/dashboard.less",
-        "network/network.less",
-        "autocomplete_light/style.css",
-    ),
-        "output_filename": "all.css",
-    }
-}
-PIPELINE_JS = {
-    "all": {"source_filenames": (
-        # "jquery/dist/jquery.js",  # included separately
-        "bootbox/bootbox.js",
-        "bootstrap/dist/js/bootstrap.js",
-        "intro.js/intro.js",
-        "jquery-knob/dist/jquery.knob.min.js",
-        "jquery-simple-slider/js/simple-slider.js",
-        "favico.js/favico.js",
-        "datatables/media/js/jquery.dataTables.js",
-        "dashboard/dashboard.js",
-        "dashboard/activity.js",
-        "dashboard/group-details.js",
-        "dashboard/group-list.js",
-        "dashboard/js/stupidtable.min.js",  # no bower file
-        "dashboard/node-create.js",
-        "dashboard/node-details.js",
-        "dashboard/node-list.js",
-        "dashboard/profile.js",
-        "dashboard/store.js",
-        "dashboard/template-list.js",
-        "dashboard/vm-common.js",
-        "dashboard/vm-create.js",
-        "dashboard/vm-list.js",
-        "dashboard/help.js",
-        "js/host.js",
-        "js/network.js",
-        "js/switch-port.js",
-        "js/host-list.js",
-        "autocomplete_light/autocomplete.js",
-        "autocomplete_light/widget.js",
-        "autocomplete_light/addanother.js",
-        "autocomplete_light/text_widget.js",
-        "autocomplete_light/remote.js",
-    ),
-        "output_filename": "all.js",
-    },
-    "vm-detail": {"source_filenames": (
-        "clipboard/dist/clipboard.min.js",
-        "dashboard/vm-details.js",
-        "no-vnc/include/util.js",
-        "no-vnc/include/webutil.js",
-        "no-vnc/include/base64.js",
-        "no-vnc/include/websock.js",
-        "no-vnc/include/des.js",
-        "no-vnc/include/keysym.js",
-        "no-vnc/include/keysymdef.js",
-        "no-vnc/include/keyboard.js",
-        "no-vnc/include/input.js",
-        "no-vnc/include/display.js",
-        "no-vnc/include/jsunzip.js",
-        "no-vnc/include/rfb.js",
-        "dashboard/vm-console.js",
-        "dashboard/vm-tour.js",
-    ),
-        "output_filename": "vm-detail.js",
-    },
-    "datastore": {"source_filenames": (
-        "chart.js/dist/Chart.min.js",
-        "dashboard/datastore-details.js"
-    ),
-        "output_filename": "datastore.js",
-    },
-}
 
+PIPELINE = {
+    'COMPILERS' : ('pipeline.compilers.less.LessCompiler',),
+    'LESS_ARGUMENTS': u'--include-path={}'.format(':'.join(STATICFILES_DIRS)),
+    'CSS_COMPRESSOR': 'pipeline.compressors.yuglify.YuglifyCompressor',
+    'JS_COMPRESSOR': None,
+    'DISABLE_WRAPPER': True,
+    'STYLESHEETS': {
+        "all": {"source_filenames": (
+            "compile_bootstrap.less",
+            "bootstrap/dist/css/bootstrap-theme.css",
+            "fontawesome/css/font-awesome.css",
+            "jquery-simple-slider/css/simple-slider.css",
+            "intro.js/introjs.css",
+            "template.less",
+            "dashboard/dashboard.less",
+            "network/network.less",
+            "autocomplete_light/vendor/select2/dist/css/select2.css",
+            "autocomplete_light/select2.css",
+        ),
+            "output_filename": "all.css",
+        }
+    },
+    'JAVASCRIPT': {
+        "all": {"source_filenames": (
+            # "jquery/dist/jquery.js",  # included separately
+            "bootbox/bootbox.js",
+            "bootstrap/dist/js/bootstrap.js",
+            "intro.js/intro.js",
+            "jquery-knob/dist/jquery.knob.min.js",
+            "jquery-simple-slider/js/simple-slider.js",
+            "favico.js/favico.js",
+            "datatables/media/js/jquery.dataTables.js",
+            "autocomplete_light/jquery.init.js",
+            "autocomplete_light/autocomplete.init.js",
+            "autocomplete_light/vendor/select2/dist/js/select2.js",
+            "autocomplete_light/select2.js",
+            "dashboard/dashboard.js",
+            "dashboard/activity.js",
+            "dashboard/group-details.js",
+            "dashboard/group-list.js",
+            "dashboard/js/stupidtable.min.js",  # no bower file
+            "dashboard/node-create.js",
+            "dashboard/node-details.js",
+            "dashboard/node-list.js",
+            "dashboard/profile.js",
+            "dashboard/store.js",
+            "dashboard/template-list.js",
+            "dashboard/vm-common.js",
+            "dashboard/vm-create.js",
+            "dashboard/vm-list.js",
+            "dashboard/help.js",
+            "js/host.js",
+            "js/network.js",
+            "js/switch-port.js",
+            "js/host-list.js",
+        ),
+            "output_filename": "all.js",
+        },
+        "vm-detail": {"source_filenames": (
+            "clipboard/dist/clipboard.min.js",
+            "dashboard/vm-details.js",
+            "no-vnc/include/util.js",
+            "no-vnc/include/webutil.js",
+            "no-vnc/include/base64.js",
+            "no-vnc/include/websock.js",
+            "no-vnc/include/des.js",
+            "no-vnc/include/keysym.js",
+            "no-vnc/include/keysymdef.js",
+            "no-vnc/include/keyboard.js",
+            "no-vnc/include/input.js",
+            "no-vnc/include/display.js",
+            "no-vnc/include/jsunzip.js",
+            "no-vnc/include/rfb.js",
+            "dashboard/vm-console.js",
+            "dashboard/vm-tour.js",
+        ),
+            "output_filename": "vm-detail.js",
+        },
+        "datastore": {"source_filenames": (
+            "chart.js/dist/Chart.min.js",
+            "dashboard/datastore-details.js"
+        ),
+            "output_filename": "datastore.js",
+        },
+    },
+}
 
 
 ########## SECRET CONFIGURATION
@@ -279,26 +278,31 @@ FIXTURE_DIRS = (
 
 
 ########## TEMPLATE CONFIGURATION
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#template-context-processors
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.contrib.auth.context_processors.auth',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.i18n',
-    'django.core.context_processors.media',
-    'django.core.context_processors.static',
-    'django.core.context_processors.tz',
-    'django.contrib.messages.context_processors.messages',
-    'django.core.context_processors.request',
-    'dashboard.context_processors.notifications',
-    'dashboard.context_processors.extract_settings',
-    'dashboard.context_processors.broadcast_messages',
-)
 
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
-TEMPLATE_DIRS = (
-    normpath(join(SITE_ROOT, '../../site-circle/templates')),
-    normpath(join(SITE_ROOT, 'templates')),
-)
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#TEMPLATES
+TEMPLATES = [{
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    'DIRS' : (
+        normpath(join(SITE_ROOT, '../../site-circle/templates')),
+        normpath(join(SITE_ROOT, 'templates')),
+    ),
+    'APP_DIRS': True,
+    'OPTIONS': {
+        'context_processors': (
+            'django.contrib.auth.context_processors.auth',
+            'django.template.context_processors.debug',
+            'django.template.context_processors.i18n',
+            'django.template.context_processors.media',
+            'django.template.context_processors.static',
+            'django.template.context_processors.tz',
+            'django.contrib.messages.context_processors.messages',
+            'django.template.context_processors.request',
+            'dashboard.context_processors.notifications',
+            'dashboard.context_processors.extract_settings',
+            'dashboard.context_processors.broadcast_messages',
+        ),
+    },
+}]
 ########## END TEMPLATE CONFIGURATION
 
 
@@ -336,6 +340,10 @@ DJANGO_APPS = (
     # Useful template tags:
     # 'django.contrib.humanize',
 
+    # Django autocomplete light
+    # it needs registering before django admin
+    'dal',
+    'dal_select2',
     # Admin panel and documentation:
     'django.contrib.admin',
     # 'django.contrib.admindocs',
@@ -348,7 +356,6 @@ THIRD_PARTY_APPS = (
     'taggit',
     'statici18n',
     'django_sshkey',
-    'autocomplete_light',
     'pipeline',
 )
 

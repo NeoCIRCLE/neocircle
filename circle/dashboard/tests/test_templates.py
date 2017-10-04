@@ -29,22 +29,22 @@ class TemplateSyntaxTestCase(unittest.TestCase):
     def test_templates(self):
         """Test all templates for syntax errors."""
         for loader in Engine.get_default().template_loaders:
-            print loader
+            print(loader)
             self._test_dir(loader.get_template_sources(''))
 
     def _test_dir(self, dir, path="/"):
         for i in dir:
-            i = join(path, i)
+            i = join(path, str(i))
             if isfile(i):
                 self._test_template(join(path, i))
             elif isdir(i):
-                print "%s:" % i
+                print("%s:" % i)
                 self._test_dir(listdir(i), i)
 
     def _test_template(self, path):
-        print path
+        print(path)
         try:
             Template(open(path).read()).render(Context({}))
         except (NoReverseMatch, VariableDoesNotExist, KeyError, AttributeError,
                 ValueError, ) as e:
-            print e
+            print(e)

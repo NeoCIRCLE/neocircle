@@ -151,7 +151,7 @@ class ConnectCommand(Model):
     access_method = CharField(max_length=10, choices=ACCESS_METHODS,
                               verbose_name=_('access method'),
                               help_text=_('Type of the remote access method.'))
-    name = CharField(max_length="128", verbose_name=_('name'), blank=False,
+    name = CharField(max_length=128, verbose_name=_('name'), blank=False,
                      help_text=_("Name of your custom command."))
     template = CharField(blank=True, null=True, max_length=256,
                          verbose_name=_('command template'),
