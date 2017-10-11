@@ -89,7 +89,7 @@ if settings.ADMIN_ENABLED:
 
 if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
     urlpatterns += [
-        (r'^saml2/', include('djangosaml2.urls')),
+        url(r'^saml2/', include('djangosaml2.urls')),
     ]
 
 handler500 = 'common.views.handler500'
