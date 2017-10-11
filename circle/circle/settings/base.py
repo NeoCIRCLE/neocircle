@@ -500,6 +500,10 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
         'metadata': {'local': [remote_metadata], },
         'key_file': join(SITE_ROOT, 'samlcert.key'),  # private part
         'cert_file': join(SITE_ROOT, 'samlcert.pem'),  # public part
+        'encryption_keypairs': [{
+            'key_file': join(SITE_ROOT, 'samlcert.key'),  # private part
+            'cert_file': join(SITE_ROOT, 'samlcert.pem'),  # public part
+        }]
     }
     try:
         SAML_CONFIG += loads(get_env_variable('DJANGO_SAML_SETTINGS'))

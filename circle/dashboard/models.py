@@ -347,9 +347,8 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
     logger.debug("Register save_org_id to djangosaml2 pre_user_save")
     from djangosaml2.signals import pre_user_save
 
-    def save_org_id(sender, **kwargs):
-        logger.debug("save_org_id called by %s", sender.username)
-        attributes = kwargs.pop('attributes')
+    def save_org_id(sender, instance, attributes, **kwargs):
+        logger.debug("save_org_id called by %s", instance.username)
         atr = settings.SAML_ORG_ID_ATTRIBUTE
         try:
             value = attributes[atr][0].upper()
@@ -357,19 +356,19 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
             value = None
             logger.info("save_org_id couldn't find attribute. %s", unicode(e))
 
-        if sender.pk is None:
-            sender.save()
-            logger.debug("save_org_id saved user %s", unicode(sender))
+        if instance.pk is None:
+            instance.save()
+            logger.debug("save_org_id saved user %s", unicode(instance))
 
-        profile, created = Profile.objects.get_or_create(user=sender)
+        profile, created = Profile.objects.get_or_create(user=instance)
         if created or profile.org_id != value:
             logger.info("org_id of %s added to user %s's profile",
-                        value, sender.username)
+                        value, instance.username)
             profile.org_id = value
             profile.save()
         else:
             logger.debug("org_id of %s already added to user %s's profile",
-                         value, sender.username)
+                         value, instance.username)
         memberatrs = getattr(settings, 'SAML_GROUP_ATTRIBUTES', [])
         for group in chain(*[attributes[i]
                              for i in memberatrs if i in attributes]):
@@ -380,10 +379,10 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
             else:
                 logger.debug('could find membergroup %s (%s)',
                              group, unicode(g))
-                g.user_set.add(sender)
+                g.user_set.add(instance)
 
         for i in FutureMember.objects.filter(org_id__iexact=value):
-            i.group.user_set.add(sender)
+            i.group.user_set.add(instance)
             i.delete()
 
         owneratrs = getattr(settings, 'SAML_GROUP_OWNER_ATTRIBUTES', [])
@@ -396,7 +395,7 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
             else:
                 logger.debug('could find ownergroup %s (%s)',
                              group, unicode(g))
-                g.profile.set_level(sender, 'owner')
+                g.profile.set_level(instance, 'owner')
 
         return False  # User did not change
 
