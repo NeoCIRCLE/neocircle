@@ -1550,6 +1550,8 @@ vm_search_choices = (
 
 
 class VmListSearchForm(forms.Form):
+    use_required_attribute = False
+
     s = forms.CharField(widget=forms.TextInput(attrs={
         'class': "form-control input-tags",
         'placeholder': _("Search...")
@@ -1574,6 +1576,8 @@ class VmListSearchForm(forms.Form):
 
 
 class TemplateListSearchForm(forms.Form):
+    use_required_attribute = False
+
     s = forms.CharField(widget=forms.TextInput(attrs={
         'class': "form-control input-tags",
         'placeholder': _("Search...")
@@ -1593,6 +1597,8 @@ class TemplateListSearchForm(forms.Form):
 
 
 class UserListSearchForm(forms.Form):
+    use_required_attribute = False
+
     s = forms.CharField(widget=forms.TextInput(attrs={
         'class': "form-control input-tags",
         'placeholder': _("Search...")
