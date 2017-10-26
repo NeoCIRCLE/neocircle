@@ -19,12 +19,13 @@
 """ Implementation of the OCCI - Infrastructure extension classes """
 
 
-from occi_core import Resource, Link
-from occi_utils import action_list_for_resource, OcciActionInvocationError
-from occi_instances import (COMPUTE_ACTIONS, LEASETIME_ACTIONS,
+from occi.core import Resource, Link
+from occi.utils import action_list_for_resource, OcciActionInvocationError
+from occi.instances import (COMPUTE_ACTIONS, LEASETIME_ACTIONS,
                             STORAGE_ACTIONS, NETWORK_ACTIONS)
 from common.models import HumanReadableException
 from celery.exceptions import TimeoutError
+from firewall.models import Rule
 import logging
 
 
@@ -117,11 +118,11 @@ class Compute(Resource):
         for disk in disks:
             storages.append(Storage(disk))
         for storage in storages:
-            links.append(StorageLink(self, storage).render_as_json())
+            links.append(StorageLink(self, storage).as_dict())
         nics = [NetworkInterface(self, Network(nic.vlan))
                 for nic in self.vm.interface_set.all()]
         for networkinterface in nics:
-            links.append(networkinterface.render_as_json())
+            links.append(networkinterface.as_dict())
         return links
 
     def invoke_action(self, user, action, attributes):
@@ -137,6 +138,10 @@ class Compute(Resource):
             self.save(user, attributes)
         elif action.endswith("renew"):
             self.renew(user)
+        elif action.endswith("createstorage"):
+            self.create_disk(user, attributes)
+        elif action.endswith("downloadstorage"):
+            self.download_disk(user, attributes)
         else:
             raise OcciActionInvocationError(message="Undefined action.")
         self.__init__(self.vm)
@@ -144,6 +149,28 @@ class Compute(Resource):
     def renew(self, user):
         try:
             self.vm.renew(user=user, force=True)
+        except HumanReadableException as e:
+            raise OcciActionInvocationError(message=e.get_user_text())
+
+    def create_disk(self, user, attributes):
+        if "size" not in attributes:
+            raise OcciActionInvocationError(
+                message="Storage size is missing from action attributes!"
+            )
+        try:
+            self.vm.create_disk(user=user, size=attributes["size"],
+                                name=attributes.get("name"))
+        except HumanReadableException as e:
+            raise OcciActionInvocationError(message=e.get_user_text())
+
+    def download_disk(self, user, attributes):
+        if "url" not in attributes:
+            raise OcciActionInvocationError(
+                message="Storage image url is missing from action attributes!"
+            )
+        try:
+            self.vm.download_disk(user=user, url=attributes["url"],
+                                  name=attributes.get("name"))
         except HumanReadableException as e:
             raise OcciActionInvocationError(message=e.get_user_text())
 
@@ -371,8 +398,49 @@ class NetworkInterface(Link):
         self.mixins = [
             ("http://schemas.ogf.org/occi/infrastructure/networkinterface#" +
              "ipnetworkinterface"),
+            ("http://circlecloud.org/occi/infrastructure/networkinterface#" +
+             "ports"),
         ]
         self.attributes = self.set_attributes()
+
+    def invoke_action(self, user, action, attributes):
+        if action.endswith("addport"):
+            self.addport(user, attributes)
+        elif action.endswith("removeport"):
+            self.removeport(user, attributes)
+        else:
+            raise OcciActionInvocationError(message="Undefined action.")
+        self.__init__(Compute(self.compute.vm), Network(self.network.vlan))
+
+    def addport(self, user, attributes):
+        if "port" not in attributes or "protocol" not in attributes:
+            raise OcciActionInvocationError(
+                message="Please supply the protocol and the port!")
+        try:
+            self.compute.vm.add_port(user=user, host=self.interface.host,
+                                     proto=attributes["protocol"],
+                                     port=int(attributes["port"]))
+        except HumanReadableException as e:
+            raise OcciActionInvocationError(message=e.get_user_text())
+        except AttributeError:
+            raise OcciActionInvocationError(
+                message="Unmanaged interfaces cant add ports."
+            )
+
+    def removeport(self, user, attributes):
+        if "port" not in attributes or "protocol" not in attributes:
+            raise OcciActionInvocationError(
+                message="Please supply the protocol and the port!")
+        try:
+            rule = Rule.objects.filter(host=self.interface.host).filter(
+                dport=attributes["port"]).get(
+                proto=attributes["protocol"])
+        except Rule.DoesNotExist:
+            raise OcciActionInvocationError(message="Port does not exist!")
+        try:
+            self.compute.vm.remove_port(user=user, rule=rule)
+        except HumanReadableException as e:
+            raise OcciActionInvocationError(message=e.get_user_text())
 
     def set_attributes(self):
         attributes = {}
@@ -382,10 +450,17 @@ class NetworkInterface(Link):
         attributes["occi.networkinterface.state"] = "active"
         attributes["occi.networkinterface.state.message"] = (
             "The networkinterface is active.")
-        attributes["occi.networkinterface.address"] = (
-            unicode(self.interface.host.ipv4))
+        if self.interface.host:
+            attributes["occi.networkinterface.address"] = (
+                unicode(self.interface.host.ipv4))
         attributes["occi.networkinterface.gateway"] = (
             unicode(self.interface.vlan.network4.ip))
         attributes["occi.networkinterface.allocation"] = (
             self.network.attributes["occi.network.allocation"])
+        attributes["org.circlecloud.occi.networkinterface.ports"] = (
+            self.get_open_ports())
         return attributes
+
+    def get_open_ports(self):
+        return [{"port": rule.dport, "protocol": rule.proto}
+                for rule in Rule.objects.filter(host=self.interface.host)]

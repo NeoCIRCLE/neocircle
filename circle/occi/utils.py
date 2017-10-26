@@ -18,7 +18,7 @@
 
 """" Utilities for the OCCI implementation of CIRCLE """
 
-from django.http import HttpResponse
+from django.http import JsonResponse
 import json
 
 
@@ -89,44 +89,33 @@ def occi_response(data, *args, **kwargs):
         by default. """
     status = kwargs.get("status", 200)
     # TODO: support for renderings other than json (e.g., text/plain)
-    data = json.dumps(data)
-    response = HttpResponse(data, charset="utf-8", status=status,
-                            content_type="application/json; charset=utf-8")
+    response = JsonResponse(data, status=status)
     # TODO: use Server header instead of OCCI-Server
     response["OCCI-Server"] = "OCCI/1.2"
     response["Accept"] = "application/json"
     return response
 
 
-def validate_request(request, authentication_required=True,
-                     has_data=False, **kwargs):
-    """ This function checks if the request's content type is
-        application/json and if the data is a valid json object. If the
-        authentication_required parameter is 'True', it will also check if
-        the user is authenticated. """
-    # checking if the user is authenticated
-    if authentication_required:
-        if not request.user.is_authenticated():
-            raise OcciRequestNotValid("Authentication required.", status=403)
-    if has_data:
-        # checking content type
-        if request.META.get("CONTENT_TYPE") != "application/json":
-            raise OcciRequestNotValid("Only application/json content type" +
-                                      " is allowed.")
-        # checking if the data is a valid json
-        try:
-            data = json.loads(request.body.decode("utf-8"))
-        except KeyError:
-            raise OcciRequestNotValid("The json provided in the request is " +
-                                      "not valid.")
-        # checking if provided keys are in the json
-        if "data_keys" in kwargs:
-            for key in kwargs["data_keys"]:
-                if key not in data:
-                    raise OcciRequestNotValid(key + " key is required.")
-        # if validation was successful, the function returns the parsed
-        # json data
-        return data
+def validate_request_data(request, data_keys):
+    """ This function checks if all the required data keys are set and if the
+        input is a valid json object. """
+    # checking content type
+    if request.META.get("CONTENT_TYPE") != "application/json":
+        raise OcciRequestNotValid("Only application/json content type" +
+                                  " is allowed.")
+    # checking if the data is a valid json
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+    except KeyError:
+        raise OcciRequestNotValid("The json provided in the request is " +
+                                  "not valid.")
+    # checking if provided keys are in the json
+    for key in data_keys:
+        if key not in data:
+            raise OcciRequestNotValid(key + " key is required.")
+    # if validation was successful, the function returns the parsed
+    # json data
+    return data
 
 
 def set_optional_attributes(self, optional_attributes, kwargs):

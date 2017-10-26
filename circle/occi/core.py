@@ -19,10 +19,10 @@
 """ Implementation of the OCCI - Core model classes """
 
 
-from occi_utils import set_optional_attributes
+from occi.utils import set_optional_attributes
 
 
-class Attribute:
+class Attribute(object):
     """ OCCI 1.2 - CORE - Classification - Attribute """
 
     TYPES = ("Object", "List", "Hash")
@@ -36,16 +36,16 @@ class Attribute:
         self.required = required
         set_optional_attributes(self, self.optional_attributes, kwargs)
 
-    def render_as_json(self):
-        json = {"mutable": self.mutable, "required": self.required,
-                "type": self.type}
+    def as_dict(self):
+        res = {"mutable": self.mutable, "required": self.required,
+               "type": self.type}
         if hasattr(self, "pattern"):
-            json["pattern"] = self.pattern
+            res["pattern"] = self.pattern
         if hasattr(self, "default"):
-            json["default"] = self.default
+            res["default"] = self.default
         if hasattr(self, "description"):
-            json["description"] = self.description
-        return json
+            res["description"] = self.description
+        return res
 
 
 class Category(object):
@@ -71,24 +71,23 @@ class Kind(Category):
         set_optional_attributes(self, self.kind_optional_attributes,
                                 kwargs)
 
-    def render_as_json(self):
-        json = {"term": self.term, "scheme": self.scheme}
+    def as_dict(self):
+        res = {"term": self.term, "scheme": self.scheme}
         if hasattr(self, "title"):
-            json["title"] = self.title
+            res["title"] = self.title
         if hasattr(self, "parent"):
-            json["parent"] = self.parent
+            res["parent"] = self.parent
         if hasattr(self, "location"):
-            json["location"] = self.location
+            res["location"] = self.location
         if hasattr(self, "attributes"):
-            json["attributes"] = {}
+            res["attributes"] = {}
             for attribute in self.attributes:
-                json["attributes"][attribute.name] = (attribute
-                                                      .render_as_json())
+                res["attributes"][attribute.name] = (attribute.as_dict())
         if hasattr(self, "actions"):
-            json["actions"] = []
+            res["actions"] = []
             for action in self.actions:
-                json["actions"].append(action.scheme + action.term)
-        return json
+                res["actions"].append(action.scheme + action.term)
+        return res
 
 
 class Action(Category):
@@ -97,16 +96,15 @@ class Action(Category):
     def __init(self, *args, **kwargs):
         super(Action, self).__init__(*args, **kwargs)
 
-    def render_as_json(self):
-        json = {"term": self.term, "scheme": self.scheme}
+    def as_dict(self):
+        res = {"term": self.term, "scheme": self.scheme}
         if hasattr(self, "title"):
-            json["title"] = self.title
+            res["title"] = self.title
         if hasattr(self, "attributes"):
-            json["attributes"] = {}
+            res["attributes"] = {}
             for attribute in self.attributes:
-                json["attributes"][attribute.name] = (attribute
-                                                      .render_as_json())
-        return json
+                res["attributes"][attribute.name] = (attribute.as_dict())
+        return res
 
 
 class Mixin(Category):
@@ -120,26 +118,25 @@ class Mixin(Category):
         set_optional_attributes(self, self.mixin_optional_attributes,
                                 kwargs)
 
-    def render_as_json(self):
-        json = {"term": self.term, "scheme": self.scheme}
+    def as_dict(self):
+        res = {"term": self.term, "scheme": self.scheme}
         if hasattr(self, "title"):
-            json["title"] = self.title
+            res["title"] = self.title
         if hasattr(self, "location"):
-            json["location"] = self.location
+            res["location"] = self.location
         if hasattr(self, "depends"):
-            json["depends"] = self.depends
+            res["depends"] = self.depends
         if hasattr(self, "applies"):
-            json["applies"] = self.applies
+            res["applies"] = self.applies
         if hasattr(self, "attributes"):
-            json["attributes"] = {}
+            res["attributes"] = {}
             for attribute in self.attributes:
-                json["attributes"][attribute.name] = (attribute
-                                                      .render_as_json())
+                res["attributes"][attribute.name] = (attribute.as_dict())
         if hasattr(self, "actions"):
-            json["actions"] = []
+            res["actions"] = []
             for action in self.actions:
-                json["actions"].append(action.scheme + action.term)
-        return json
+                res["actions"].append(action.scheme + action.term)
+        return res
 
 
 class Entity(object):
@@ -161,24 +158,24 @@ class Resource(Entity):
 
     def __init__(self, *args, **kwargs):
         super(Resource, self).__init__(*args, **kwargs)
-        set_optional_attributes(self, self.resource_optional_attributes,
-                                kwargs)
+        set_optional_attributes(
+            self, self.resource_optional_attributes, kwargs)
 
-    def render_as_json(self):
-        json = {"kind": self.kind, "id": self.id}
+    def as_dict(self):
+        res = {"kind": self.kind, "id": self.id}
         if hasattr(self, "title"):
-            json["title"] = self.title
+            res["title"] = self.title
         if hasattr(self, "summary"):
-            json["summary"] = self.summary
+            res["summary"] = self.summary
         if hasattr(self, "attributes"):
-            json["attributes"] = self.attributes
+            res["attributes"] = self.attributes
         if hasattr(self, "actions"):
-            json["actions"] = self.actions
+            res["actions"] = self.actions
         if hasattr(self, "links"):
-            json["links"] = self.links
+            res["links"] = self.links
         if hasattr(self, "mixins"):
-            json["mixins"] = self.mixins
-        return json
+            res["mixins"] = self.mixins
+        return res
 
 
 class Link(Entity):
@@ -190,18 +187,17 @@ class Link(Entity):
         super(Link, self).__init__(*args, **kwargs)
         self.source = source
         self.target = target
-        set_optional_attributes(self, self.link_optional_attributes,
-                                kwargs)
+        set_optional_attributes(self, self.link_optional_attributes, kwargs)
 
-    def render_as_json(self):
-        json = {"kind": self.kind, "id": self.id, "source": self.source,
-                "target": self.target}
+    def as_dict(self):
+        res = {"kind": self.kind, "id": self.id, "source": self.source,
+               "target": self.target}
         if hasattr(self, "mixins"):
-            json["mixins"] = self.mixins
+            res["mixins"] = self.mixins
         if hasattr(self, "attributes"):
-            json["attributes"] = self.attributes
+            res["attributes"] = self.attributes
         if hasattr(self, "actions"):
-            json["actions"] = self.actions
+            res["actions"] = self.actions
         if hasattr(self, "title"):
-            json["title"] = self.title
-        return json
+            res["title"] = self.title
+        return res

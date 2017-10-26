@@ -25,33 +25,33 @@ from django.views.generic import View
 from django.contrib.auth import logout
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from django.views.decorators.csrf import ensure_csrf_cookie
-from django.utils.decorators import method_decorator
 from vm.models.instance import Instance, InstanceTemplate
 from storage.models import Disk
 from firewall.models import Vlan
-from forms import OcciAuthForm
-from occi_infrastructure import Compute, Storage, Network
-from occi_utils import (OcciResourceInstanceNotExist,
+from occi.forms import OcciAuthForm
+from occi.infrastructure import (Compute, Storage, Network, StorageLink,
+                                 NetworkInterface,)
+from occi.utils import (OcciResourceInstanceNotExist,
                         OcciActionInvocationError,
                         OcciRequestNotValid,
                         OcciResourceCreationError,
                         OcciResourceDeletionError,
                         occi_response,
-                        validate_request)
-from occi_instances import ALL_KINDS, ALL_MIXINS, ALL_ACTIONS
+                        validate_request_data)
+from occi.instances import ALL_KINDS, ALL_MIXINS, ALL_ACTIONS
 from common.models import HumanReadableException
+from occi.mixins import OcciViewMixin, EnsureCsrfTokenMixin
 
 import logging
 log = logging.getLogger(__name__)
 
 
-class OcciLoginView(View):
+class OcciLoginView(EnsureCsrfTokenMixin, View):
     """ Authentication for the usage of the OCCI api.
         This view responds with 200 and the access token in a Cookie if the
         authentication succeeded, and with 400 if the provided username and
         password is not valid. """
-    @method_decorator(ensure_csrf_cookie)
+
     def get(self, request, *args, **kwargs):
         """ Returns a response with a cookie to be used for requests other
             than get. """
@@ -62,8 +62,6 @@ class OcciLoginView(View):
         """ Returns a response with a cookie to be used for the OCCI api
             requests. """
         data = json.loads(request.body.decode("utf-8"))
-        log.error(data)
-        print(data)
         form = OcciAuthForm(data=data, request=request)
         if form.is_valid():
             result = {"result": "OK"}
@@ -75,7 +73,7 @@ class OcciLoginView(View):
             return occi_response(result, status=400)
 
 
-class OcciLogoutView(View):
+class OcciLogoutView(EnsureCsrfTokenMixin, View):
     """ Logout """
 
     def get(self, request, *args, **kwargs):
@@ -84,21 +82,17 @@ class OcciLogoutView(View):
         return occi_response(result)
 
 
-class OcciQueryInterfaceView(View):
+class OcciQueryInterfaceView(OcciViewMixin, View):
     """ The view of the OCCI query interface """
-    @method_decorator(ensure_csrf_cookie)
+
     def get(self, request, *args, **kwargs):
-        try:
-            validate_request(request)
-        except OcciRequestNotValid as e:
-            return e.response
         result = {"kinds": [], "mixins": [], "actions": []}
         for kind in ALL_KINDS():
-            result["kinds"].append(kind.render_as_json())
-        for mixin in ALL_MIXINS(request.user):
-            result["mixins"].append(mixin.render_as_json())
-        for action in ALL_ACTIONS():
-            result["actions"].append(action.render_as_json())
+            result["kinds"].append(kind.as_dict())
+        result["mixins"] = [mixin.as_dict() for mixin in
+                            ALL_MIXINS(request.user)]
+        result["actions"] = [action.as_dict()
+                             for action in ALL_ACTIONS()]
         return occi_response(result)
 
     def post(self, request, *args, **kwargs):
@@ -114,32 +108,20 @@ class OcciQueryInterfaceView(View):
                               "query interface."}, status=400)
 
 
-class OcciComputeCollectionView(View):
-    @method_decorator(ensure_csrf_cookie)
+class OcciComputeCollectionView(OcciViewMixin, View):
+
     def get(self, request, *args, **kwargs):
-        try:
-            validate_request(request)
-        except OcciRequestNotValid as e:
-            return e.response
-        vms = (Instance.get_objects_with_level("owner", request.user)
-               .filter(destroyed_at=None))
-        json = {"resources": []}
-        for vm in vms:
-            json["resources"].append(Compute(vm).render_as_json())
-        return occi_response(json)
+        resources = [Compute(vm).as_dict()
+                     for vm in Instance.get_objects_with_level(
+                     "owner", request.user).filter(destroyed_at=None)]
+        return occi_response({"resources": resources})
 
     def put(self, request, *args, **kwargs):
         # TODO: vm creation
         return occi_response({"message": "TODO"})
-        try:
-            Instance.create_from_template(
-                InstanceTemplate.objects.get(pk=1), request.user)
-        except Exception:
-            return occi_response({"test": "tset"})
-        return occi_response({})
 
 
-class OcciComputeView(View):
+class OcciComputeView(OcciViewMixin, View):
     """ View of a compute instance """
 
     def get_vm_object(self, user, vmid):
@@ -150,16 +132,12 @@ class OcciComputeView(View):
             raise OcciResourceInstanceNotExist()
         return Compute(vm)
 
-    @method_decorator(ensure_csrf_cookie)
     def get(self, request, *args, **kwargs):
-        if not request.user.is_authenticated():
-            return occi_response({"error": "Authentication required."},
-                                 status=403)
         try:
             compute = self.get_vm_object(request.user, kwargs["id"])
         except OcciResourceInstanceNotExist as e:
             return e.response
-        return occi_response(compute.render_as_json(), charset="utf-8")
+        return occi_response(compute.as_dict(), charset="utf-8")
 
     def post(self, request, *args, **kwargs):
         requestData = json.loads(request.body.decode("utf-8"))
@@ -174,7 +152,7 @@ class OcciComputeView(View):
                                       requestData.get("attributes", None))
             except OcciActionInvocationError as e:
                 return e.response
-            return occi_response(compute.render_as_json(), status=200)
+            return occi_response(compute.as_dict(), status=200)
         elif "attributes" in requestData:
             attrs = requestData["attributes"]
             try:
@@ -197,7 +175,7 @@ class OcciComputeView(View):
                 )
             except HumanReadableException as e:
                 log.warning(e.get_user_text())
-            return occi_response(Compute(vm).render_as_json(), status=200)
+            return occi_response(Compute(vm).as_dict(), status=200)
         return occi_response({"error": "Bad request"}, status=400)
 
     def put(self, request, *args, **kwargs):
@@ -208,8 +186,8 @@ class OcciComputeView(View):
             # there has to be a mixins array in the provided rendering
             data_keys = ["mixins"]
             try:
-                requestData = validate_request(request, True, True,
-                                               data_keys=data_keys)
+                requestData = validate_request_data(request,
+                                                    data_keys=data_keys)
             except OcciRequestNotValid as e:
                 return e.response
             ostpl = "http://circlecloud.org/occi/templates/os#os_template_"
@@ -229,7 +207,7 @@ class OcciComputeView(View):
                     except:
                         return OcciResourceCreationError().response
                     compute = Compute(vm)
-                    return occi_response(compute.render_as_json())
+                    return occi_response(compute.as_dict())
         # TODO: update compute instance
         return occi_response({"error": "Update of compute instances is " +
                               "not implemented."}, status=501)
@@ -246,28 +224,23 @@ class OcciComputeView(View):
         return occi_response({"result": "Compute instance deleted."})
 
 
-class OcciStorageCollectionView(View):
+class OcciStorageCollectionView(OcciViewMixin, View):
 
-    @method_decorator(ensure_csrf_cookie)
     def get(self, request, *args, **kwargs):
-        try:
-            validate_request(request)
-        except OcciRequestNotValid as e:
-            return e.response
         vms = (Instance.get_objects_with_level("owner", request.user)
                .filter(destroyed_at=None))
         json = {"resources": []}
         for vm in vms:
             disks = vm.disks.all()
             for disk in disks:
-                json["resources"].append(Storage(disk).render_as_json())
+                json["resources"].append(Storage(disk).as_dict())
         return occi_response(json)
 
     def put(self, request, *args, **kwargs):
         return occi_response({"message": "Not supported."}, status=501)
 
 
-class OcciStorageView(View):
+class OcciStorageView(OcciViewMixin, View):
     """ View of a storage instance """
 
     def get_disk_object(self, user, diskid):
@@ -283,17 +256,12 @@ class OcciStorageView(View):
             return Storage(disk)
         raise OcciResourceInstanceNotExist()
 
-    @method_decorator(ensure_csrf_cookie)
     def get(self, request, *args, **kwargs):
-        try:
-            validate_request(request)
-        except OcciRequestNotValid as e:
-            return e.response
         try:
             disk = self.get_disk_object(request.user, kwargs["id"])
         except OcciResourceInstanceNotExist as e:
             return e.response
-        return occi_response(disk.render_as_json(), charset="utf-8")
+        return occi_response(disk.as_dict(), charset="utf-8")
 
     def post(self, request, *args, **kwargs):
         requestData = json.loads(request.body.decode("utf-8"))
@@ -315,24 +283,26 @@ class OcciStorageView(View):
                                   requestData.get("attributes", None))
         except OcciActionInvocationError as e:
             return e.response
-        return occi_response(storage.render_as_json(), status=200)
+        return occi_response(storage.as_dict(), status=200)
+
+    def put(self, request, *args, **kwargs):
+        return OcciResourceCreationError(
+            message="Storage creation is not supported at this uri. " +
+            "Please use the compute instances' actions!"
+        ).response
 
 
-class OcciNetworkCollectionView(View):
-    @method_decorator(ensure_csrf_cookie)
+class OcciNetworkCollectionView(OcciViewMixin, View):
+
     def get(self, request, *args, **kwargs):
-        try:
-            validate_request(request)
-        except OcciRequestNotValid as e:
-            return e.response
         vlans = (Vlan.get_objects_with_level("owner", request.user))
         json = {"resources": []}
         for vlan in vlans:
-            json["resources"].append(Network(vlan).render_as_json())
+            json["resources"].append(Network(vlan).as_dict())
         return occi_response(json)
 
 
-class OcciNetworkView(View):
+class OcciNetworkView(OcciViewMixin, View):
     """ View of a compute instance """
 
     def get_vlan_object(self, user, vlanid):
@@ -343,17 +313,12 @@ class OcciNetworkView(View):
             raise OcciResourceInstanceNotExist()
         return Network(vlan)
 
-    @method_decorator(ensure_csrf_cookie)
     def get(self, request, *args, **kwargs):
-        try:
-            validate_request(request)
-        except OcciRequestNotValid as e:
-            return e.response
         try:
             network = self.get_vlan_object(request.user, kwargs["id"])
         except OcciResourceInstanceNotExist as e:
             return e.response
-        return occi_response(network.render_as_json(), charset="utf-8")
+        return occi_response(network.as_dict(), charset="utf-8")
 
     def post(self, request, *args, **kwargs):
         requestData = json.loads(request.body.decode("utf-8"))
@@ -375,4 +340,135 @@ class OcciNetworkView(View):
                                   requestData.get("attributes", None))
         except OcciActionInvocationError as e:
             return e.response
-        return occi_response(network.render_as_json(), status=200)
+        return occi_response(network.as_dict(), status=200)
+
+
+class OcciStoragelinkCollectionView(OcciViewMixin, View):
+    """ View of all storage link instances of the user """
+
+    def get(self, request, *args, **kwargs):
+        vms = (Instance.get_objects_with_level("owner", request.user)
+               .filter(destroyed_at=None))
+        links = [StorageLink(Compute(vm), Storage(disk)).as_dict()
+                 for vm in vms for disk in vm.disks.all()]
+        return occi_response({"links": links})
+
+
+class OcciStoragelinkView(OcciViewMixin, View):
+    """ VIew of a storage link instance """
+
+    def get(self, request, *args, **kwargs):
+        try:
+            vm = get_object_or_404(Instance.get_objects_with_level(
+                "owner", request.user).filter(destroyed_at=None),
+                pk=kwargs["computeid"])
+        except Http404:
+            return OcciResourceInstanceNotExist().response
+        try:
+            disk = vm.disks.get(pk=kwargs["storageid"])
+        except Disk.DoesNotExist:
+            return OcciResourceInstanceNotExist().response
+        return occi_response(
+            StorageLink(Compute(vm), Storage(disk)).as_dict())
+
+
+class OcciNetworkInterfaceCollectionView(OcciViewMixin, View):
+    """ View of network interface instances of a user """
+
+    def get(self, request, *args, **kwargs):
+        vms = (Instance.get_objects_with_level("owner", request.user)
+               .filter(destroyed_at=None))
+        links = [NetworkInterface(Compute(vm),
+                                  Network(nwi.vlan)).as_dict()
+                 for vm in vms for nwi in vm.interface_set.all()]
+        return occi_response({"links": links})
+
+
+class OcciNetworkInterfaceView(OcciViewMixin, View):
+    """ View of a network interface instance """
+
+    def get_compute_object(self, user, vmid):
+        try:
+            vm = get_object_or_404(Instance.get_objects_with_level(
+                "owner", user).filter(destroyed_at=None), pk=vmid)
+        except Http404:
+            raise OcciResourceInstanceNotExist()
+        return Compute(vm)
+
+    def get_network_object(self, user, vlanid):
+        try:
+            vlan = get_object_or_404(Vlan.get_objects_with_level(
+                "user", user), pk=vlanid)
+        except Http404:
+            raise OcciResourceInstanceNotExist()
+        return Network(vlan)
+
+    def get_networkinterface_object(self, user, vmid, vlanid):
+        compute = self.get_compute_object(user, vmid)
+        try:
+            interface = compute.vm.interface_set.get(vlan__pk=vlanid)
+        except:
+            raise OcciResourceInstanceNotExist()
+        return NetworkInterface(compute, Network(interface.vlan))
+
+    def get(self, request, *args, **kwargs):
+        try:
+            nic = self.get_networkinterface_object(
+                request.user, kwargs["computeid"], kwargs["networkid"])
+        except OcciResourceInstanceNotExist as e:
+            return e.response
+        return occi_response(nic.as_dict())
+
+    def post(self, request, *args, **kwargs):
+        requestData = json.loads(request.body.decode("utf-8"))
+        if "action" in requestData:
+            try:
+                nif = self.get_networkinterface_object(
+                    request.user, kwargs["computeid"], kwargs["networkid"])
+            except OcciResourceInstanceNotExist as e:
+                return e.response
+            try:
+                nif.invoke_action(request.user,
+                                  requestData.get("action", None),
+                                  requestData.get("attributes", None))
+            except OcciActionInvocationError as e:
+                return e.response
+            return occi_response(nif.as_dict(), status=200)
+        return OcciActionInvocationError().response
+
+    def put(self, request, *args, **kwargs):
+        compute = self.get_compute_object(request.user, kwargs["computeid"])
+        network = self.get_network_object(request.user, kwargs["networkid"])
+        try:
+            compute.vm.add_interface(user=request.user, vlan=network.vlan)
+        except HumanReadableException as e:
+            return OcciResourceCreationError(
+                message=e.get_user_text()).response
+        except Exception as e:
+            return OcciResourceCreationError(message=unicode(e)).response
+        nif = NetworkInterface(compute, network)
+        return occi_response(nif.as_dict())
+
+    def delete(self, request, *args, **kwargs):
+        compute = self.get_compute_object(request.user, kwargs["computeid"])
+        network = self.get_network_object(request.user, kwargs["networkid"])
+        try:
+            interface = compute.vm.interface_set.get(vlan=network.vlan)
+        except:
+            return OcciResourceInstanceNotExist().response
+        try:
+            from firewall.models import Host
+            from vm.models.network import Interface
+            hc = Host.objects.filter(mac=interface.host.mac).count()
+            ic = Interface.objects.filter(host__mac=interface.host.mac).count()
+            compute.vm.remove_interface(user=request.user, interface=interface)
+        except HumanReadableException as e:
+            return OcciResourceDeletionError(
+                message=e.get_user_text()).response
+        except Exception:
+            from firewall.models import Host
+            from vm.models.network import Interface
+            hc = Host.objects.filter(mac=interface.host.mac).count()
+            ic = Interface.objects.filter(host__mac=interface.host.mac).count()
+            return occi_response({"host": hc, "interface": ic})
+        return occi_response({"status": "ok"})

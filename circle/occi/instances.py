@@ -19,7 +19,7 @@
 """ Required instances of the OCCI classes """
 
 from vm.models.instance import InstanceTemplate
-from occi_core import Kind, Mixin, Attribute, Action
+from occi.core import Kind, Mixin, Attribute, Action
 
 
 ENTITY_KIND = Kind("http://schemas.ogf.org/occi/core#", "entity",
@@ -237,6 +237,42 @@ CREDENTIALS_MIXIN = Mixin("http://circlecloud.org/occi/infrastructure/" +
                           applies="http://schemas.ogf.org/occi/" +
                           "infrastructure#compute")
 
+NETWORKINTERFACE_PORTS_ATTRIBUTES = [
+    Attribute("org.circlecloud.occi.networkinterface.ports", "List", False,
+              False, description="A list of open ports on the interface."),
+]
+
+NETWORKINTERFACE_PORTS_ACTIONS = [
+    Action(
+        "http://schemas.ogf.org/occi/infrastructure/networkinterface/action#",
+        "addport",
+        title="Open a port on a network interface.",
+        attributes=[
+            Attribute("protocol", "Enum {tcp, udp, icmp}", True, False),
+            Attribute("port", "Integer",  False, True),
+        ],
+    ),
+    Action(
+        "http://schemas.ogf.org/occi/infrastructure/networkinterface/action#",
+        "removeport",
+        title="Closes a port on a network interface.",
+        attributes=[
+            Attribute("protocol", "Enum {tcp, udp, icmp}", True, False),
+            Attribute("port", "Integer",  False, True),
+        ],
+    ),
+]
+
+NETWORKINTERFACE_PORTS_MIXIN = Mixin(
+    "http://circlecloud.org/occi/infrastructure/networkinterface#",
+    "ports",
+    title="Network interface ports mixin",
+    attributes=NETWORKINTERFACE_PORTS_ATTRIBUTES,
+    actions=NETWORKINTERFACE_PORTS_ACTIONS,
+    applies="http://schemas.ogf.org/occi/infrastructure#networkinterface",
+)
+
+
 LEASETIME_ATTRIBUTES = [
     Attribute("org.circlecloud.occi.leasetime.suspend", "String", False,
               False, description="The time remaining until the compute " +
@@ -264,11 +300,13 @@ OS_TPL_MIXIN = Mixin("http://schemas.ogf.org/occi/infrastructure#",
                      "os_tpl",
                      title="OS Template")
 
+
 ACTION_ARRAYS = [
     COMPUTE_ACTIONS,
     NETWORK_ACTIONS,
     STORAGE_ACTIONS,
     LEASETIME_ACTIONS,
+    NETWORKINTERFACE_PORTS_ACTIONS,
 ]
 
 
@@ -290,10 +328,38 @@ def os_tpl_mixins(user):
     templates = InstanceTemplate.get_objects_with_level("user", user)
     result = []
     for template in templates:
-        result.append(Mixin("http://circlecloud.org/occi/templates/os#",
-                            "os_template_" + str(template.pk),
-                            title=template.name,
-                            depends=(OS_TPL_MIXIN.scheme + OS_TPL_MIXIN.term)))
+        template_attrs = [
+            Attribute("occi.compute.architecture", "Enum {x86, x64}",
+                      True, False,
+                      default={
+                          "x86_64": "x64",
+                          "x86-64 (64 bit)": "x64",
+                          "i686": "x86",
+                          "x86 (32 bit)": "x86"
+                      }[template.arch],
+                      description="CPU Architecture of the instance."),
+            Attribute("occi.compute.cores", "Integer", True, False,
+                      default=template.num_cores,
+                      description="Number of virtual CPU cores assigned to " +
+                      "the instance."),
+            Attribute("occi.compute.share", "Integer", True, False,
+                      default=template.priority,
+                      description="Relative number of CPU shares for the " +
+                      "instance."),
+            Attribute("occi.compute.memory", "Float, 10^9 (GiB)", True, False,
+                      default=template.ram_size,
+                      description="Maximum RAM in gigabytes allocated to " +
+                      "the instance."),
+        ]
+        result.append(
+            Mixin(
+                "http://circlecloud.org/occi/templates/os#",
+                "os_template_" + str(template.pk),
+                title=template.name,
+                depends=(OS_TPL_MIXIN.scheme + OS_TPL_MIXIN.term),
+                attributes=template_attrs,
+            )
+        )
     return result
 
 
@@ -304,6 +370,7 @@ def ALL_MIXINS(user):
         CREDENTIALS_MIXIN,
         OS_TPL_MIXIN,
         LEASETIME_MIXIN,
+        NETWORKINTERFACE_PORTS_MIXIN,
     ]
     template_mixins = os_tpl_mixins(user)
     for template in template_mixins:
