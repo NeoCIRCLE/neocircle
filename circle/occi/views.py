@@ -204,7 +204,7 @@ class OcciComputeView(OcciViewMixin, View):
                     try:
                         vm = Instance.create_from_template(template,
                                                            request.user)
-                    except:
+                    except Exception:
                         return OcciResourceCreationError().response
                     compute = Compute(vm)
                     return occi_response(compute.as_dict())
@@ -219,7 +219,7 @@ class OcciComputeView(OcciViewMixin, View):
             return e.response
         try:
             compute.vm.destroy(user=request.user)
-        except:
+        except Exception:
             return OcciResourceDeletionError().response
         return occi_response({"result": "Compute instance deleted."})
 
@@ -407,7 +407,7 @@ class OcciNetworkInterfaceView(OcciViewMixin, View):
         compute = self.get_compute_object(user, vmid)
         try:
             interface = compute.vm.interface_set.get(vlan__pk=vlanid)
-        except:
+        except Exception:
             raise OcciResourceInstanceNotExist()
         return NetworkInterface(compute, Network(interface.vlan))
 
@@ -454,7 +454,7 @@ class OcciNetworkInterfaceView(OcciViewMixin, View):
         network = self.get_network_object(request.user, kwargs["networkid"])
         try:
             interface = compute.vm.interface_set.get(vlan=network.vlan)
-        except:
+        except Exception:
             return OcciResourceInstanceNotExist().response
         try:
             from firewall.models import Host
