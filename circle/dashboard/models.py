@@ -151,7 +151,7 @@ class ConnectCommand(Model):
     access_method = CharField(max_length=10, choices=ACCESS_METHODS,
                               verbose_name=_('access method'),
                               help_text=_('Type of the remote access method.'))
-    name = CharField(max_length="128", verbose_name=_('name'), blank=False,
+    name = CharField(max_length=128, verbose_name=_('name'), blank=False,
                      help_text=_("Name of your custom command."))
     template = CharField(blank=True, null=True, max_length=256,
                          verbose_name=_('command template'),
@@ -184,6 +184,10 @@ class Profile(Model):
     email_notifications = BooleanField(
         verbose_name=_("Email notifications"), default=True,
         help_text=_('Whether user wants to get digested email notifications.'))
+    desktop_notifications = BooleanField(
+        verbose_name=_("Desktop notifications"), default=False,
+        help_text=_('Whether user wants to get desktop notification when an '
+                    'activity has finished and the window is not in focus.'))
     smb_password = CharField(
         max_length=20,
         verbose_name=_('Samba password'),
@@ -196,6 +200,10 @@ class Profile(Model):
         verbose_name=_('disk quota'),
         default=2048 * 1024 * 1024,
         help_text=_('Disk quota in mebibytes.'))
+    two_factor_secret = CharField(
+        verbose_name=_("two factor secret key"),
+        max_length=32, null=True, blank=True,
+    )
 
     def get_connect_commands(self, instance, use_ipv6=False):
         """ Generate connection command based on template."""
@@ -204,15 +212,16 @@ class Profile(Model):
             commands = self.user.command_set.filter(
                 access_method=instance.access_method)
             if commands.count() < 1:
-                return [single_command]
+                return [{'id': 0, 'cmd': single_command}]
             else:
-                return [
-                    command.template % {
+                return [{
+                    'id': command.id,
+                    'cmd': command.template % {
                         'port': instance.get_connect_port(use_ipv6=use_ipv6),
                         'host':  instance.get_connect_host(use_ipv6=use_ipv6),
                         'password': instance.pw,
                         'username': 'cloud',
-                    } for command in commands]
+                    }} for command in commands]
         else:
             return []
 
@@ -312,6 +321,7 @@ def get_or_create_profile(self):
     obj, created = GroupProfile.objects.get_or_create(group_id=self.pk)
     return obj
 
+
 Group.profile = property(get_or_create_profile)
 
 
@@ -330,15 +340,15 @@ def create_profile(user):
 def create_profile_hook(sender, user, request, **kwargs):
     return create_profile(user)
 
+
 user_logged_in.connect(create_profile_hook)
 
 if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
     logger.debug("Register save_org_id to djangosaml2 pre_user_save")
     from djangosaml2.signals import pre_user_save
 
-    def save_org_id(sender, **kwargs):
-        logger.debug("save_org_id called by %s", sender.username)
-        attributes = kwargs.pop('attributes')
+    def save_org_id(sender, instance, attributes, **kwargs):
+        logger.debug("save_org_id called by %s", instance.username)
         atr = settings.SAML_ORG_ID_ATTRIBUTE
         try:
             value = attributes[atr][0].upper()
@@ -346,19 +356,19 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
             value = None
             logger.info("save_org_id couldn't find attribute. %s", unicode(e))
 
-        if sender.pk is None:
-            sender.save()
-            logger.debug("save_org_id saved user %s", unicode(sender))
+        if instance.pk is None:
+            instance.save()
+            logger.debug("save_org_id saved user %s", unicode(instance))
 
-        profile, created = Profile.objects.get_or_create(user=sender)
+        profile, created = Profile.objects.get_or_create(user=instance)
         if created or profile.org_id != value:
             logger.info("org_id of %s added to user %s's profile",
-                        value, sender.username)
+                        value, instance.username)
             profile.org_id = value
             profile.save()
         else:
             logger.debug("org_id of %s already added to user %s's profile",
-                         value, sender.username)
+                         value, instance.username)
         memberatrs = getattr(settings, 'SAML_GROUP_ATTRIBUTES', [])
         for group in chain(*[attributes[i]
                              for i in memberatrs if i in attributes]):
@@ -369,10 +379,10 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
             else:
                 logger.debug('could find membergroup %s (%s)',
                              group, unicode(g))
-                g.user_set.add(sender)
+                g.user_set.add(instance)
 
         for i in FutureMember.objects.filter(org_id__iexact=value):
-            i.group.user_set.add(sender)
+            i.group.user_set.add(instance)
             i.delete()
 
         owneratrs = getattr(settings, 'SAML_GROUP_OWNER_ATTRIBUTES', [])
@@ -385,14 +395,11 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
             else:
                 logger.debug('could find ownergroup %s (%s)',
                              group, unicode(g))
-                g.profile.set_level(sender, 'owner')
+                g.profile.set_level(instance, 'owner')
 
         return False  # User did not change
 
     pre_user_save.connect(save_org_id)
-
-else:
-    logger.debug("Do not register save_org_id to djangosaml2 pre_user_save")
 
 
 def update_store_profile(sender, **kwargs):

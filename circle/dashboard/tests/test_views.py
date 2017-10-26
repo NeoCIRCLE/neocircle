@@ -17,6 +17,8 @@
 
 import json
 
+import pyotp
+
 # from unittest import skip
 from django.test import TestCase
 from django.test.client import Client
@@ -28,7 +30,7 @@ from dashboard.views import VmAddInterfaceView
 from vm.models import Instance, InstanceTemplate, Lease, Node, Trait
 from vm.operations import (WakeUpOperation, AddInterfaceOperation,
                            AddPortOperation, RemoveInterfaceOperation,
-                           DeployOperation)
+                           DeployOperation, RenameOperation)
 from ..models import Profile
 from firewall.models import Vlan, Host, VlanGroup
 from mock import Mock, patch
@@ -39,10 +41,12 @@ settings = django.conf.settings.FIREWALL_SETTINGS
 
 
 class LoginMixin(object):
-    def login(self, client, username, password='password'):
+    def login(self, client, username, password='password', follow=False):
         response = client.post('/accounts/login/', {'username': username,
-                                                    'password': password})
+                                                    'password': password},
+                               follow=follow)
         self.assertNotEqual(response.status_code, 403)
+        return response
 
 
 class VmDetailTest(LoginMixin, MockCeleryMixin, TestCase):
@@ -270,33 +274,6 @@ class VmDetailTest(LoginMixin, MockCeleryMixin, TestCase):
         self.assertEqual(InstanceTemplate.objects.get(id=1).raw_data,
                          "<devices></devices>")
 
-    def test_permitted_lease_delete_w_template_using_it(self):
-        c = Client()
-        self.login(c, 'superuser')
-        leases = Lease.objects.count()
-        response = c.post("/dashboard/lease/delete/1/")
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(leases, Lease.objects.count())
-
-    def test_permitted_lease_delete_w_template_not_using_it(self):
-        c = Client()
-        self.login(c, 'superuser')
-        lease = Lease.objects.create(name="yay")
-        leases = Lease.objects.count()
-
-        response = c.post("/dashboard/lease/delete/%d/" % lease.pk)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(leases - 1, Lease.objects.count())
-
-    def test_unpermitted_lease_delete(self):
-        c = Client()
-        self.login(c, 'user1')
-        leases = Lease.objects.count()
-        response = c.post("/dashboard/lease/delete/1/")
-        # redirect to the login page
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(leases, Lease.objects.count())
-
     def test_notification_read(self):
         c = Client()
         self.login(c, "user1")
@@ -460,31 +437,43 @@ class VmDetailTest(LoginMixin, MockCeleryMixin, TestCase):
     def test_unpermitted_set_name(self):
         c = Client()
         self.login(c, "user2")
-        inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u2, 'user')
-        old_name = inst.name
-        response = c.post("/dashboard/vm/1/", {'new_name': 'test1235'})
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(Instance.objects.get(pk=1).name, old_name)
+        with patch.object(RenameOperation, 'async') as mock_method:
+            inst = Instance.objects.get(pk=1)
+            mock_method.side_effect = inst.rename
+            inst.set_level(self.u2, 'user')
+            old_name = inst.name
+            response = c.post("/dashboard/vm/1/op/rename/",
+                              {'new_name': 'test1235'})
+            self.assertEqual(response.status_code, 403)
+            assert not mock_method.called
+            self.assertEqual(Instance.objects.get(pk=1).name, old_name)
 
     def test_permitted_set_name(self):
         c = Client()
         self.login(c, "user2")
-        inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u2, 'owner')
-        response = c.post("/dashboard/vm/1/", {'new_name': 'test1234'})
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(Instance.objects.get(pk=1).name, 'test1234')
+        with patch.object(RenameOperation, 'async') as mock_method:
+            inst = Instance.objects.get(pk=1)
+            mock_method.side_effect = inst.rename
+            inst.set_level(self.u2, 'owner')
+            response = c.post("/dashboard/vm/1/op/rename/",
+                              {'new_name': 'test1234'})
+            self.assertEqual(response.status_code, 302)
+            assert mock_method.called
+            self.assertEqual(Instance.objects.get(pk=1).name, 'test1234')
 
     def test_permitted_set_name_w_ajax(self):
         c = Client()
         self.login(c, "user2")
         inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u2, 'owner')
-        response = c.post("/dashboard/vm/1/", {'new_name': 'test123'},
-                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(Instance.objects.get(pk=1).name, 'test123')
+        with patch.object(RenameOperation, 'async') as mock_method:
+            inst.set_level(self.u2, 'owner')
+            mock_method.side_effect = inst.rename
+            response = c.post("/dashboard/vm/1/op/rename/",
+                              {'new_name': 'test123'},
+                              HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+            self.assertEqual(response.status_code, 200)
+            assert mock_method.called
+            self.assertEqual(Instance.objects.get(pk=1).name, 'test123')
 
     def test_permitted_wake_up_wrong_state(self):
         c = Client()
@@ -615,6 +604,12 @@ class NodeDetailTest(LoginMixin, MockCeleryMixin, TestCase):
         node = Node.objects.get(pk=1)
         trait, created = Trait.objects.get_or_create(name='testtrait')
         node.traits.add(trait)
+        self.patcher = patch("vm.tasks.vm_tasks.get_queues", return_value={
+            'x': [{'name': "devenv.vm.fast"}],
+            'y': [{'name': "devenv.vm.slow"}],
+            'z': [{'name': "devenv.net.fast"}],
+        })
+        self.patcher.start()
 
     def tearDown(self):
         super(NodeDetailTest, self).tearDown()
@@ -622,12 +617,19 @@ class NodeDetailTest(LoginMixin, MockCeleryMixin, TestCase):
         self.u2.delete()
         self.us.delete()
         self.g1.delete()
+        self.patcher.stop()
 
     def test_404_superuser_node_page(self):
         c = Client()
         self.login(c, 'superuser')
         response = c.get('/dashboard/node/25555/')
         self.assertEqual(response.status_code, 404)
+
+    def test_200_superuser_node_page(self):
+        c = Client()
+        self.login(c, 'superuser')
+        response = c.get('/dashboard/node/1/')
+        self.assertEqual(response.status_code, 200)
 
     def test_302_user_node_page(self):
         c = Client()
@@ -1758,3 +1760,159 @@ class SshKeyTest(LoginMixin, TestCase):
 
         resp = c.post("/dashboard/sshkey/delete/1/")
         self.assertEqual(403, resp.status_code)
+
+
+class LeaseDetailTest(LoginMixin, TestCase):
+    fixtures = ['test-vm-fixture.json', ]
+
+    def setUp(self):
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+        self.u2 = User.objects.create(username='user2', is_staff=True)
+        self.u2.set_password('password')
+        self.u2.save()
+        self.us = User.objects.create(username='superuser', is_superuser=True)
+        self.us.set_password('password')
+        self.us.save()
+
+    def tearDown(self):
+        super(LeaseDetailTest, self).tearDown()
+        self.u1.delete()
+        self.u2.delete()
+        self.us.delete()
+
+    def test_anon_view(self):
+        c = Client()
+        response = c.get("/dashboard/lease/1/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_unpermitted_view(self):
+        c = Client()
+        self.login(c, 'user1')
+        response = c.get("/dashboard/lease/1/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_operator_view(self):
+        c = Client()
+        self.login(c, 'user2')
+        lease = Lease.objects.get()
+        lease.set_level(self.u2, "owner")
+        response = c.get("/dashboard/lease/1/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_superuser_view(self):
+        c = Client()
+        self.login(c, 'superuser')
+        response = c.get("/dashboard/lease/1/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_permitted_lease_delete_w_template_using_it(self):
+        c = Client()
+        self.login(c, 'superuser')
+        leases = Lease.objects.count()
+        response = c.post("/dashboard/lease/delete/1/")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(leases, Lease.objects.count())
+
+    def test_permitted_lease_delete_w_template_not_using_it(self):
+        c = Client()
+        self.login(c, 'superuser')
+        lease = Lease.objects.create(name="yay")
+        leases = Lease.objects.count()
+
+        response = c.post("/dashboard/lease/delete/%d/" % lease.pk)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(leases - 1, Lease.objects.count())
+
+    def test_unpermitted_lease_delete(self):
+        c = Client()
+        self.login(c, 'user1')
+        leases = Lease.objects.count()
+        response = c.post("/dashboard/lease/delete/1/")
+        # redirect to the login page
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(leases, Lease.objects.count())
+
+
+class TwoFactorTest(LoginMixin, TestCase):
+    def setUp(self):
+        self.u1 = User.objects.create(username='user1', first_name="Bela",
+                                      last_name="Akkounter")
+        self.u1.set_password('password')
+        self.u1.save()
+        self.p1 = Profile.objects.create(
+            user=self.u1, two_factor_secret=pyotp.random_base32())
+        self.p1.save()
+
+        self.u2 = User.objects.create(username='user2', is_staff=True)
+        self.u2.set_password('password')
+        self.u2.save()
+        self.p2 = Profile.objects.create(user=self.u2)
+        self.p2.save()
+
+    def tearDown(self):
+        super(TwoFactorTest, self).tearDown()
+        self.u1.delete()
+        self.u2.delete()
+
+    def test_login_wo_2fa_by_redirect(self):
+        c = Client()
+        response = self.login(c, 'user2')
+        self.assertRedirects(response, "/", target_status_code=302)
+
+    def test_login_w_2fa_by_redirect(self):
+        c = Client()
+        response = self.login(c, 'user1')
+        self.assertRedirects(response, "/two-factor-login/")
+
+    def test_login_wo_2fa_by_content(self):
+        c = Client()
+        response = self.login(c, 'user2', follow=True)
+        self.assertTemplateUsed(response, "dashboard/index.html")
+        self.assertContains(response, "You have no permission to start "
+                                      "or manage virtual machines.")
+
+    def test_login_w_2fa_by_conent(self):
+        c = Client()
+        r = self.login(c, 'user1', follow=True)
+        self.assertTemplateUsed(r, "registration/two-factor-login.html")
+        self.assertContains(r, "Welcome Bela Akkounter (user1)!")
+
+    def test_successful_2fa_login(self):
+        c = Client()
+        self.login(c, 'user1')
+
+        code = pyotp.TOTP(self.p1.two_factor_secret).now()
+        r = c.post("/two-factor-login/", {'confirmation_code': code},
+                   follow=True)
+        self.assertContains(r, "You have no permission to start "
+                               "or manage virtual machines.")
+
+    def test_unsuccessful_2fa_login(self):
+        c = Client()
+        self.login(c, 'user1')
+
+        r = c.post("/two-factor-login/", {'confirmation_code': "nudli"})
+        self.assertTemplateUsed(r, "registration/two-factor-login.html")
+        self.assertContains(r, "Welcome Bela Akkounter (user1)!")
+
+    def test_straight_to_2fa_as_anonymous(self):
+        c = Client()
+        response = c.get("/two-factor-login/", follow=True)
+        self.assertItemsEqual(
+            response.redirect_chain,
+            [('/', 302),
+             ('/dashboard/', 302),
+             ('/accounts/login/?next=/dashboard/', 302)]
+        )
+
+    def test_straight_to_2fa_as_user(self):
+        c = Client()
+        self.login(c, 'user2')
+        response = c.get("/two-factor-login/", follow=True)
+        self.assertItemsEqual(
+            response.redirect_chain,
+            [('/', 302),
+             ('/dashboard/', 302)]
+        )

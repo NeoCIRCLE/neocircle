@@ -508,13 +508,6 @@ $.ajaxSetup({
   }
 });
 
-/* for autocomplete */
-$(function() {
-  yourlabs.TextWidget.prototype.getValue = function(choice) {
-    return choice.children().html();
-  };
-});
-
 var tagsToReplace = {
     '&': '&amp;',
     '<': '&lt;',
@@ -555,5 +548,13 @@ $(function () {
     $('.broadcast-message').removeClass(
       'alert-info alert-warning alert-success alert-danger').addClass(
       "alert-" + $(this).val());
+  });
+});
+
+/* select all in template list */
+$(function() {
+  $("#manage-access-select-all").click(function(e) {
+    var inputs = $(this).closest("table").find('input[type="checkbox"]');
+    inputs.prop("checked", !inputs.prop("checked"));
   });
 });

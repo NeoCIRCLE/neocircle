@@ -14,12 +14,14 @@
     "bootstrap": "~3.2.0",
     "fontawesome": "~4.3.0",
     "jquery": "~2.1.1",
-    "no-vnc": "*",
+    "no-vnc": "0.5.1",
     "jquery-knob": "~1.2.9",
     "jquery-simple-slider": "https://github.com/BME-IK/jquery-simple-slider.git",
     "bootbox": "~4.3.0",
     "intro.js": "0.9.0",
     "favico.js": "~0.3.5",
-    "datatables": "~1.10.4"
+    "datatables": "~1.10.4",
+    "chart.js": "2.3.0",
+    "clipboard": "~1.6.1"
   }
 }

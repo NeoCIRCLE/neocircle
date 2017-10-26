@@ -629,6 +629,7 @@ class RemovePortOperation(InstanceOperation):
     name = _("close port")
     description = _("Close the specified port.")
     concurrency_check = False
+    acl_level = "operator"
     required_perms = ('vm.config_ports', )
 
     def _operation(self, activity, rule):
@@ -647,6 +648,7 @@ class AddPortOperation(InstanceOperation):
     name = _("open port")
     description = _("Open the specified port.")
     concurrency_check = False
+    acl_level = "operator"
     required_perms = ('vm.config_ports', )
 
     def _operation(self, activity, host, proto, port):
@@ -859,7 +861,9 @@ class ShutOffOperation(InstanceOperation):
 
     def _operation(self, activity):
         # Shutdown networks
-        with activity.sub_activity('shutdown_net'):
+        with activity.sub_activity('shutdown_net',
+                                   readable_name=ugettext_noop(
+                                       "shutdown network")):
             self.instance.shutdown_net()
 
         self.instance._delete_vm(parent_activity=activity)
@@ -1395,6 +1399,27 @@ class ResourcesOperation(InstanceOperation):
             "Priority: %(priority)s, Num cores: %(num_cores)s, "
             "Ram size: %(ram_size)s"), priority=priority, num_cores=num_cores,
             ram_size=ram_size
+        )
+
+
+@register_operation
+class RenameOperation(InstanceOperation):
+    id = "rename"
+    name = _("rename")
+    description = _("Change the name of virtual machine.")
+    acl_level = "operator"
+    required_perms = ()
+
+    def _operation(self, user, activity, new_name):
+        old_name = self.instance.name
+        self.instance.name = new_name
+
+        self.instance.full_clean()
+        self.instance.save()
+
+        return create_readable(ugettext_noop(
+            "Changed name from '%(old_name)s' to '%(new_name)s'."),
+            old_name=old_name, new_name=new_name
         )
 
 

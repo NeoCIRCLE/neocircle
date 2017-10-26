@@ -18,7 +18,7 @@
   <h3 class="list-group-item-heading dashboard-vm-details-network-h3">
     <i class="fa fa-{% if i.host %}globe{% else %}link{% endif %}"></i> {{ i.vlan.name }}
     {% if not i.host%}({% trans "unmanaged" %}){% endif %}
-    {% if user.is_superuser %}
+    {% if user.is_superuser and i.host %}
       <a href="{{ i.host.get_absolute_url }}"
         class="btn btn-default btn-xs">{% trans "edit" %}</a>
     {% endif %}
@@ -83,7 +83,8 @@
                         <span class="operation-wrapper">
                           <a href="{{ op.remove_port.get_url }}?rule={{ l.ipv4.pk }}"
                              class="btn btn-link btn-xs operation"
-                             title="{% trans "Remove" %}">
+                             title="{% trans "Remove" %}"
+                             {% if not op.remove_port %}disabled{% endif %}>
                             <i class="fa fa-times"><span class="sr-only">{% trans "Remove" %}</span></i>
                           </a>
                         </span>
@@ -118,7 +119,9 @@
                         {{ l.private }}/{{ l.proto }}
                       </td>
                       <td>
-                        <a href="{{ op.remove_port.get_url }}?rule={{ l.ipv4.pk }}" class="btn btn-link btn-xs vm-details-remove-port" data-rule="{{ l.ipv6.pk }}" title="{% trans "Remove" %}"><i class="fa fa-times"><span class="sr-only">{% trans "Remove" %}</span></i></a>
+                        <a href="{{ op.remove_port.get_url }}?rule={{ l.ipv4.pk }}" class="btn btn-link btn-xs vm-details-remove-port" data-rule="{{ l.ipv6.pk }}" title="{% trans "Remove" %}" {% if not op.remove_port %}disabled{% endif %}>
+                          <i class="fa fa-times"><span class="sr-only">{% trans "Remove" %}</span></i>
+                        </a>
                       </td>
                     </tr>
                   {% endif %}

@@ -137,8 +137,10 @@
         {% if user.is_superuser %}
           <hr />
 
-          <script type="text/javascript" src="/static/admin/js/jquery.min.js"></script>
-          <script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+          <script type="text/javascript" src="/static/admin/js/vendor/jquery/jquery.min.js"></script>
+          <script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>      
+          <script type="text/javascript" src="/static/autocomplete_light/jquery.init.js"></script>
+          <script type="text/javascript" src="/static/autocomplete_light/vendor/select2/dist/js/select2.js"></script>
           {{ group_perm_form.media }}
 
           <h3>{% trans "Group permissions" %}</h3>

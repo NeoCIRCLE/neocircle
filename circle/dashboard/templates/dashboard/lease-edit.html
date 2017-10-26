@@ -52,7 +52,7 @@
                 <td>
                   <select class="form-control" name="perm-u-{{i.user.id}}">
                     {% for id, name in acl.levels %}
-                    <option{%if id = i.level%} selected="selected"{%endif%} value="{{id}}">{{name}}</option>
+                    <option{%if id == i.level%} selected="selected"{%endif%} value="{{id}}">{{name}}</option>
                     {% endfor %}
                   </select>
                 </td>
@@ -72,7 +72,7 @@
                 <td>
                   <select class="form-control" name="perm-g-{{i.group.id}}">
                     {% for id, name in acl.levels %}
-                    <option{%if id = i.level%} selected="selected"{%endif%} value="{{id}}">{{name}}</option>
+                    <option{%if id == i.level%} selected="selected"{%endif%} value="{{id}}">{{name}}</option>
                     {% endfor %}
                   </select>
                 </td>

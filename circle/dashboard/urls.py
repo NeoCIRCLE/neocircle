@@ -16,16 +16,15 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
-from django.conf.urls import patterns, url, include
+from django.conf.urls import url
 
-import autocomplete_light
 from vm.models import Instance
 from .views import (
     AclUpdateView, FavouriteView, GroupAclUpdateView, GroupDelete,
     GroupDetailView, GroupList, IndexView,
     InstanceActivityDetail, LeaseCreate, LeaseDelete, LeaseDetail,
     MyPreferencesView, NodeAddTraitView, NodeCreate, NodeDelete,
-    NodeDetailView, NodeList,
+    NodeDetailView, NodeList, NodeActivityDetail,
     NotificationView, TemplateAclUpdateView, TemplateCreate,
     TemplateDelete, TemplateDetail, TemplateList,
     vm_activity, VmCreate, VmDetailView,
@@ -55,14 +54,14 @@ from .views import (
     UserList,
     StorageDetail, DiskDetail,
     MessageList, MessageDetail, MessageCreate, MessageDelete,
+    EnableTwoFactorView, DisableTwoFactorView,
+    AclUserGroupAutocomplete, AclUserAutocomplete,
 )
 from .views.vm import vm_ops, vm_mass_ops
 from .views.node import node_ops
 
-autocomplete_light.autodiscover()
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'^$', IndexView.as_view(), name="dashboard.index"),
     url(r"^profile/list/$", UserList.as_view(),
         name="dashboard.views.user-list"),
@@ -133,6 +132,8 @@ urlpatterns = patterns(
         name='dashboard.views.node-activity-list'),
     url(r'^node/create/$', NodeCreate.as_view(),
         name='dashboard.views.node-create'),
+    url(r'^node/activity/(?P<pk>\d+)/$', NodeActivityDetail.as_view(),
+        name='dashboard.views.node-activity'),
 
     url(r'^favourite/$', FavouriteView.as_view(),
         name='dashboard.views.favourite'),
@@ -177,6 +178,10 @@ urlpatterns = patterns(
     url(r'^profile/(?P<username>[^/]+)/$', ProfileView.as_view(),
         name="dashboard.views.profile"),
     url(r'^profile/(?P<username>[^/]+)/use_gravatar/$', toggle_use_gravatar),
+    url(r'^profile/two-factor/enable/$', EnableTwoFactorView.as_view(),
+        name="dashboard.views.profile-enable-two-factor"),
+    url(r'^profile/two-factor/disable/$', DisableTwoFactorView.as_view(),
+        name="dashboard.views.profile-disable-two-factor"),
 
     url(r'^group/(?P<group_pk>\d+)/remove/user/(?P<member_pk>\d+)/$',
         GroupRemoveUserView.as_view(),
@@ -209,8 +214,6 @@ urlpatterns = patterns(
     url(r'^conncmd/create/$',
         ConnectCommandCreate.as_view(),
         name="dashboard.views.connect-command-create"),
-
-    url(r'^autocomplete/', include('autocomplete_light.urls')),
 
     url(r"^store/list/$", StoreList.as_view(),
         name="dashboard.views.store-list"),
@@ -246,22 +249,26 @@ urlpatterns = patterns(
         name="dashboard.views.message-create"),
     url(r'^message/delete/(?P<pk>\d+)/$', MessageDelete.as_view(),
         name="dashboard.views.message-delete"),
-)
 
-urlpatterns += patterns(
-    '',
-    *(url(r'^vm/(?P<pk>\d+)/op/%s/$' % op, v.as_view(), name=v.get_urlname())
-        for op, v in vm_ops.iteritems())
-)
+    url(r'^autocomplete/acl/user-group/$',
+        AclUserGroupAutocomplete.as_view(),
+        name='autocomplete.acl.user-group'),
+    url(r'^autocomplete/acl/user/$',
+        AclUserAutocomplete.as_view(),
+        name='autocomplete.acl.user'),
+]
 
-urlpatterns += patterns(
-    '',
-    *(url(r'^vm/mass_op/%s/$' % op, v.as_view(), name=v.get_urlname())
-        for op, v in vm_mass_ops.iteritems())
-)
+urlpatterns += [
+    url(r'^vm/(?P<pk>\d+)/op/%s/$' % op, v.as_view(), name=v.get_urlname())
+    for op, v in vm_ops.iteritems()
+]
 
-urlpatterns += patterns(
-    '',
-    *(url(r'^node/(?P<pk>\d+)/op/%s/$' % op, v.as_view(), name=v.get_urlname())
-        for op, v in node_ops.iteritems())
-)
+urlpatterns += [
+    url(r'^vm/mass_op/%s/$' % op, v.as_view(), name=v.get_urlname())
+    for op, v in vm_mass_ops.iteritems()
+]
+
+urlpatterns += [
+    url(r'^node/(?P<pk>\d+)/op/%s/$' % op, v.as_view(), name=v.get_urlname())
+    for op, v in node_ops.iteritems()
+]

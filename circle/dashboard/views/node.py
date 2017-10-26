@@ -27,7 +27,6 @@ from django.db.models import Count
 from django.forms.models import inlineformset_factory
 from django.http import HttpResponse
 from django.shortcuts import redirect
-from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
 from django.views.generic import DetailView, TemplateView, View
@@ -37,6 +36,7 @@ from django_tables2 import SingleTableView
 
 from firewall.models import Host
 from vm.models import Node, NodeActivity, Trait
+from vm.tasks.vm_tasks import check_queue
 
 from ..forms import TraitForm, HostForm, NodeForm
 from ..tables import NodeListTable
@@ -81,6 +81,20 @@ node_ops = OrderedDict([
 ])
 
 
+def _get_activity_icon(act):
+    op = act.get_operation()
+    if op and op.id in node_ops:
+        return node_ops[op.id].icon
+    else:
+        return "cog"
+
+
+def _format_activities(acts):
+    for i in acts:
+        i.icon = _get_activity_icon(i)
+    return acts
+
+
 class NodeDetailView(LoginRequiredMixin,
                      GraphMixin, DetailView):
     template_name = "dashboard/node-detail.html"
@@ -103,10 +117,17 @@ class NodeDetailView(LoginRequiredMixin,
         context['ops'] = get_operations(self.object, self.request.user)
         context['op'] = {i.op: i for i in context['ops']}
         context['show_show_all'] = len(na) > 10
-        context['activities'] = na[:10]
+        context['activities'] = _format_activities(na[:10])
         context['trait_form'] = form
         context['graphite_enabled'] = (
             settings.GRAPHITE_URL is not None)
+
+        node_hostname = self.object.host.hostname
+        context['queues'] = {
+            'vmcelery.fast': check_queue(node_hostname, "vm", "fast"),
+            'vmcelery.slow': check_queue(node_hostname, "vm", "slow"),
+            'netcelery.fast': check_queue(node_hostname, "net", "fast"),
+        }
         return context
 
     def post(self, request, *args, **kwargs):
@@ -298,8 +319,8 @@ class NodeActivityView(LoginRequiredMixin, SuperuserRequiredMixin, View):
         show_all = request.GET.get("show_all", "false") == "true"
         node = Node.objects.get(pk=pk)
 
-        activities = NodeActivity.objects.filter(
-            node=node, parent=None).order_by('-started').select_related()
+        activities = _format_activities(NodeActivity.objects.filter(
+            node=node, parent=None).order_by('-started').select_related())
 
         show_show_all = len(activities) > 10
         if not show_all:
@@ -308,11 +329,30 @@ class NodeActivityView(LoginRequiredMixin, SuperuserRequiredMixin, View):
         response = {
             'activities': render_to_string(
                 "dashboard/node-detail/_activity-timeline.html",
-                RequestContext(request, {'activities': activities,
-                                         'show_show_all': show_show_all}))
+                {
+                    'activities': activities,
+                    'show_show_all': show_show_all
+                },
+                request
+            )
         }
 
         return HttpResponse(
             json.dumps(response),
             content_type="application/json"
         )
+
+
+class NodeActivityDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+                         DetailView):
+    model = NodeActivity
+    context_object_name = 'nodeactivity'  # much simpler to mock object
+    template_name = 'dashboard/nodeactivity_detail.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super(NodeActivityDetail, self).get_context_data(**kwargs)
+        ctx['activities'] = _format_activities(NodeActivity.objects.filter(
+            node=self.object.node, parent=None
+        ).order_by('-started').select_related())
+        ctx['icon'] = _get_activity_icon(self.object)
+        return ctx

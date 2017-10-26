@@ -1,0 +1,13 @@
+[Unit]
+Description=CIRCLE portal
+After=network.target
+
+[Service]
+User=cloud
+Group=cloud
+WorkingDirectory=/home/cloud/circle/circle
+ExecStart=/bin/bash -c "source /etc/profile; workon circle; exec /home/cloud/.virtualenvs/circle/bin/uwsgi --chdir=/home/cloud/circle/circle -H /home/cloud/.virtualenvs/circle --socket /tmp/uwsgi.sock --wsgi-file circle/wsgi.py --chmod-socket=666"
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

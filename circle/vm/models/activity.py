@@ -135,14 +135,6 @@ class InstanceActivity(ActivityModel):
     def get_absolute_url(self):
         return reverse('dashboard.views.vm-activity', args=[self.pk])
 
-    def get_status_id(self):
-        if self.succeeded is None:
-            return 'wait'
-        elif self.succeeded:
-            return 'success'
-        else:
-            return 'failed'
-
     def has_percentage(self):
         op = self.instance.get_operation_from_activity_code(self.activity_code)
         return (self.task_uuid and op and op.has_percentage and
@@ -214,6 +206,13 @@ class NodeActivity(ActivityModel):
     class Meta:
         app_label = 'vm'
         db_table = 'vm_nodeactivity'
+
+    def get_operation(self):
+        return self.node.get_operation_from_activity_code(
+            self.activity_code)
+
+    def get_absolute_url(self):
+        return reverse('dashboard.views.node-activity', args=[self.pk])
 
     def __unicode__(self):
         if self.parent:

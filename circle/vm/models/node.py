@@ -160,6 +160,8 @@ class Node(OperatedMixin, TimeStampedModel):
         """
         try:
             self.get_remote_queue_name("vm", "fast")
+            self.get_remote_queue_name("vm", "slow")
+            self.get_remote_queue_name("net", "fast")
         except:
             return False
         else:

@@ -232,6 +232,14 @@ class ActivityModel(TimeStampedModel):
         else:
             return code
 
+    def get_status_id(self):
+        if self.succeeded is None:
+            return 'wait'
+        elif self.succeeded:
+            return 'success'
+        else:
+            return 'failed'
+
 
 @celery.task()
 def compute_cached(method, instance, memcached_seconds,
