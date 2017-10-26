@@ -24,11 +24,9 @@ from occi.views import (OcciLoginView, OcciLogoutView, OcciQueryInterfaceView,
                         OcciStoragelinkView, OcciStoragelinkCollectionView,
                         OcciNetworkInterfaceView,
                         OcciNetworkInterfaceCollectionView,)
-from common.views import GenerateTokenView
 
 
 urlpatterns = [
-    url(r'^login/token/$', GenerateTokenView.as_view()),
     url(r'^login/$', OcciLoginView.as_view()),
     url(r'^logout/$', OcciLogoutView.as_view()),
     url(r'^-/$', OcciQueryInterfaceView.as_view()),
