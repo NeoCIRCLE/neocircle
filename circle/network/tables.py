@@ -307,4 +307,3 @@ class SmallVmTable(Table):
         fields = ('instance', )
         sequence = ('instance_id', 'instance', )
         order_by = 'instance.pk'
-
