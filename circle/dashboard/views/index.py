@@ -29,6 +29,7 @@ from braces.views import LoginRequiredMixin
 from dashboard.models import GroupProfile
 from vm.models import Instance, Node, InstanceTemplate
 from dashboard.views.vm import vm_ops
+from network.models import Vxlan
 
 from ..store_api import Store
 
@@ -99,6 +100,12 @@ class IndexView(LoginRequiredMixin, TemplateView):
         if user.has_perm('vm.create_template'):
             context['templates'] = InstanceTemplate.get_objects_with_level(
                 'operator', user, disregard_superuser=True).all()[:5]
+
+        # vxlan
+        if user.has_perm('network.create_vxlan'):
+            context['vxlans'] = Vxlan.get_objects_with_level(
+                'user', user, disregard_superuser=True).all()[:5]
+            context['vxlans'] = Vxlan.objects.all()[:5]
 
         # toplist
         if settings.STORE_URL:

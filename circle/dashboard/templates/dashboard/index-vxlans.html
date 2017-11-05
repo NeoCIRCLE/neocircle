@@ -1,0 +1,44 @@
+{% load i18n %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <span class="btn btn-default btn-xs infobtn pull-right" data-container="body" title="{% trans "List of virtual networks that are available for you." %}">
+      <i class="fa fa-info-circle"></i>
+    </span>
+    <h3 class="no-margin"><i class="fa fa-globe"></i> {% trans "Virtual networks" %}
+    </h3>
+  </div>
+  <div class="list-group" id="vxlan-list-view">
+    <div id="dashboard-user-list">
+      {% for vxlan in vxlans  %}
+      <a href="{% url "network.vxlan" vni=vxlan.vni %}" class="list-group-item
+        {% if forloop.last and vxlan|length < 5 %} list-group-item-last{% endif %}">
+        <span class="index-template-list-name">
+          <i class="fa fa-sitemap"></i> {{ vxlan.name }}
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+    <div class="list-group-item list-group-footer">
+      <div class="row">
+        <div class="col-xs-5 col-sm-6">
+          <form action="{% url "network.vxlan-list" %}" method="GET" id="dashboard-vxlan-search-form">
+            <div class="input-group input-group-sm">
+              <input name="s" type="text" class="form-control" placeholder="{% trans "Search..." %}" />
+              <div class="input-group-btn">
+                <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i></button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="col-xs-7 col-sm-6 text-right">
+          <a href="{% url "network.vxlan-list" %}" class="btn btn-primary btn-xs">
+            <i class="fa fa-chevron-circle-right"></i> {% trans "show all" %}
+          </a>
+          <a href="{% url "network.vxlan-create" %}" class="btn btn-success btn-xs">
+            <i class="fa fa-plus-circle"></i> {% trans "new" %}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
