@@ -24,6 +24,8 @@ from django_tables2.columns import (LinkColumn, TemplateColumn, Column,
                                     BooleanColumn)
 
 from firewall.models import Host, Vlan, Domain, Group, Record, Rule, SwitchPort
+from network.models import Vxlan
+from vm.models import Interface
 
 
 class MACColumn(Column):
@@ -233,6 +235,16 @@ class VlanGroupTable(Table):
         order_by = 'name'
 
 
+class VxlanTable(Table):
+    name = LinkColumn('network.vxlan', args=[A('vni')])
+
+    class Meta:
+        model = Vxlan
+        attrs = {'class': 'table table-striped table-condensed'}
+        fields = ('vni', 'name', )
+        order_by = 'vni'
+
+
 class HostRecordsTable(Table):
     fqdn = LinkColumn(
         "network.record", args=[A("pk")],
@@ -282,3 +294,17 @@ class FirewallRuleTable(Table):
                   'action', 'proto', 'actions')
         order_by = '-pk'
         empty_text = _("No related rules found.")
+
+
+class SmallVmTable(Table):
+    instance = Column(accessor=A('instance.name'), verbose_name='VM')
+    instance_id = LinkColumn('dashboard.views.detail', args=[A('instance.pk')],
+                             accessor=A('instance.pk'), verbose_name='ID')
+
+    class Meta:
+        model = Interface
+        attrs = {'class': 'table table-striped'}
+        fields = ('instance', )
+        sequence = ('instance_id', 'instance', )
+        order_by = 'instance.pk'
+

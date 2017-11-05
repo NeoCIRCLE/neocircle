@@ -27,6 +27,7 @@ from firewall.models import (
     Host, Vlan, Domain, Group, Record, BlacklistItem, Rule, VlanGroup,
     SwitchPort, Firewall
 )
+from network.models import Vxlan
 
 
 class LinkButton(BaseInput):
@@ -348,3 +349,29 @@ class VlanGroupForm(ModelForm):
     class Meta:
         model = VlanGroup
         fields = ("name", "vlans", "description", "owner", )
+
+
+class VxlanForm(ModelForm):
+    helper = FormHelper()
+    helper.layout = Layout(
+        Div(
+            Fieldset(
+                '',
+                'name',
+                'vni',
+                'vlan',
+                'description',
+                'comment',
+                'owner',
+            )
+        ),
+        FormActions(
+            Submit('submit', _("Save")),
+            LinkButton('back', _("Back"), reverse_lazy(
+                'network.vxlan-list'))
+        )
+    )
+
+    class Meta:
+        model = Vxlan
+        fields = ("name", "vni", "vlan", "description", "comment", "owner", )

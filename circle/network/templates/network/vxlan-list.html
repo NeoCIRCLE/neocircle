@@ -1,0 +1,18 @@
+{% extends "network/base.html" %}
+{% load render_table from django_tables2 %}
+{% load i18n %}
+{% load l10n %}
+{% load staticfiles %}
+
+{% block title-page %}{% trans "Vlans" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <a href="{% url "network.vxlan-create" %}" class="btn btn-success pull-right"><i class="fa fa-plus-circle"></i> {% trans "Create a new vxlan" %}</a>
+    <h1>Vlans <small>{% trans "list of all vxlans" %}</small></h1>
+</div>
+
+<div class="table-responsive">
+    {% render_table table %}
+</div>
+{% endblock %}

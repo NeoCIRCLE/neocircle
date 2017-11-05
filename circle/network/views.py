@@ -30,17 +30,19 @@ from django_tables2 import SingleTableView
 
 from firewall.models import (
     Host, Vlan, Domain, Group, Record, BlacklistItem, Rule, VlanGroup,
-    SwitchPort, EthernetDevice, Firewall)
+    SwitchPort, EthernetDevice, Firewall
+)
+from network.models import Vxlan
 from vm.models import Interface
 from .tables import (
     HostTable, VlanTable, SmallHostTable, DomainTable, GroupTable,
     RecordTable, BlacklistItemTable, RuleTable, VlanGroupTable,
     SmallRuleTable, SmallGroupRuleTable, SmallRecordTable, SwitchPortTable,
-    SmallDhcpTable, FirewallTable, FirewallRuleTable,
+    SmallDhcpTable, FirewallTable, FirewallRuleTable, VxlanTable, SmallVmTable,
 )
 from .forms import (
     HostForm, VlanForm, DomainForm, GroupForm, RecordForm, BlacklistItemForm,
-    RuleForm, VlanGroupForm, SwitchPortForm, FirewallForm
+    RuleForm, VlanGroupForm, SwitchPortForm, FirewallForm, VxlanForm
 )
 
 from django.contrib import messages
@@ -48,7 +50,6 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic.edit import FormMixin
 from django.utils.translation import ugettext_lazy as _
 from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
-# from django.db.models import Q
 from operator import itemgetter
 from itertools import chain
 from dashboard.views import AclUpdateView
@@ -802,6 +803,7 @@ class VlanDetail(VlanMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
     slug_field = 'vid'
     slug_url_kwarg = 'vid'
     success_message = _(u'Succesfully modified vlan %(name)s.')
+    success_url = reverse_lazy('network.vlan_list')
 
     def get_context_data(self, **kwargs):
         context = super(VlanDetail, self).get_context_data(**kwargs)
@@ -812,8 +814,6 @@ class VlanDetail(VlanMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
             self.object, self.request.user, 'network.vlan-acl')
         context['aclform'] = AclUserOrGroupAddForm()
         return context
-
-    success_url = reverse_lazy('network.vlan_list')
 
 
 class VlanCreate(VlanMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
@@ -914,6 +914,75 @@ class VlanGroupDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
             return next
         else:
             return reverse_lazy('network.vlan_group_list')
+
+
+class VxlanList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
+    model = Vxlan
+    table_class = VxlanTable
+    template_name = "network/vxlan-list.html"
+    table_pagination = False
+
+
+class VxlanAclUpdateView(AclUpdateView):
+    model = Vxlan
+
+
+class VxlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+                  SuccessMessageMixin, UpdateView):
+    model = Vxlan
+    template_name = "network/vxlan-edit.html"
+    form_class = VxlanForm
+    slug_field = 'vni'
+    slug_url_kwarg = 'vni'
+    success_message = _(u'Succesfully modified vlan %(name)s.')
+    success_url = reverse_lazy('network.vxlan-list')
+
+    def get_context_data(self, **kwargs):
+        context = super(VxlanDetail, self).get_context_data(**kwargs)
+        context['vm_list'] = SmallVmTable(self.object.vm_interface.all())
+        context['acl'] = AclUpdateView.get_acl_data(
+            self.object, self.request.user, 'network.vxlan-acl')
+        context['aclform'] = AclUserOrGroupAddForm()
+        return context
+
+
+class VxlanCreate(LoginRequiredMixin, SuccessMessageMixin,
+                  InitialOwnerMixin, CreateView):
+    model = Vxlan
+    template_name = "network/vxlan-create.html"
+    form_class = VxlanForm
+    success_message = _(u'Successfully created vxlan %(name)s.')
+
+
+class VxlanDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
+    model = Vlan
+    template_name = "network/confirm/base_delete.html"
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return next
+        else:
+            return reverse_lazy('network.vxlan-list')
+
+    def get_object(self, queryset=None):
+        """ we identify vlans by vid and not pk """
+        return Vxlan.objects.get(vni=self.kwargs['vni'])
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if unicode(self.object) != request.POST.get('confirm'):
+            messages.error(request, _(u"Object name does not match."))
+            return self.get(request, *args, **kwargs)
+
+        response = super(VxlanDelete, self).delete(request, *args, **kwargs)
+        messages.success(request, _(u"Vxlan successfully deleted."))
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super(VxlanDelete, self).get_context_data(**kwargs)
+        context['confirmation'] = True
+        return context
 
 
 def remove_host_group(request, **kwargs):
