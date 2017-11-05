@@ -29,7 +29,22 @@
       </div>
       {% trans "Vlans" %}
       <div>
-        <small>{% trans "Hosts are machines on the network" %}</small>
+        <small>{% trans "802.1Q virtual networks" %}</small>
+      </div>
+    </h3>
+
+    <h3>
+      <div class="pull-right">
+        <a href="{% url "network.vxlan-list" %}" class="btn btn-xs btn-default">
+          <i class="fa fa-list"></i> {% trans "list" %}
+        </a>
+        <a href="{% url "network.vxlan-create" %}" class="btn btn-xs btn-success">
+          <i class="fa fa-plus-circle"></i> {% trans "new" %}
+        </a>
+      </div>
+      {% trans "Vxlans" %}
+      <div>
+        <small>{% trans "VXLAN virtual networks" %}</small>
       </div>
     </h3>
 
@@ -44,7 +59,7 @@
       </div>
       {% trans "Domains" %}
       <div>
-        <small>{% trans "Hosts are machines on the network" %}</small>
+        <small>{% trans "Domain names" %}</small>
       </div>
     </h3>
 
@@ -59,7 +74,7 @@
       </div>
       {% trans "Records" %}
       <div>
-        <small>{% trans "Hosts are machines on the network" %}</small>
+        <small>{% trans "DNS records" %}</small>
       </div>
     </h3>
 
@@ -74,7 +89,7 @@
       </div>
       {% trans "Blacklist items" %}
       <div>
-        <small>{% trans "Hosts are machines on the network" %}</small>
+        <small>{% trans "List of denied IPs and exceptions" %}</small>
       </div>
     </h3>
 
@@ -89,7 +104,7 @@
       </div>
       {% trans "Rules" %}
       <div>
-        <small>{% trans "Hosts are machines on the network" %}</small>
+        <small>{% trans "Firewall rules" %}</small>
       </div>
     </h3>
 
@@ -104,7 +119,7 @@
       </div>
       {% trans "Switch ports" %}
       <div>
-        <small>{% trans "Hosts are machines on the network" %}</small>
+        <small>{% trans "Switch ports" %}</small>
       </div>
     </h3>
 
@@ -119,7 +134,7 @@
       </div>
       {% trans "Vlan groups" %}
       <div>
-        <small>{% trans "Hosts are machines on the network" %}</small>
+        <small>{% trans "Groups of 802.1Q virtual networks" %}</small>
       </div>
     </h3>
 
@@ -134,7 +149,7 @@
       </div>
       {% trans "Host groups" %}
       <div>
-        <small>{% trans "Hosts are machines on the network" %}</small>
+        <small>{% trans "Groups of hosts are machines on the network" %}</small>
       </div>
     </h3>
   </div>
