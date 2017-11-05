@@ -25,6 +25,7 @@ from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
 from common.models import create_readable
 from firewall.models import Vlan, Host
+from network.models import Vxlan
 from ..tasks import net_tasks
 
 logger = getLogger(__name__)
@@ -35,9 +36,15 @@ class InterfaceTemplate(Model):
     """Network interface template for an instance template.
 
     If the interface is managed, a host will be created for it.
+    Use with Vxlan is never managed.
     """
-    vlan = ForeignKey(Vlan, verbose_name=_('vlan'),
+    vlan = ForeignKey(Vlan, blank=True, null=True,
+                      verbose_name=_('vlan'),
                       help_text=_('Network the interface belongs to.'))
+    vxlan = ForeignKey(Vxlan, blank=True, null=True,
+                       verbose_name=_('vxlan'),
+                       help_text=_('Virtual network the interface '
+                                   'belongs to.'))
     managed = BooleanField(verbose_name=_('managed'), default=True,
                            help_text=_('If a firewall host (i.e. IP address '
                                        'association) should be generated.'))
@@ -54,7 +61,10 @@ class InterfaceTemplate(Model):
         verbose_name_plural = _('interface templates')
 
     def __unicode__(self):
-        return "%s - %s - %s" % (self.template, self.vlan, self.managed)
+        if self.vlan:
+            return "%s - %s - %s" % (self.template, self.vlan, self.managed)
+        else:  # vxlan
+            return "%s - %s - %s" % (self.template, self.vxlan, False)
 
 
 class Interface(Model):
@@ -64,8 +74,12 @@ class Interface(Model):
     MODEL_TYPES = (('virtio', 'virtio'), ('ne2k_pci', 'ne2k_pci'),
                    ('pcnet', 'pcnet'), ('rtl8139', 'rtl8139'),
                    ('e1000', 'e1000'))
-    vlan = ForeignKey(Vlan, verbose_name=_('vlan'),
+    vlan = ForeignKey(Vlan, blank=True, null=True,
+                      verbose_name=_('vlan'),
                       related_name="vm_interface")
+    vxlan = ForeignKey(Vxlan, blank=True, null=True,
+                       verbose_name=_('vxlan'),
+                       related_name="vm_interface")
     host = ForeignKey(Host, verbose_name=_('host'),  blank=True, null=True)
     instance = ForeignKey('Instance', verbose_name=_('instance'),
                           related_name='interface_set')
@@ -77,50 +91,66 @@ class Interface(Model):
         ordering = ("-vlan__managed", )
 
     def __unicode__(self):
-        return 'cloud-' + str(self.instance.id) + '-' + str(self.vlan.vid)
+        if self.vxlan is None:
+            return 'cloud-%s-%s' % (str(self.instance.id),
+                                    str(self.vlan.vid))
+        else:  # vxlan
+            return 'cloud-%s-x%s' % (str(self.instance.id),
+                                     str(self.vxlan.vni))
 
     @property
     def mac(self):
         try:
             return self.host.mac
         except:
-            return Interface.generate_mac(self.instance, self.vlan)
+            return Interface.generate_mac(
+                self.instance,
+                self.vlan.vid if self.vxlan is None else self.vxlan.vni,
+                self.vxlan is not None
+            )
 
     @classmethod
-    def generate_mac(cls, instance, vlan):
+    def generate_mac(cls, instance, vid, is_vxlan):
         """Generate MAC address for a VM instance on a VLAN.
         """
         # MAC 02:XX:XX:XX:XX:XX
-        #        \________/\__/
-        #           VM ID   VLAN ID
+        #        \______/ |\__/
+        #          VM ID  | V(X)LAN ID
+        #       __________|_____
+        #      /                \
+        #       VXLAN: 1, VLAN: 0
         class mac_custom(mac_unix):
             word_fmt = '%.2X'
-        i = instance.id & 0xfffffff
-        v = vlan.vid & 0xfff
-        m = (0x02 << 40) | (i << 12) | v
+        i = instance.id & 0xffffff
+        v = vid & 0xfff
+        vx = 1 if is_vxlan else 0
+        m = (0x02 << 40) | (i << 16) | (vx << 12) | v
         return EUI(m, dialect=mac_custom)
 
     def get_vmnetwork_desc(self):
         return {
             'name': self.__unicode__(),
-            'bridge': 'cloud',
+            'bridge': ('cloud' if self.vxlan is None
+                       else 'cloudx-%s' % self.vxlan.vni),
             'mac': str(self.mac),
             'ipv4': str(self.host.ipv4) if self.host is not None else None,
             'ipv6': str(self.host.ipv6) if self.host is not None else None,
             'vlan': self.vlan.vid,
+            'vxlan': self.vxlan.vni if self.vxlan is not None else None,
             'model': self.model,
             'managed': self.host is not None
         }
 
     @classmethod
-    def create(cls, instance, vlan, managed, owner=None, base_activity=None):
+    def create(cls, instance, vlan, managed, vxlan=None,
+               owner=None, base_activity=None):
         """Create a new interface for a VM instance to the specified VLAN.
         """
-        if managed:
+        if managed and vxlan is None:
             host = Host()
             host.vlan = vlan
             # TODO change Host's mac field's type to EUI in firewall
-            host.mac = str(cls.generate_mac(instance, vlan))
+            host.mac = str(cls.generate_mac(instance, vlan.vid, False))
             host.hostname = instance.vm_name
             # Get addresses from firewall
             if base_activity is None:
@@ -159,7 +189,7 @@ class Interface(Model):
         else:
             host = None
 
-        iface = cls(vlan=vlan, host=host, instance=instance)
+        iface = cls(vlan=vlan, vxlan=vxlan, host=host, instance=instance)
         iface.save()
         return iface
 
@@ -180,7 +210,10 @@ class Interface(Model):
     def save_as_template(self, instance_template):
         """Create a template based on this interface.
         """
-        i = InterfaceTemplate(vlan=self.vlan, managed=self.host is not None,
+        i = InterfaceTemplate(vlan=self.vlan,
+                              managed=(
+                                self.host is not None or
+                                self.vxlan or not None),
                               template=instance_template)
         i.save()
         return i

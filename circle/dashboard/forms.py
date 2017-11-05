@@ -947,16 +947,27 @@ class VmRemoveInterfaceForm(OperationForm):
 
 
 class VmAddInterfaceForm(OperationForm):
+
+    network_type = 'vlan'
+    label = _('Vlan')
+
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices')
         super(VmAddInterfaceForm, self).__init__(*args, **kwargs)
 
         field = forms.ModelChoiceField(
-            queryset=choices, required=True, label=_('Vlan'))
+            queryset=choices, required=False,
+            label=self.label)
         if not choices:
             field.widget.attrs['disabled'] = 'disabled'
             field.empty_label = _('No more networks.')
-        self.fields['vlan'] = field
+        self.fields[self.network_type] = field
+
+
+class VmAddUserInterfaceForm(VmAddInterfaceForm):
+
+    network_type = 'vxlan'
+    label = _('Vxlan')
 
 
 class DeployChoiceField(forms.ModelChoiceField):
