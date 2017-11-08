@@ -8,12 +8,15 @@
     </h3>
   </div>
   <div class="list-group" id="vxlan-list-view">
-    <div id="dashboard-user-list">
+    <div id="dashboard-vxlan-list">
       {% for vxlan in vxlans  %}
       <a href="{% url "network.vxlan" vni=vxlan.vni %}" class="list-group-item
         {% if forloop.last and vxlan|length < 5 %} list-group-item-last{% endif %}">
-        <span class="index-template-list-name">
+        <span class="index-vxlan-list-name">
           <i class="fa fa-sitemap"></i> {{ vxlan.name }}
+          {% if user.is_superuser %}
+          <small class="text-muted"> vni: {{ vxlan.vni }} </small>
+          {% endif %}
         </span>
       </a>
       {% endfor %}

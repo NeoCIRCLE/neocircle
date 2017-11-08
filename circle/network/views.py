@@ -922,6 +922,23 @@ class VxlanList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     template_name = "network/vxlan-list.html"
     table_pagination = False
 
+    def get(self, *args, **kwargs):
+        if self.request.is_ajax():
+            return self._create_ajax_request()
+        return super(VxlanList, self).get(*args, **kwargs)
+
+    def _create_ajax_request(self):
+        vxlans = Vxlan.get_objects_with_level(
+            'user', self.request.user)
+        vxlans = [{
+            'pk': i.pk,
+            'url': reverse_lazy('network.vxlan', args=[i.pk]),
+            'icon': 'fa-sitemap',
+            'name': i.name,
+            'vni': i.vni if self.request.user.is_superuser else None
+        } for i in vxlans]
+        return JsonResponse(list(vxlans), safe=False)
+
 
 class VxlanAclUpdateView(AclUpdateView):
     model = Vxlan

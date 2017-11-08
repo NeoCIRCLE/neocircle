@@ -4,12 +4,12 @@
 {% load l10n %}
 {% load staticfiles %}
 
-{% block title-page %}{% trans "Vlans" %}{% endblock %}
+{% block title-page %}{% trans "Vxlans" %}{% endblock %}
 
 {% block content %}
 <div class="page-header">
     <a href="{% url "network.vxlan-create" %}" class="btn btn-success pull-right"><i class="fa fa-plus-circle"></i> {% trans "Create a new vxlan" %}</a>
-    <h1>Vlans <small>{% trans "list of all vxlans" %}</small></h1>
+    <h1>Vxlans <small>{% trans "list of all vxlans" %}</small></h1>
 </div>
 
 <div class="table-responsive">
