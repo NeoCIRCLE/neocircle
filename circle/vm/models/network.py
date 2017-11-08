@@ -95,7 +95,7 @@ class Interface(Model):
             return 'cloud-%s-%s' % (str(self.instance.id),
                                     str(self.vlan.vid))
         else:  # vxlan
-            return 'cloud-%s-x%s' % (str(self.instance.id),
+            return 'cloudx-%s-%s' % (str(self.instance.id),
                                      str(self.vxlan.vni))
 
     @property
