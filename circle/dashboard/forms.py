@@ -22,7 +22,6 @@ from urlparse import urlparse
 
 import pyotp
 
-from django.forms import ModelForm
 from django.contrib.auth.forms import (
     AuthenticationForm, PasswordResetForm, SetPasswordForm,
     PasswordChangeForm,
@@ -65,6 +64,7 @@ from django.utils.translation import string_concat
 from .validators import domain_validator
 
 from dashboard.models import ConnectCommand, create_profile
+from common.forms import Form, ModelForm
 
 
 LANGUAGES_WITH_CODE = ((l[0], string_concat(l[1], " (", l[0], ")"))
@@ -87,7 +87,7 @@ class NoFormTagMixin(object):
         return helper
 
 
-class OperationForm(NoFormTagMixin, forms.Form):
+class OperationForm(NoFormTagMixin, Form):
     pass
 
 
@@ -108,7 +108,7 @@ class VmSaveForm(OperationForm):
                             "for updating a template."))
 
 
-class VmCustomizeForm(forms.Form):
+class VmCustomizeForm(Form):
     name = forms.CharField(widget=forms.TextInput(attrs={
         'class': "form-control",
         'style': "max-width: 350px",
@@ -213,7 +213,7 @@ class VmCustomizeForm(forms.Form):
                         del self.cleaned_data[name]
 
 
-class GroupCreateForm(NoFormTagMixin, forms.ModelForm):
+class GroupCreateForm(NoFormTagMixin, ModelForm):
 
     description = forms.CharField(label=_("Description"), required=False,
                                   widget=forms.Textarea(attrs={'rows': 3}))
@@ -261,7 +261,7 @@ class GroupCreateForm(NoFormTagMixin, forms.ModelForm):
         fields = ('name', )
 
 
-class GroupProfileUpdateForm(NoFormTagMixin, forms.ModelForm):
+class GroupProfileUpdateForm(NoFormTagMixin, ModelForm):
 
     def __init__(self, *args, **kwargs):
         new_groups = kwargs.pop('new_groups', None)
@@ -296,7 +296,7 @@ class GroupProfileUpdateForm(NoFormTagMixin, forms.ModelForm):
         fields = ('description', 'org_id')
 
 
-class HostForm(NoFormTagMixin, forms.ModelForm):
+class HostForm(NoFormTagMixin, ModelForm):
 
     def setowner(self, user):
         self.instance.owner = user
@@ -369,7 +369,7 @@ class HostForm(NoFormTagMixin, forms.ModelForm):
         fields = ['hostname', 'vlan', 'mac', 'ipv4', ]
 
 
-class NodeForm(forms.ModelForm):
+class NodeForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(NodeForm, self).__init__(*args, **kwargs)
@@ -459,7 +459,7 @@ class NodeForm(forms.ModelForm):
         fields = ['name', 'priority', 'enabled', ]
 
 
-class TemplateForm(forms.ModelForm):
+class TemplateForm(ModelForm):
     networks = forms.ModelMultipleChoiceField(
         queryset=None, required=False, label=_("Networks"))
 
@@ -610,7 +610,7 @@ class TemplateForm(forms.ModelForm):
         }
 
 
-class LeaseForm(forms.ModelForm):
+class LeaseForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(LeaseForm, self).__init__(*args, **kwargs)
@@ -765,7 +765,7 @@ class VmRenewForm(OperationForm):
             self.fields['save'].widget = HiddenInput()
 
 
-class VmMigrateForm(forms.Form):
+class VmMigrateForm(Form):
     live_migration = forms.BooleanField(
         required=False, initial=True, label=_("Live migration"),
         help_text=_(
@@ -1191,7 +1191,7 @@ class WorkingBaseInput(BaseInput):
         super(WorkingBaseInput, self).__init__(name, value, **kwargs)
 
 
-class TraitForm(forms.ModelForm):
+class TraitForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(TraitForm, self).__init__(*args, **kwargs)
@@ -1216,7 +1216,7 @@ class TraitForm(forms.ModelForm):
         fields = ['name']
 
 
-class MyProfileForm(forms.ModelForm):
+class MyProfileForm(ModelForm):
     preferred_language = forms.ChoiceField(
         LANGUAGES_WITH_CODE,
         label=_("Preferred language"),
@@ -1238,7 +1238,7 @@ class MyProfileForm(forms.ModelForm):
         return value
 
 
-class UnsubscribeForm(forms.ModelForm):
+class UnsubscribeForm(ModelForm):
 
     class Meta:
         fields = ('email_notifications', )
@@ -1295,7 +1295,7 @@ class UserCreationForm(OrgUserCreationForm):
         return user
 
 
-class UserEditForm(forms.ModelForm):
+class UserEditForm(ModelForm):
     instance_limit = forms.IntegerField(
         label=_('Instance limit'),
         min_value=0, widget=NumberInput)
@@ -1332,7 +1332,7 @@ class UserEditForm(forms.ModelForm):
         return helper
 
 
-class AclUserOrGroupAddForm(forms.Form):
+class AclUserOrGroupAddForm(Form):
     name = forms.CharField(
         widget=autocomplete.ListSelect2(
             url='autocomplete.acl.user-group',
@@ -1341,7 +1341,7 @@ class AclUserOrGroupAddForm(forms.Form):
                    'data-placeholder': _("Name of group or user")}))
 
 
-class TransferOwnershipForm(forms.Form):
+class TransferOwnershipForm(Form):
     name = forms.CharField(
         widget=autocomplete.ListSelect2(
             url='autocomplete.acl.user',
@@ -1351,7 +1351,7 @@ class TransferOwnershipForm(forms.Form):
         label=_("E-mail address or identifier of user"))
 
 
-class AddGroupMemberForm(forms.Form):
+class AddGroupMemberForm(Form):
     new_member = forms.CharField(
         widget=autocomplete.ListSelect2(
             url='autocomplete.acl.user',
@@ -1361,7 +1361,7 @@ class AddGroupMemberForm(forms.Form):
         label=_("E-mail address or identifier of user"))
 
 
-class UserKeyForm(forms.ModelForm):
+class UserKeyForm(ModelForm):
     name = forms.CharField(required=True, label=_('Name'))
     key = forms.CharField(
         label=_('Key'), required=True,
@@ -1388,7 +1388,7 @@ class UserKeyForm(forms.ModelForm):
         return super(UserKeyForm, self).clean()
 
 
-class ConnectCommandForm(forms.ModelForm):
+class ConnectCommandForm(ModelForm):
     class Meta:
         fields = ('name', 'access_method', 'template')
         model = ConnectCommand
@@ -1404,7 +1404,7 @@ class ConnectCommandForm(forms.ModelForm):
         return super(ConnectCommandForm, self).clean()
 
 
-class TraitsForm(forms.ModelForm):
+class TraitsForm(ModelForm):
 
     class Meta:
         model = Instance
@@ -1421,7 +1421,7 @@ class TraitsForm(forms.ModelForm):
         return helper
 
 
-class RawDataForm(forms.ModelForm):
+class RawDataForm(ModelForm):
     raw_data = forms.CharField(validators=[domain_validator],
                                widget=forms.Textarea(attrs={'rows': 5}),
                                required=False)
@@ -1442,7 +1442,7 @@ class RawDataForm(forms.ModelForm):
         return helper
 
 
-class GroupPermissionForm(forms.ModelForm):
+class GroupPermissionForm(ModelForm):
     permissions = forms.ModelMultipleChoiceField(
         queryset=None,
         widget=FilteredSelectMultiple(_("permissions"), is_stacked=False)
@@ -1504,7 +1504,7 @@ class GroupPermissionForm(forms.ModelForm):
         return helper
 
 
-class VmResourcesForm(forms.ModelForm):
+class VmResourcesForm(ModelForm):
     num_cores = forms.IntegerField(widget=forms.NumberInput(attrs={
         'class': "form-control input-tags cpu-count-input",
         'min': 1,
@@ -1549,7 +1549,7 @@ vm_search_choices = (
 )
 
 
-class VmListSearchForm(forms.Form):
+class VmListSearchForm(Form):
     use_required_attribute = False
 
     s = forms.CharField(widget=forms.TextInput(attrs={
@@ -1575,7 +1575,7 @@ class VmListSearchForm(forms.Form):
             self.data = data
 
 
-class TemplateListSearchForm(forms.Form):
+class TemplateListSearchForm(Form):
     use_required_attribute = False
 
     s = forms.CharField(widget=forms.TextInput(attrs={
@@ -1596,7 +1596,7 @@ class TemplateListSearchForm(forms.Form):
             self.data = data
 
 
-class UserListSearchForm(forms.Form):
+class UserListSearchForm(Form):
     use_required_attribute = False
 
     s = forms.CharField(widget=forms.TextInput(attrs={
@@ -1678,7 +1678,7 @@ class TwoFactorForm(ModelForm):
         fields = ["two_factor_secret", ]
 
 
-class TwoFactorConfirmationForm(forms.Form):
+class TwoFactorConfirmationForm(Form):
     confirmation_code = forms.CharField(
         label=_('Two-factor authentication passcode'),
         help_text=_("Get the code from your authenticator."),

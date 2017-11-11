@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 from django.forms import (
-    ModelForm, ModelChoiceField, ChoiceField, Form, CharField, RadioSelect,
+    ModelChoiceField, ChoiceField, CharField, RadioSelect,
     Textarea, ValidationError
 )
 from django.utils.translation import ugettext_lazy as _
@@ -30,6 +30,7 @@ from request.models import (
     LeaseType, TemplateAccessType, TemplateAccessAction,
 )
 from dashboard.forms import VmResourcesForm
+from common.forms import Form, ModelForm
 
 
 class LeaseTypeForm(ModelForm):

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.forms import ModelForm, widgets
+from django.forms import widgets
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 
@@ -27,6 +27,7 @@ from firewall.models import (
     Host, Vlan, Domain, Group, Record, BlacklistItem, Rule, VlanGroup,
     SwitchPort, Firewall
 )
+from common.forms import ModelForm
 
 
 class LinkButton(BaseInput):
