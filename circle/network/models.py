@@ -42,17 +42,19 @@ class Vxlan(AclBase, models.Model):
     ACL_LEVELS = (
         ('user', _('user')),
         ('operator', _('operator')),
+        ('owner', _('owner')),
     )
+    # NOTE: VXLAN VNI's maximal value is 2^24-1, but MAC address generator
+    #       only supports 2^12-1 maximal value.
     vni = models.IntegerField(unique=True,
                               verbose_name=_('VNI'),
                               help_text=_('VXLAN Network Identifier.'),
                               validators=[MinValueValidator(0),
-                                          MaxValueValidator(2 ** 24 - 1)])
+                                          MaxValueValidator(2 ** 12 - 1)])
     vlan = models.ForeignKey(Vlan,
                              verbose_name=_('vlan'),
                              help_text=_('The server vlan.'))
     name = models.CharField(max_length=20,
-                            unique=True,
                             verbose_name=_('Name'),
                             help_text=_('The short name of the '
                                         'virtual network.'),
@@ -77,6 +79,9 @@ class Vxlan(AclBase, models.Model):
         verbose_name = _("vxlan")
         verbose_name_plural = _("vxlans")
         ordering = ('vni', )
+        permissions = (
+            ('create_vxlan', _('Can create a Vxlan network.')),
+        )
 
     def __unicode__(self):
         return self.name
