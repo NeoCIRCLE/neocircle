@@ -15,4 +15,14 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
-# Create your views here.
+from django.core.exceptions import PermissionDenied
+
+
+class CheckedObjectMixin(object):
+    read_level = 'user'
+
+    def get_object(self, **kwargs):
+        obj = super(CheckedObjectMixin, self).get_object()
+        if not obj.has_level(self.request.user, self.read_level):
+            raise PermissionDenied()
+        return obj
