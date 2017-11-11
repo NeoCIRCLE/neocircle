@@ -55,7 +55,7 @@
     </div>
     {% endif %}
 
-    {% if perms.vxlan %}
+    {% if perms.network.create_vxlan %}
     <div class="col-lg-4 col-sm-6">
       {% include "dashboard/index-vxlans.html" %}
     </div>

@@ -104,8 +104,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
         # vxlan
         if user.has_perm('network.create_vxlan'):
             context['vxlans'] = Vxlan.get_objects_with_level(
-                'user', user, disregard_superuser=True).all()[:5]
-            context['vxlans'] = Vxlan.objects.all()[:5]
+                'user', user).all()[:5]
 
         # toplist
         if settings.STORE_URL:

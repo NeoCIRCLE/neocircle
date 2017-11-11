@@ -20,7 +20,7 @@ from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Fieldset, Div, Submit, BaseInput
+from crispy_forms.layout import Layout, Fieldset, Div, Submit, BaseInput, Field
 from crispy_forms.bootstrap import FormActions, FieldWithButtons, StrictButton
 
 from firewall.models import (
@@ -351,7 +351,7 @@ class VlanGroupForm(ModelForm):
         fields = ("name", "vlans", "description", "owner", )
 
 
-class VxlanForm(ModelForm):
+class VxlanSuperUserForm(ModelForm):
     helper = FormHelper()
     helper.layout = Layout(
         Div(
@@ -366,12 +366,36 @@ class VxlanForm(ModelForm):
             )
         ),
         FormActions(
-            Submit('submit', _("Save")),
-            LinkButton('back', _("Back"), reverse_lazy(
+            Submit('submit', _('Save')),
+            LinkButton('back', _('Back'), reverse_lazy(
                 'network.vxlan-list'))
         )
     )
 
     class Meta:
         model = Vxlan
-        fields = ("name", "vni", "vlan", "description", "comment", "owner", )
+        fields = ('name', 'vni', 'vlan', 'description', 'comment', 'owner', )
+
+
+class VxlanForm(ModelForm):
+    helper = FormHelper()
+    helper.layout = Layout(
+        Div(
+            Fieldset(
+                '',
+                'name',
+                'description',
+                'comment',
+                Field('vni', type='hidden'),
+            )
+        ),
+        FormActions(
+            Submit('submit', _('Save')),
+            LinkButton('back', _('Back'), reverse_lazy(
+                'network.vxlan-list'))
+        )
+    )
+
+    class Meta:
+        model = Vxlan
+        fields = ('name', 'description', 'comment', 'vni', )

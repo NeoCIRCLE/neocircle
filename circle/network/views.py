@@ -15,16 +15,22 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import random
 from collections import OrderedDict
 
 from netaddr import IPNetwork
-from django.views.generic import (TemplateView, UpdateView, DeleteView,
-                                  CreateView)
-from django.core.exceptions import ValidationError
+from django.views.generic import (
+    TemplateView, UpdateView, DeleteView, CreateView
+)
+from django.core.exceptions import (
+    ValidationError, PermissionDenied, ImproperlyConfigured
+)
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
 from django.db.models import Q
+from django.conf import settings
 
 from django_tables2 import SingleTableView
 
@@ -34,6 +40,8 @@ from firewall.models import (
 )
 from network.models import Vxlan
 from vm.models import Interface
+from common.views import CreateLimitedResourceMixin
+from acl.views import CheckedObjectMixin
 from .tables import (
     HostTable, VlanTable, SmallHostTable, DomainTable, GroupTable,
     RecordTable, BlacklistItemTable, RuleTable, VlanGroupTable,
@@ -42,7 +50,8 @@ from .tables import (
 )
 from .forms import (
     HostForm, VlanForm, DomainForm, GroupForm, RecordForm, BlacklistItemForm,
-    RuleForm, VlanGroupForm, SwitchPortForm, FirewallForm, VxlanForm
+    RuleForm, VlanGroupForm, SwitchPortForm, FirewallForm,
+    VxlanForm, VxlanSuperUserForm,
 )
 
 from django.contrib import messages
@@ -71,6 +80,9 @@ except ImportError:
                 mimetype=mimetype,
                 status=status,
                 content_type=content_type)
+
+
+logger = logging.getLogger(__name__)
 
 
 class MagicMixin(object):
@@ -509,7 +521,7 @@ class HostDetail(HostMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
 
 
 class HostCreate(HostMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
-                 SuccessMessageMixin, InitialOwnerMixin, CreateView):
+                 SuccessMessageMixin, CreateView):
     model = Host
     template_name = "network/host-create.html"
     form_class = HostForm
@@ -916,11 +928,19 @@ class VlanGroupDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
             return reverse_lazy('network.vlan_group_list')
 
 
-class VxlanList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
+class VxlanList(LoginRequiredMixin, SingleTableView):
     model = Vxlan
     table_class = VxlanTable
-    template_name = "network/vxlan-list.html"
     table_pagination = False
+
+    def get_template_names(self):
+        if self.request.user.is_superuser:
+            return ["network/vxlan-superuser-list.html"]
+        else:
+            return ["network/vxlan-list.html"]
+
+    def get_queryset(self):
+        return Vxlan.get_objects_with_level('user', self.request.user)
 
     def get(self, *args, **kwargs):
         if self.request.is_ajax():
@@ -928,8 +948,7 @@ class VxlanList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
         return super(VxlanList, self).get(*args, **kwargs)
 
     def _create_ajax_request(self):
-        vxlans = Vxlan.get_objects_with_level(
-            'user', self.request.user)
+        vxlans = self.get_queryset()
         vxlans = [{
             'pk': i.pk,
             'url': reverse_lazy('network.vxlan', args=[i.pk]),
@@ -944,15 +963,24 @@ class VxlanAclUpdateView(AclUpdateView):
     model = Vxlan
 
 
-class VxlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+class VxlanDetail(LoginRequiredMixin, CheckedObjectMixin,
                   SuccessMessageMixin, UpdateView):
     model = Vxlan
-    template_name = "network/vxlan-edit.html"
-    form_class = VxlanForm
     slug_field = 'vni'
     slug_url_kwarg = 'vni'
     success_message = _(u'Succesfully modified vlan %(name)s.')
     success_url = reverse_lazy('network.vxlan-list')
+
+    def get_template_names(self):
+        if self.request.user.is_superuser:
+            return ["network/vxlan-superuser-edit.html"]
+        else:
+            return ["network/vxlan-edit.html"]
+
+    def get_form_class(self, is_post=False):
+        if self.request.user.is_superuser:
+            return VxlanSuperUserForm
+        return VxlanForm
 
     def get_context_data(self, **kwargs):
         context = super(VxlanDetail, self).get_context_data(**kwargs)
@@ -962,18 +990,93 @@ class VxlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
         context['aclform'] = AclUserOrGroupAddForm()
         return context
 
+    def post(self, *args, **kwargs):
+        if not self.object.has_level(self.request.user, 'owner'):
+            raise PermissionDenied()
+        return super(VxlanDetail, self).post(*args, **kwargs)
 
-class VxlanCreate(LoginRequiredMixin, SuccessMessageMixin,
-                  InitialOwnerMixin, CreateView):
+
+class VxlanCreate(LoginRequiredMixin, CreateLimitedResourceMixin,
+                  SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = Vxlan
-    template_name = "network/vxlan-create.html"
-    form_class = VxlanForm
+    profile_attribute = 'network_limit'
+    resource_name = _('Virtual network')
     success_message = _(u'Successfully created vxlan %(name)s.')
 
+    def get_template_names(self):
+        if self.request.user.is_superuser:
+            return ["network/vxlan-superuser-create.html"]
+        else:
+            return ["network/vxlan-create.html"]
 
-class VxlanDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
+    def get_form_class(self, is_post=False):
+        if self.request.user.is_superuser:
+            return VxlanSuperUserForm
+        return VxlanForm
+
+    def get_initial(self):
+        initial = super(VxlanCreate, self).get_initial()
+        initial['vni'] = self._generate_vni()
+        return initial
+
+    def get_default_vlan(self):
+        vlan = Vlan.objects.filter(
+            name=settings.DEFAULT_USERNET_VLAN_NAME).first()
+        if vlan is None:
+            msg = (_('Cannot find server vlan: %s') %
+                   settings.DEFAULT_USERNET_VLAN_NAME)
+            if self.request.user.is_superuser:
+                messages.error(self.request, msg)
+            logger.error(msg)
+            raise ImproperlyConfigured()
+        return vlan
+
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+        obj.owner = self.request.user
+        obj.vlan = self.get_default_vlan()
+        try:
+            obj.full_clean()
+            obj.save()
+            obj.set_level(obj.owner, 'owner')
+            self.object = obj
+        except Exception as e:
+            msg = _('Unexpected error occured. '
+                    'Please try again or contact administrator!')
+            messages.error(self.request, msg)
+            logger.exception(e)
+        return redirect(self.get_success_url())
+
+    def form_invalid(self, form):
+        # When multiple client get same VNI value
+        if 'vni' in form.errors.as_data():
+            messages.error(self.request, _('Cannot create virtual network.'
+                                           ' Please try again.'))
+            return redirect('network.vxlan-create')
+        return super(VxlanCreate, self).form_invalid(form)
+
+    def _generate_vni(self):
+        if Vxlan.objects.count() == settings.USERNET_MAX:
+            msg = _('Cannot find unused VNI value. '
+                    'Please contact administrator!')
+            messages.error(self.request, msg)
+            logger.error(msg)
+        else:
+            full_range = set(range(0, settings.USERNET_MAX))
+            used_values = {vni[0] for vni in Vxlan.objects.values_list('vni')}
+            free_values = full_range - used_values
+            return random.choice(list(free_values))
+
+
+class VxlanDelete(LoginRequiredMixin, CheckedObjectMixin, DeleteView):
     model = Vlan
-    template_name = "network/confirm/base_delete.html"
+    read_level = 'owner'
+
+    def get_template_names(self):
+        if self.request.user.is_superuser:
+            return ["network/confirm/base_delete.html"]
+        else:
+            return ["dashboard/confirm/base-delete.html"]
 
     def get_success_url(self):
         next = self.request.POST.get('next')
@@ -987,10 +1090,11 @@ class VxlanDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
         return Vxlan.objects.get(vni=self.kwargs['vni'])
 
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        if unicode(self.object) != request.POST.get('confirm'):
-            messages.error(request, _(u"Object name does not match."))
-            return self.get(request, *args, **kwargs)
+        if self.request.user.is_superuser:
+            self.object = self.get_object()
+            if unicode(self.object) != request.POST.get('confirm'):
+                messages.error(request, _(u"Object name does not match."))
+                return self.get(request, *args, **kwargs)
 
         response = super(VxlanDelete, self).delete(request, *args, **kwargs)
         messages.success(request, _(u"Vxlan successfully deleted."))
@@ -998,7 +1102,8 @@ class VxlanDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
 
     def get_context_data(self, **kwargs):
         context = super(VxlanDelete, self).get_context_data(**kwargs)
-        context['confirmation'] = True
+        if self.request.user.is_superuser:
+            context['confirmation'] = True
         return context
 
 

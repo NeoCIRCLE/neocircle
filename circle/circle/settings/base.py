@@ -587,3 +587,7 @@ REQUEST_HOOK_URL = get_env_variable("REQUEST_HOOK_URL", "")
 SSHKEY_EMAIL_ADD_KEY = False
 
 TWO_FACTOR_ISSUER = get_env_variable("TWO_FACTOR_ISSUER", "CIRCLE")
+
+DEFAULT_USERNET_VLAN_NAME = (
+    get_env_variable("DEFAULT_USERNET_VLAN_NAME", "usernet"))
+USERNET_MAX = 2 ** 12
