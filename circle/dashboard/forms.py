@@ -1310,6 +1310,9 @@ class UserEditForm(forms.ModelForm):
     instance_limit = forms.IntegerField(
         label=_('Instance limit'),
         min_value=0, widget=NumberInput)
+    network_limit = forms.IntegerField(
+        label=_('Virtual network limit'),
+        min_value=0, widget=NumberInput)
     two_factor_secret = forms.CharField(
         label=_('Two-factor authentication secret'),
         help_text=_("Remove the secret key to disable two-factor "
@@ -1319,18 +1322,22 @@ class UserEditForm(forms.ModelForm):
         super(UserEditForm, self).__init__(*args, **kwargs)
         self.fields["instance_limit"].initial = (
             self.instance.profile.instance_limit)
+        self.fields["network_limit"].initial = (
+            self.instance.profile.network_limit)
         self.fields["two_factor_secret"].initial = (
             self.instance.profile.two_factor_secret)
 
     class Meta:
         model = User
         fields = ('email', 'first_name', 'last_name', 'instance_limit',
-                  'is_active', "two_factor_secret", )
+                  'network_limit', 'is_active', 'two_factor_secret', )
 
     def save(self, commit=True):
         user = super(UserEditForm, self).save()
         user.profile.instance_limit = (
             self.cleaned_data['instance_limit'] or None)
+        user.profile.network_limit = (
+            self.cleaned_data['network_limit'] or None)
         user.profile.two_factor_secret = (
             self.cleaned_data['two_factor_secret'] or None)
         user.profile.save()
