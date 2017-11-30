@@ -14,15 +14,47 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.contenttypes.fields import (
+    GenericRelation, GenericForeignKey
+)
+from django.contrib.contenttypes.models import ContentType
 
 from acl.models import AclBase
 from firewall.models import Vlan
 from firewall.fields import val_alfanum
+
+
+class EditorElement(models.Model):
+    x = models.IntegerField()
+    y = models.IntegerField()
+    free_port_num = models.IntegerField()
+    owner = models.ForeignKey(User)
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey()
+
+    def as_data(self):
+        type = 'network' if isinstance(self.content_object, Vxlan) else 'vm'
+        if type == 'network':
+            id = "net-%s" % self.content_object.vni
+        else:
+            id = "vm-%s" % self.content_object.pk
+        return {
+            'name': unicode(self.content_object),
+            'id': id,
+            'x': self.x,
+            'y': self.y,
+            'free_port_num': self.free_port_num,
+            'type': type,
+            'description': self.content_object.description,
+        }
 
 
 class Vxlan(AclBase, models.Model):
@@ -73,6 +105,7 @@ class Vxlan(AclBase, models.Model):
                               verbose_name=_('owner'))
     modified_at = models.DateTimeField(auto_now=True,
                                        verbose_name=_('modified at'))
+    editor_elements = GenericRelation(EditorElement)
 
     class Meta:
         app_label = 'network'
