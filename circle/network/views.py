@@ -17,11 +17,12 @@
 
 import logging
 import random
+import json
 from collections import OrderedDict
 
 from netaddr import IPNetwork
 from django.views.generic import (
-    TemplateView, UpdateView, DeleteView, CreateView
+    TemplateView, UpdateView, DeleteView, CreateView,
 )
 from django.core.exceptions import (
     ValidationError, PermissionDenied, ImproperlyConfigured
@@ -38,8 +39,8 @@ from firewall.models import (
     Host, Vlan, Domain, Group, Record, BlacklistItem, Rule, VlanGroup,
     SwitchPort, EthernetDevice, Firewall
 )
-from network.models import Vxlan
-from vm.models import Interface
+from network.models import Vxlan, EditorElement
+from vm.models import Interface, Instance
 from common.views import CreateLimitedResourceMixin
 from acl.views import CheckedObjectMixin
 from .tables import (
@@ -1105,6 +1106,192 @@ class VxlanDelete(LoginRequiredMixin, CheckedObjectMixin, DeleteView):
         if self.request.user.is_superuser:
             context['confirmation'] = True
         return context
+
+
+class NetworkEditorView(LoginRequiredMixin, TemplateView):
+    template_name = 'network/editor.html'
+
+    def get(self, *args, **kwargs):
+        if self.request.is_ajax():
+            connections = self._get_connections()
+
+            ngelements = self._get_nongraph_elements(connections)
+            ngelements = self._serialize_elements(ngelements)
+
+            connections = map(lambda con: {
+               'source': 'vm-%s' % con['source'].pk,
+               'target': 'net-%s' % con['target'].vni,
+            }, connections['connections'])
+
+            unused_elements = self._get_unused_elements()
+            unused_elements = self._serialize_elements(unused_elements)
+
+            return JsonResponse({
+                'elements': map(lambda e: e.as_data(),
+                                EditorElement.objects.filter(
+                                    owner=self.request.user)),
+                'nongraph_elements': ngelements,
+                'unused_elements': unused_elements,
+                'connections': connections,
+            })
+        return super(NetworkEditorView, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        data = json.loads(self.request.body)
+        add_ifs = data.get('add_interfaces', [])
+        remove_ifs = data.get('remove_interfaces', [])
+        add_nodes = data.get('add_nodes', [])
+        remove_nodes = data.get('remove_nodes', [])
+
+        # Add editor element
+        self._element_list_operation(add_nodes, self._update_element)
+        # Remove editor element
+        self._element_list_operation(remove_nodes, self._remove_element)
+
+        # Add interface
+        self._interface_list_operation(add_ifs, self._add_interface)
+        # Remove interface
+        self._interface_list_operation(remove_ifs, self._remove_interface)
+
+        return self.get(*args, **kwargs)
+
+    def _max_port_num_helper(self, model, attr_name):
+        if not hasattr(self, attr_name):
+            value = model.get_objects_with_level(
+                'user', self.request.user).count()
+            setattr(self, attr_name, value)
+        return getattr(self, attr_name)
+
+    @property
+    def vm_max_port_num(self):
+        return self._max_port_num_helper(Vxlan, '_vm_max_port_num')
+
+    @property
+    def vxlan_max_port_num(self):
+        return self._max_port_num_helper(Instance, '_vxlan_max_port_num')
+
+    def _vm_serializer(self, vm):
+        max_port_num = self.vm_max_port_num
+        vxlans = Vxlan.get_objects_with_level(
+            'user', self.request.user).values_list('pk', flat=True)
+        free_port_num = max_port_num - vm.interface_set.filter(
+            vxlan__pk__in=vxlans).count()
+        return {
+            'name': unicode(vm),
+            'id': 'vm-%s' % vm.pk,
+            'description': vm.description,
+            'type': 'vm',
+            'icon': 'fa-desktop',
+            'free_port_num': free_port_num,
+        }
+
+    def _vxlan_serializer(self, vxlan):
+        max_port_num = self.vxlan_max_port_num
+        vms = Instance.get_objects_with_level(
+            'user', self.request.user).values_list('pk', flat=True)
+        free_port_num = max_port_num - Interface.objects.filter(
+            vxlan=vxlan, instance__pk__in=vms).count()
+        return {
+            'name': vxlan.name,
+            'id': 'net-%s' % vxlan.vni,
+            'description': vxlan.description,
+            'type': 'network',
+            'icon': 'fa-sitemap',
+            'free_port_num': free_port_num,
+        }
+
+    def _get_unused_elements(self):
+        connections = self._get_connections()
+        vms = map(lambda vm: vm.id, connections['vms'])
+        vxlans = map(lambda vxlan: vxlan.vni, connections['vxlans'])
+        eelems = EditorElement.objects.filter(owner=self.request.user)
+
+        vm_query = Q(pk__in=vms) | Q(editor_elements__in=eelems)
+        vms = Instance.get_objects_with_level(
+            'user', self.request.user).exclude(vm_query)
+        vxlan_query = Q(vni__in=vms) | Q(editor_elements__in=eelems)
+        vxlans = Vxlan.get_objects_with_level(
+            'user', self.request.user).exclude(vxlan_query)
+        return {
+            'vms': vms,
+            'vxlans': vxlans,
+        }
+
+    def _get_nongraph_elements(self, connections):
+        return {
+            'vms': filter(lambda v: not v.editor_elements.exists(),
+                          connections['vms']),
+            'vxlans': filter(lambda v: not v.editor_elements.exists(),
+                             connections['vxlans']),
+        }
+
+    def _get_connections(self):
+        """ Returns connections and theirs participants. """
+        vms = Instance.get_objects_with_level('user', self.request.user)
+        connections = []
+        vm_set = set()
+        vxlan_set = set()
+        for vm in vms:
+            for intf in vm.interface_set.filter(vxlan__isnull=False):
+                vm_set.add(vm)
+                vxlan_set.add(intf.vxlan)
+                connections.append({
+                    'source': vm,
+                    'target': intf.vxlan,
+                })
+        return {
+            'connections': connections,
+            'vms': vm_set,
+            'vxlans': vxlan_set,
+        }
+
+    def _serialize_elements(self, elements):
+        return (map(self._vm_serializer, elements['vms']) +
+                map(self._vxlan_serializer, elements['vxlans']))
+
+    def _get_modifiable_object(self, model, connection,
+                               attr_name, filter_attr):
+        value = connection.get(attr_name)
+        if value is not None:
+            value = model.get_objects_with_level(
+                'user', self.request.user).filter(
+                    **{filter_attr: value}).first()
+        return value
+
+    def _element_list_operation(self, node_list, operation):
+        for e in node_list:
+            elem = dict(e)
+            type = elem.pop('type')
+            id = elem.pop('id')
+            model = Instance if type == 'vm' else Vxlan
+            filter = {'pk': id} if type == 'vm' else {'vni': id}
+            object = model.get_objects_with_level(
+                'user', self.request.user).get(**filter)
+            operation(object.editor_elements, elem)
+
+    def _update_element(self, elements, elem):
+        elements.update_or_create(owner=self.request.user,
+                                  defaults=elem)
+
+    def _remove_element(self, elements, elem):
+        elements.filter(owner=self.request.user).delete()
+
+    def _interface_list_operation(self, if_list, operation):
+        for con in if_list:
+            vm = self._get_modifiable_object(Instance, con, 'source', 'pk')
+            vxlan = self._get_modifiable_object(Vxlan, con, 'target', 'vni')
+            if vm and vxlan:
+                operation(vm, vxlan)
+
+    def _add_interface(self, vm, vxlan):
+        vm.add_user_interface(
+            user=self.request.user, vxlan=vxlan, system=vm.system)
+
+    def _remove_interface(self, vm, vxlan):
+        intf = vm.interface_set.filter(vxlan=vxlan).first()
+        if intf:
+            vm.remove_user_interface(
+                interface=intf, user=self.request.user, system=vm.system)
 
 
 def remove_host_group(request, **kwargs):

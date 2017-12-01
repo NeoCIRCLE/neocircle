@@ -31,7 +31,7 @@ from .views import (
     FirewallList, FirewallDetail, FirewallCreate, FirewallDelete,
     remove_host_group, add_host_group,
     remove_switch_port_device, add_switch_port_device,
-    VlanAclUpdateView
+    VlanAclUpdateView, NetworkEditorView
 )
 
 urlpatterns = [
@@ -134,6 +134,10 @@ urlpatterns = [
         name='network.vxlan-acl'),
     url('^vxlans/delete/(?P<vni>\d+)/$', VxlanDelete.as_view(),
         name="network.vxlan-delete"),
+
+    # editor
+    url('^editor/$', NetworkEditorView.as_view(),
+        name="network.editor"),
 
     # non class based views
     url('^hosts/(?P<pk>\d+)/remove/(?P<group_pk>\d+)/$', remove_host_group,

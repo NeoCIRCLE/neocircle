@@ -1,0 +1,53 @@
+{% extends "dashboard/base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load pipeline %}
+
+{% block title-page %}{% trans 'Network Editor' %}{% endblock %}
+
+{% block extra_css %}
+  {% stylesheet "network-editor" %}
+{% endblock %}
+
+{% block content %}
+
+<div class="flex-container" id="workspace">
+
+  <div class="panel panel-default text-center" id="dragPanel">
+    <div class="panel-heading">
+      <div class="row">
+        <div class="col-md-9 text-left">
+          <h3 class="no-margin"><i class="fa fa-sitemap"></i> {% trans 'Editor' %}</h3>
+        </div>
+        <div class="col-md-3 text-left">
+          <button class="btn btn-success btn-xs" id="saveButton"><i class="fa fa-floppy-o"></i></button>
+        </div>
+      </div>
+    </div>
+    <div class="panel-heading text-center">
+      <div id="filterConatiner">
+        <div class="row">
+          <input type="text" class="form-control" id="searchField" placeholder="{% trans 'Search' %}"/><br />
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <i id="vm-filter"></i> <i class="fa fa-desktop"></i> vm
+          </div>
+          <div class="col-md-6">
+            <i id="net-filter"></i> <i class="fa fa-sitemap"></i> net
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel-body" id="dragContainer">
+    </div>
+  </div>
+
+  <div class="" id="dropContainer" oncontextmenu="return false;"></div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  {% javascript "network-editor" %}
+{% endblock %}
