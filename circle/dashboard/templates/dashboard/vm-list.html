@@ -15,6 +15,9 @@
           <!--<i class="fa fa-refresh fa-spin fa-2x"></i>-->
         </div>
         <a class="pull-right btn btn-success btn-xs vm-create" href="{% url "dashboard.views.vm-create" %}"><i class="fa fa-plus-circle"></i> {% trans "new virtual machine" %}</a>
+        <a href="{% url "network.editor" %}" class="btn btn-primary btn-xs pull-right" data-container="body" title="{% trans "Edit network topology." %}">
+          <i class="fa fa-pencil-square-o"></i> Edit topology
+        </a>
         <h3 class="no-margin"><i class="fa fa-desktop"></i> {% trans "Virtual machines" %}</h3>
       </div>
       <div class="panel-body">

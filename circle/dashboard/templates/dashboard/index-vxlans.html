@@ -4,6 +4,9 @@
     <span class="btn btn-default btn-xs infobtn pull-right" data-container="body" title="{% trans "List of virtual networks that are available for you." %}">
       <i class="fa fa-info-circle"></i>
     </span>
+    <a href="{% url "network.editor" %}" class="btn btn-default btn-xs pull-right" data-container="body" title="{% trans "Edit network topology." %}">
+      <i class="fa fa-pencil-square-o"></i> Editor
+    </a>
     <h3 class="no-margin"><i class="fa fa-globe"></i> {% trans "Virtual networks" %}
     </h3>
   </div>

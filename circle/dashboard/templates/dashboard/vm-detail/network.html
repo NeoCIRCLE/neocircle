@@ -8,6 +8,8 @@
   <i class="fa fa-{{op.icon}}"></i> {% trans "add interface" %}</a>
   {% endif %}{% endwith %}
 </div>
+<br />
+<br />
 <div id="vm-details-add-user-interface">
   {% with op=op.add_user_interface %}{% if op %}
   <a href="{{op.get_url}}" class="btn btn-{{op.effect}} operation pull-right"
