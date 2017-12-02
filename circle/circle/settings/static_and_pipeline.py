@@ -85,7 +85,7 @@ PIPELINE = {
         },
         "network-editor": {
             "source_filenames": (
-                "network/editor.css",
+                "network/editor.less",
             ),
             "output_filename": "network-editor.css",
         },
