@@ -19,12 +19,16 @@ from __future__ import unicode_literals, absolute_import
 
 import logging
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group, Permission
 from django.core.management.base import BaseCommand
+from django.db.models import Q
 
-from firewall.models import Vlan, VlanGroup, Domain, Firewall, Rule
+from firewall.models import Vlan, VlanGroup, Domain, Firewall, Rule, Host
+from firewall.fields import mac_custom
 from storage.models import DataStore
-from vm.models import Lease
+from vm.models import Lease, Node
+from dashboard.models import GroupProfile, Profile
+from netaddr import IPAddress, EUI
 
 
 logger = logging.getLogger(__name__)
@@ -43,6 +47,11 @@ class Command(BaseCommand):
         parser.add_argument('--firewall-queue')
         parser.add_argument('--admin-user')
         parser.add_argument('--admin-pass')
+        parser.add_argument('--node-hostname')
+        parser.add_argument('--node-mac')
+        parser.add_argument('--node-ip')
+        parser.add_argument('--node-name')
+        parser.add_argument('--kvm-present', action="store_true")
 
     def create(self, model, field, **kwargs):
         value = kwargs[field]
@@ -55,12 +64,13 @@ class Command(BaseCommand):
         else:
             return qs[0]
 
-# http://docs.saltstack.com/en/latest/ref/states/all/salt.states.cmd.html
+    # http://docs.saltstack.com/en/latest/ref/states/all/salt.states.cmd.html
     def print_state(self):
         self.stdout.write("\nchanged=%s" % ("yes" if self.changed else "no"))
 
     def handle(self, *args, **options):
         self.changed = False
+    # from pdb import set_trace; set_trace()
 
         if (DataStore.objects.exists() and Vlan.objects.exists() and
                 not options['force']):
@@ -151,5 +161,144 @@ class Command(BaseCommand):
         self.create(Rule, 'description', description='allow man->net',
                     direction='out', action='accept',
                     foreign_network=vg_net, vlan=man)
+        node_ip = IPAddress(options['node_ip'])
+        node_mac = EUI(options['node_mac'], dialect=mac_custom)
+        node_host = Host.objects.filter(ipv4=node_ip).first()
+        if node_host is None:
+            node_host = self.create(Host, 'mac', mac=node_mac,
+                                    hostname=options['node_hostname'],
+                                    ipv4=node_ip, vlan=man, owner=admin)
+        else:
+            Host.objects.filter(pk=node_host.pk).update(
+                mac=node_mac,       hostname=options['node_hostname'],
+                ipv4=node_ip, vlan=man, owner=admin)
+            node_host.refresh_from_db()
 
+        self.create(Node, 'name', name=options['node_name'], host=node_host,
+                    priority=1, enabled=True, schedule_enabled=True)
+
+        # creating groups
+        admins = self.create(Group, 'name', name='Administrators')
+        pusers = self.create(Group, 'name', name='Powerusers')
+        users = self.create(Group, 'name', name='Users')
+
+        # creating group profiles
+        self.create(GroupProfile, 'group', group=admins)
+        self.create(GroupProfile, 'group', group=pusers)
+        self.create(GroupProfile, 'group', group=users)
+
+        # specifying group permissions
+        user_permissions = [
+            'add_diskresizeaction',
+            'change_diskresizeaction',
+            'delete_diskresizeaction',
+            'add_extendleaseaction',
+            'change_extendleaseaction',
+            'delete_extendleaseaction',
+            'add_resourcechangeaction',
+            'change_resourcechangeaction',
+            'delete_resourcechangeaction',
+            'add_templateaccessaction',
+            'change_templateaccessaction',
+            'delete_templateaccessaction',
+            'add_templateaccesstype',
+            'change_templateaccesstype',
+            'delete_templateaccesstype',
+            'create_vm',
+            'config_ports',
+        ]
+
+        puser_permissions = [
+            'add_extendleaseaction',
+            'change_extendleaseaction',
+            'delete_extendleaseaction',
+            'config_ports',
+            'create_vm',
+            'create_empty_disk',
+            'download_disk',
+            'resize_disk',
+            'access_console',
+            'change_resources',
+            'set_resources',
+            'change_template_resources',
+            'add_instancetemplate',
+        ]
+
+        admin_permissions = [
+            'add_group',
+            'change_group',
+            'delete_group',
+            'add_user',
+            'change_user',
+            'delete_user',
+            'add_message',
+            'change_message',
+            'delete_message',
+            'use_autocomplete',
+            'add_group',
+            'change_group',
+            'delete_group',
+            'create_empty_disk',
+            'download_disk',
+            'resize_disk',
+            'access_console',
+            'change_resources',
+            'config_ports',
+            'create_vm',
+            'emergency_change_state',
+            'recover',
+            'redeploy',
+            'set_resources',
+            'change_template_resources',
+            'create_base_template',
+            'create_template',
+            'create_leases',
+        ]
+
+        # set group permissions
+        admins.permissions.set(self._get_permissions(admin_permissions))
+        pusers.permissions.set(self._get_permissions(puser_permissions))
+        users.permissions.set(self._get_permissions(user_permissions))
+
+        # creating users and their profiles
+        useruser = self.create(User, 'username', username='user',
+                               is_superuser=False, is_staff=False)
+        useruser.set_password("user")
+        useruser.save()
+        self.create(Profile, 'user', user=useruser)
+
+        poweruser = self.create(User, 'username', username="poweruser",
+                                is_superuser=True, is_staff=False)
+        poweruser.set_password("poweruser")
+        poweruser.save()
+        self.create(Profile, 'user', user=poweruser)
+
+        adminuser = self.create(User, 'username', username="admin",
+                                is_superuser=True, is_staff=False)
+        adminuser.set_password("admin")
+        adminuser.save()
+        self.create(Profile, 'user', user=adminuser)
+
+        # adding users o groups
+        users.user_set.add(useruser)
+        pusers.user_set.add(poweruser)
+        admins.user_set.add(adminuser)
+
+        # add groups to vm vlan
+        vm.set_level(users, 'user')
+        vm.set_level(pusers, 'user')
+        vm.set_level(admins, 'user')
+
+        # notify admin if there is no harware virtualization
+        if options['kvm-present']:
+            adminuser.profile.notify("hardware virtualization",
+                                     "No hardware virtualization detected, "
+                                     "your hardware does not support it or "
+                                     "not enabled in BIOS.")
         self.print_state()
+
+    def _get_permissions(self, code_names):
+        query = Q()
+        for cn in code_names:
+            query |= Q(codename=cn)
+        return Permission.objects.filter(query)
