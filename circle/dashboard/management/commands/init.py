@@ -290,7 +290,7 @@ class Command(BaseCommand):
         vm.set_level(admins, 'user')
 
         # notify admin if there is no harware virtualization
-        if options['kvm-present']:
+        if options['kvm_present']:
             adminuser.profile.notify("hardware virtualization",
                                      "No hardware virtualization detected, "
                                      "your hardware does not support it or "
