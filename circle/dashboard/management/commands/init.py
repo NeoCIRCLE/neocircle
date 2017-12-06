@@ -178,40 +178,23 @@ class Command(BaseCommand):
                     priority=1, enabled=True, schedule_enabled=True)
 
         # creating groups
-        admins = self.create(Group, 'name', name='Administrators')
+        susers = self.create(Group, 'name', name='Superusers')
         pusers = self.create(Group, 'name', name='Powerusers')
         users = self.create(Group, 'name', name='Users')
 
         # creating group profiles
-        self.create(GroupProfile, 'group', group=admins)
+        self.create(GroupProfile, 'group', group=susers)
         self.create(GroupProfile, 'group', group=pusers)
         self.create(GroupProfile, 'group', group=users)
 
         # specifying group permissions
         user_permissions = [
-            'add_diskresizeaction',
-            'change_diskresizeaction',
-            'delete_diskresizeaction',
-            'add_extendleaseaction',
-            'change_extendleaseaction',
-            'delete_extendleaseaction',
-            'add_resourcechangeaction',
-            'change_resourcechangeaction',
-            'delete_resourcechangeaction',
-            'add_templateaccessaction',
-            'change_templateaccessaction',
-            'delete_templateaccessaction',
-            'add_templateaccesstype',
-            'change_templateaccesstype',
-            'delete_templateaccesstype',
             'create_vm',
             'config_ports',
         ]
 
         puser_permissions = [
-            'add_extendleaseaction',
-            'change_extendleaseaction',
-            'delete_extendleaseaction',
+            'use_autocomplete',
             'config_ports',
             'create_vm',
             'create_empty_disk',
@@ -221,42 +204,27 @@ class Command(BaseCommand):
             'change_resources',
             'set_resources',
             'change_template_resources',
-            'add_instancetemplate',
+            'create_template',
         ]
 
-        admin_permissions = [
+        suser_permissions = [
             'add_group',
-            'change_group',
-            'delete_group',
-            'add_user',
-            'change_user',
-            'delete_user',
-            'add_message',
-            'change_message',
-            'delete_message',
             'use_autocomplete',
-            'add_group',
-            'change_group',
-            'delete_group',
             'create_empty_disk',
             'download_disk',
-            'resize_disk',
             'access_console',
             'change_resources',
             'config_ports',
             'create_vm',
-            'emergency_change_state',
             'recover',
-            'redeploy',
             'set_resources',
             'change_template_resources',
             'create_base_template',
-            'create_template',
-            'create_leases',
+            'create_template'
         ]
 
         # set group permissions
-        admins.permissions.set(self._get_permissions(admin_permissions))
+        susers.permissions.set(self._get_permissions(suser_permissions))
         pusers.permissions.set(self._get_permissions(puser_permissions))
         users.permissions.set(self._get_permissions(user_permissions))
 
@@ -268,33 +236,33 @@ class Command(BaseCommand):
         self.create(Profile, 'user', user=useruser)
 
         poweruser = self.create(User, 'username', username="poweruser",
-                                is_superuser=True, is_staff=False)
+                                is_superuser=False, is_staff=False)
         poweruser.set_password("poweruser")
         poweruser.save()
         self.create(Profile, 'user', user=poweruser)
 
-        adminuser = self.create(User, 'username', username="admin",
-                                is_superuser=True, is_staff=False)
-        adminuser.set_password("admin")
-        adminuser.save()
-        self.create(Profile, 'user', user=adminuser)
+        superuser = self.create(User, 'username', username="superuser",
+                                is_superuser=False, is_staff=False)
+        superuser.set_password("superuser")
+        superuser.save()
+        self.create(Profile, 'user', user=superuser)
 
         # adding users o groups
         users.user_set.add(useruser)
         pusers.user_set.add(poweruser)
-        admins.user_set.add(adminuser)
+        susers.user_set.add(superuser)
 
         # add groups to vm vlan
         vm.set_level(users, 'user')
         vm.set_level(pusers, 'user')
-        vm.set_level(admins, 'user')
+        vm.set_level(susers, 'user')
 
         # notify admin if there is no harware virtualization
-        if options['kvm_present']:
-            adminuser.profile.notify("hardware virtualization",
-                                     "No hardware virtualization detected, "
-                                     "your hardware does not support it or "
-                                     "not enabled in BIOS.")
+        if not options['kvm_present']:
+            admin.profile.notify("hardware virtualization",
+                                 "No hardware virtualization detected, "
+                                 "your hardware does not support it or "
+                                 "not enabled in BIOS.")
         self.print_state()
 
     def _get_permissions(self, code_names):
