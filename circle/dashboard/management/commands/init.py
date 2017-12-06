@@ -81,6 +81,7 @@ class Command(BaseCommand):
                             is_superuser=True, is_staff=True)
         admin.set_password(options['admin_pass'])
         admin.save()
+        self.create(Profile, 'user', user=admin)
 
         self.create(DataStore, 'path', path='/datastore', name='default',
                     hostname=options['datastore_queue'])
