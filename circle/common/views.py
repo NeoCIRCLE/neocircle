@@ -19,8 +19,11 @@ from sys import exc_info
 
 import logging
 
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, redirect
+from django.contrib import messages
 from django.template import RequestContext
+from django.http import JsonResponse
+from django.utils.translation import ugettext_lazy as _
 
 from .models import HumanReadableException
 
@@ -59,3 +62,29 @@ def handler403(request):
     resp = render_to_response("403.html", ctx)
     resp.status_code = 403
     return resp
+
+
+class CreateLimitedResourceMixin(object):
+    resource_name = None
+    model = None
+    profile_attribute = None
+
+    def post(self, *args, **kwargs):
+        user = self.request.user
+        try:
+            limit = getattr(user.profile, self.profile_attribute)
+        except Exception as e:
+            logger.debug('No profile or %s: %s', self.profile_attribute, e)
+        else:
+            current = self.model.objects.filter(owner=user).count()
+            logger.debug('%s current use: %d, limit: %d',
+                         self.resource_name, current, limit)
+            if current > limit:
+                messages.error(self.request,
+                               _('%s limit (%d) exceeded.')
+                               % (self.resource_name, limit))
+                if self.request.is_ajax():
+                    return JsonResponse({'redirect': '/'})
+                else:
+                    return redirect('/')
+        return super(CreateLimitedResourceMixin, self).post(*args, **kwargs)

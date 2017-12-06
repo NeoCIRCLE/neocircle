@@ -114,6 +114,11 @@ class Command(BaseCommand):
         vm.snat_to.add(net)
         vm.snat_to.add(vm)
 
+        # Add unmanged vlan for user networks
+        self.create(Vlan, 'vid', name='usernet', vid=5,
+                    network4='0.0.0.0/0', domain=vm_domain,
+                    managed=False)
+
         # default vlan groups
         vg_all = self.create(VlanGroup, 'name', name='all')
         vg_all.vlans.add(vm, man, net)

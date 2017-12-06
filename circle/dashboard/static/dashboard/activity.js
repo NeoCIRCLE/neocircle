@@ -28,7 +28,7 @@ $(function() {
   });
 
   /* operations */
-  $('#ops, #vm-details-resources-disk, #vm-details-renew-op, #vm-details-pw-reset, #vm-details-add-interface, .operation-wrapper').on('click', '.operation', function(e) {
+  $('#ops, #vm-details-resources-disk, #vm-details-renew-op, #vm-details-pw-reset, #vm-details-add-interface, #vm-details-add-user-interface, .operation-wrapper').on('click', '.operation', function(e) {
     var icon = $(this).children("i").addClass('fa-spinner fa-spin');
 
     $.ajax({

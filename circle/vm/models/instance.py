@@ -34,6 +34,7 @@ from django.db import IntegrityError
 from django.dispatch import Signal
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
+from django.contrib.contenttypes.fields import GenericRelation
 
 from model_utils import Choices
 from model_utils.managers import QueryManager
@@ -50,6 +51,8 @@ from .activity import (ActivityInProgressError, InstanceActivity)
 from .common import BaseResourceConfigModel, Lease
 from .network import Interface
 from .node import Node, Trait
+from network.models import EditorElement
+
 
 logger = getLogger(__name__)
 pre_state_changed = Signal(providing_args=["new_state"])
@@ -256,6 +259,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     destroyed_at = DateTimeField(blank=True, null=True,
                                  help_text=_("The virtual machine's time of "
                                              "destruction."))
+    editor_elements = GenericRelation(EditorElement)
     objects = Manager()
     active = QueryManager(destroyed_at=None)
 

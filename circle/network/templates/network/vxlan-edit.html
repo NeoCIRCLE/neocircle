@@ -1,0 +1,32 @@
+{% extends "dashboard/base.html" %}
+{% load render_table from django_tables2 %}
+{% load i18n %}
+{% load l10n %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+{% block title-page %}{{ form.name.value }} | {% trans "vxlan" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <a href="{% url "network.vxlan-delete" vni=vxlan.vni %}" class="btn btn-danger pull-right"><i class="fa fa-times-circle"></i> {% trans "Delete this vxlan" %}</a>
+    <h2>{{ form.name.value }} <small>{% trans "details of vxlan" %}</small></h2>
+</div>
+
+<div class="row">
+  <div class="col-sm-6">
+    {% crispy form %}
+  </div>
+  <div class="col-sm-6">
+    <div class="page-header">
+      <h3>{% trans "Connected virtual machines" %}</h3>
+    </div>
+    {% render_table vm_list %}
+
+    <div class="page-header">
+      <h3>{% trans "Manage access" %}</h3>
+    </div>
+    {% include "dashboard/_manage_access.html" with table_id="vxlan-access-table" %}
+  </div>
+</div>
+{% endblock %}

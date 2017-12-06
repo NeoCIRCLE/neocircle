@@ -8,6 +8,15 @@
   <i class="fa fa-{{op.icon}}"></i> {% trans "add interface" %}</a>
   {% endif %}{% endwith %}
 </div>
+<br />
+<br />
+<div id="vm-details-add-user-interface">
+  {% with op=op.add_user_interface %}{% if op %}
+  <a href="{{op.get_url}}" class="btn btn-{{op.effect}} operation pull-right"
+      {% if op.disabled %}disabled{% endif %}>
+  <i class="fa fa-{{op.icon}}"></i> {% trans "add user interface" %}</a>
+  {% endif %}{% endwith %}
+</div>
 <h2>
   {% trans "Interfaces" %}
 </h2>
@@ -16,12 +25,28 @@
 {% for i in instance.interface_set.all %}
 <div>
   <h3 class="list-group-item-heading dashboard-vm-details-network-h3">
-    <i class="fa fa-{% if i.host %}globe{% else %}link{% endif %}"></i> {{ i.vlan.name }}
-    {% if not i.host%}({% trans "unmanaged" %}){% endif %}
+    <i class="fa fa-{% if i.host %}globe{% else %}link{% endif %}"></i>
+    {% if i.vxlan  %}
+      {{ i.vxlan.name }} (user)
+    {% else %}
+      {{ i.vlan.name }}
+      {% if not i.host%}({% trans "unmanaged" %}){% endif %}
+    {% endif %}
     {% if user.is_superuser and i.host %}
       <a href="{{ i.host.get_absolute_url }}"
         class="btn btn-default btn-xs">{% trans "edit" %}</a>
     {% endif %}
+
+    {% if i.vxlan %}
+    {% with op=op.remove_user_interface %}{% if op %}
+    <span class="operation-wrapper">
+      <a href="{{op.get_url}}?interface={{ i.pk }}"
+         class="btn btn-{{op.effect}} btn-xs operation interface-remove"
+         {% if op.disabled %}disabled{% endif %}>{% trans "remove" %}
+      </a>
+    </span>
+    {% endif %}{% endwith %}
+    {% else %}
     {% with op=op.remove_interface %}{% if op %}
     <span class="operation-wrapper">
       <a href="{{op.get_url}}?interface={{ i.pk }}"
@@ -30,6 +55,7 @@
       </a>
     </span>
     {% endif %}{% endwith %}
+    {% endif %}
   </h3>
   {% if i.host %}
     <div class="row">

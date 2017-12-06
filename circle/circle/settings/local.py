@@ -112,6 +112,7 @@ if DEBUG:
 
 PIPELINE["COMPILERS"] = (
     'dashboard.compilers.DummyLessCompiler',
+    'pipeline.compilers.es6.ES6Compiler',
 )
 
 ADMIN_ENABLED = True

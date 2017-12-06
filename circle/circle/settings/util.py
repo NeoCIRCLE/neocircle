@@ -1,4 +1,4 @@
-# Copyright 2014 Budapest University of Technology and Economics (BME IK)
+# Copyright 2017 Budapest University of Technology and Economics (BME IK)
 #
 # This file is part of CIRCLE Cloud.
 #
@@ -15,14 +15,21 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.core.exceptions import PermissionDenied
+from os import environ
+from django.core.exceptions import ImproperlyConfigured
 
 
-class CheckedObjectMixin(object):
-    read_level = 'user'
+# Normally you should not import ANYTHING from Django directly
+# into your settings, but ImproperlyConfigured is an exception.
 
-    def get_object(self, **kwargs):
-        obj = super(CheckedObjectMixin, self).get_object()
-        if not obj.has_level(self.request.user, self.read_level):
-            raise PermissionDenied()
-        return obj
+
+def get_env_variable(var_name, default=None):
+    """ Get the environment variable or return exception/default """
+    try:
+        return environ[var_name]
+    except KeyError:
+        if default is None:
+            error_msg = "Set the %s environment variable" % var_name
+            raise ImproperlyConfigured(error_msg)
+        else:
+            return default

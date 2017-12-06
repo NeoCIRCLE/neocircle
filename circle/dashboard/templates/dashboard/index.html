@@ -54,6 +54,12 @@
       {% include "dashboard/index-users.html" %}
     </div>
     {% endif %}
+
+    {% if perms.network.create_vxlan %}
+    <div class="col-lg-4 col-sm-6">
+      {% include "dashboard/index-vxlans.html" %}
+    </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
