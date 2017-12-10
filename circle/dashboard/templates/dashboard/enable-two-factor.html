@@ -1,0 +1,53 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin">
+          <i class="fa fa-lock"></i>
+          {% trans "Enable two-factor authentication" %}
+        </h3>
+      </div>
+      <div class="panel-body">
+        {% blocktrans with lang=LANGUAGE_CODE %}
+          To use two-factor authentication you need to download Google Authenticator
+          and use the following qr code, secret key or link to set it up.
+          If you need help with the download or setup check out the
+          <a href="https://support.google.com/accounts/answer/1066447?hl={{ lang }}">
+            official help page.
+          </a>
+        {% endblocktrans %}
+        <hr />
+        <div id="two-factor-qr">
+          <span>
+            {% blocktrans with secret=secret %}
+              Your secret key is: <strong>{{ secret }}</strong>
+            {% endblocktrans %}
+          </span>
+          <img src="//chart.googleapis.com/chart?chs=255x255&chld=L|0&cht=qr&chl={{ uri }}"/>
+          <small><a href="{{ uri }}">{{ uri }}</a></small>
+        </div>
+        <hr />
+        <div id="two-factor-confirm">
+          <form action="" method="POST">
+            {% csrf_token %}
+            <input type="hidden" value="{{ secret }}" name="{{ form.two_factor_secret.name }}"/>
+            {% blocktrans %}
+            If you managed to set up the authenticator click enable to finalize two-factor
+            authentication for this account.
+            {% endblocktrans %}
+            <button type="submit" class="btn btn-success">
+              <i class="fa fa-lock"></i>
+              {% trans "Enable" %}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

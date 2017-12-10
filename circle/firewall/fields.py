@@ -52,11 +52,18 @@ class MACAddressFormField(forms.Field):
 
 class MACAddressField(models.Field):
     description = _('MAC Address object')
-    __metaclass__ = models.SubfieldBase
 
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 17
         super(MACAddressField, self).__init__(*args, **kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super(MACAddressField, self).deconstruct()
+        del kwargs['max_length']
+        return name, path, args, kwargs
+
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
 
     def to_python(self, value):
         if not value:
@@ -105,15 +112,24 @@ class IPAddressFormField(forms.Field):
 
 class IPAddressField(models.Field):
     description = _('IP Network object')
-    __metaclass__ = models.SubfieldBase
 
     def __init__(self, version=4, serialize=True, *args, **kwargs):
         kwargs['max_length'] = 100
         self.version = version
         super(IPAddressField, self).__init__(*args, **kwargs)
 
+    def deconstruct(self):
+        name, path, args, kwargs = super(IPAddressField, self).deconstruct()
+        del kwargs['max_length']
+        if self.version != 4:
+            kwargs['version'] = self.version
+        return name, path, args, kwargs
+
     def get_internal_type(self):
         return "CharField"
+
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
 
     def to_python(self, value):
         if not value:
@@ -163,12 +179,21 @@ class IPNetworkFormField(forms.Field):
 
 class IPNetworkField(models.Field):
     description = _('IP Network object')
-    __metaclass__ = models.SubfieldBase
 
     def __init__(self, version=4, serialize=True, *args, **kwargs):
         kwargs['max_length'] = 100
         self.version = version
         super(IPNetworkField, self).__init__(*args, **kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super(IPNetworkField, self).deconstruct()
+        del kwargs['max_length']
+        if self.version != 4:
+            kwargs['version'] = self.version
+        return name, path, args, kwargs
+
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
 
     def to_python(self, value):
         if not value:

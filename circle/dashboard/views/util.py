@@ -23,19 +23,28 @@ from collections import OrderedDict
 from urlparse import urljoin
 
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import REDIRECT_FIELD_NAME, login as auth_login
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User, Group
+from django.contrib.auth.views import redirect_to_login
+from django.contrib.sites.shortcuts import get_current_site
 from django.core import signing
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.urlresolvers import reverse
-from django.contrib import messages
-from django.contrib.auth.views import redirect_to_login
-from django.db.models import Q
+from django.db.models import Q, Count, Sum
 from django.http import (
     HttpResponse, Http404, HttpResponseRedirect, JsonResponse
 )
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, resolve_url
+from django.utils.http import is_safe_url
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
-from django.views.generic import DetailView, View, DeleteView
+
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
+from django.views.generic import DetailView, View, DeleteView, FormView
 from django.views.generic.detail import SingleObjectMixin
 
 from braces.views import LoginRequiredMixin
@@ -45,6 +54,7 @@ from celery.exceptions import TimeoutError
 from common.models import HumanReadableException, HumanReadableObject
 from ..models import GroupProfile, Profile
 from ..forms import TransferOwnershipForm
+
 
 logger = logging.getLogger(__name__)
 saml_available = hasattr(settings, "SAML_CONFIG")
@@ -158,14 +168,31 @@ class FilterMixin(object):
 
     def create_acl_queryset(self, model):
         cleaned_data = self.search_form.cleaned_data
-        stype = cleaned_data.get('stype', "all")
-        superuser = stype == "all"
-        shared = stype == "shared" or stype == "all"
-        level = "owner" if stype == "owned" else "user"
+        stype = cleaned_data.get('stype', 'all')
+        superuser = stype == 'all'
+        shared = stype == 'shared' or stype == 'all'
+        level = 'owner' if stype == 'owned' else 'user'
+        user = self.request.user
         queryset = model.get_objects_with_level(
-            level, self.request.user,
-            group_also=shared, disregard_superuser=not superuser,
-        )
+            level, user, group_also=shared, disregard_superuser=not superuser)
+        if stype == 'owned':
+            queryset = queryset.filter(owner=user)
+        elif stype == 'shared':
+            queryset = queryset.filter(owner=user)
+
+            pk_list = []
+            for record in queryset:
+                count = record.object_level_set.annotate(
+                    Count('users'), Count('groups')).aggregate(
+                        Sum('users__count'), Sum('groups__count'))
+                if (count['users__count__sum'] > 1 or
+                   count['groups__count__sum'] > 0):
+
+                    pk_list.append(record.pk)
+
+            queryset = queryset.filter(pk__in=pk_list)
+        elif stype == 'shared_with_me':
+            queryset = queryset.exclude(owner=user)
         return queryset
 
 
@@ -747,3 +774,61 @@ class DeleteViewBase(LoginRequiredMixin, DeleteView):
         else:
             messages.success(request, self.success_message)
             return HttpResponseRedirect(self.get_success_url())
+
+
+# only in Django 1.9
+class LoginView(FormView):
+    """
+    Displays the login form and handles the login action.
+    """
+    form_class = AuthenticationForm
+    authentication_form = None
+    redirect_field_name = REDIRECT_FIELD_NAME
+    template_name = 'registration/login.html'
+    redirect_authenticated_user = False
+    extra_context = None
+
+    @method_decorator(sensitive_post_parameters())
+    @method_decorator(csrf_protect)
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        if (self.redirect_authenticated_user and
+                self.request.user.is_authenticated):
+            redirect_to = self.get_success_url()
+            if redirect_to == self.request.path:
+                raise ValueError(
+                    "Redirection loop for authenticated user detected. Check "
+                    "your LOGIN_REDIRECT_URL doesn't point to a login page."
+                )
+            return HttpResponseRedirect(redirect_to)
+        return super(LoginView, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        """Ensure the user-originating redirection URL is safe."""
+        redirect_to = self.request.POST.get(
+            self.redirect_field_name,
+            self.request.GET.get(self.redirect_field_name, '')
+        )
+        if not is_safe_url(url=redirect_to, host=self.request.get_host()):
+            return resolve_url(settings.LOGIN_REDIRECT_URL)
+        return redirect_to
+
+    def get_form_class(self):
+        return self.authentication_form or self.form_class
+
+    def form_valid(self, form):
+        """Security check complete. Log the user in."""
+        auth_login(self.request, form.get_user())
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(LoginView, self).get_context_data(**kwargs)
+        current_site = get_current_site(self.request)
+        context.update({
+            self.redirect_field_name: self.get_success_url(),
+            'site': current_site,
+            'site_name': current_site.name,
+        })
+        if self.extra_context is not None:
+            context.update(self.extra_context)
+        return context

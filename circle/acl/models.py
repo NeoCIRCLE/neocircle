@@ -18,7 +18,7 @@
 import logging
 
 from django.contrib.auth.models import User, Group
-from django.contrib.contenttypes.generic import (
+from django.contrib.contenttypes.fields import (
     GenericForeignKey, GenericRelation
 )
 from django.contrib.contenttypes.models import ContentType

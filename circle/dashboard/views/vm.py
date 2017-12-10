@@ -32,7 +32,6 @@ from django.http import (
     HttpResponse, Http404, HttpResponseRedirect, JsonResponse
 )
 from django.shortcuts import redirect, get_object_or_404
-from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.translation import (
     ugettext as _, ugettext_noop, ungettext_lazy,
@@ -69,6 +68,7 @@ from ..forms import (
     VmMigrateForm, VmDeployForm,
     VmPortRemoveForm, VmPortAddForm,
     VmRemoveInterfaceForm,
+    VmRenameForm,
 )
 from request.models import TemplateAccessType, LeaseType
 from request.forms import LeaseRequestForm, TemplateRequestForm
@@ -200,7 +200,6 @@ class VmDetailView(GraphMixin, CheckedDetailView):
 
     def post(self, request, *args, **kwargs):
         options = {
-            'new_name': self.__set_name,
             'new_description': self.__set_description,
             'new_tag': self.__add_tag,
             'to_remove': self.__remove_tag,
@@ -210,29 +209,6 @@ class VmDetailView(GraphMixin, CheckedDetailView):
             if request.POST.get(k) is not None:
                 return v(request)
         raise Http404()
-
-    def __set_name(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, "operator"):
-            raise PermissionDenied()
-        new_name = request.POST.get("new_name")
-        Instance.objects.filter(pk=self.object.pk).update(
-            **{'name': new_name})
-
-        success_message = _("VM successfully renamed.")
-        if request.is_ajax():
-            response = {
-                'message': success_message,
-                'new_name': new_name,
-                'vm_pk': self.object.pk
-            }
-            return HttpResponse(
-                json.dumps(response),
-                content_type="application/json"
-            )
-        else:
-            messages.success(request, success_message)
-            return redirect(self.object.get_absolute_url())
 
     def __set_description(self, request):
         self.object = self.get_object()
@@ -756,6 +732,31 @@ class VmCommonSnapshotDiskView(VmDiskModifyView):
         return val
 
 
+class VmRenameView(FormOperationMixin, VmOperationView):
+    op = 'rename'
+    icon = 'pencil'
+    effect = 'success'
+    show_in_toolbar = False
+    form_class = VmRenameForm
+
+    def post(self, request, extra=None, *args, **kwargs):
+        if extra is None:
+            extra = {}
+        form = self.form_class(self.request.POST, **self.get_form_kwargs())
+        if form.is_valid():
+            extra.update(form.cleaned_data)
+            resp = super(FormOperationMixin, self).post(
+                request, extra, *args, **kwargs)
+            success_message = _('VM successfully renamed.')
+            if request.is_ajax():
+                return JsonResponse({'new_name': extra['new_name']})
+            else:
+                messages.success(request, success_message)
+                return resp
+        else:
+            return self.get(request)
+
+
 vm_ops = OrderedDict([
     ('deploy', VmDeployView),
     ('wake_up', VmOperationView.factory(
@@ -812,6 +813,7 @@ vm_ops = OrderedDict([
         op='remove_snapshot', icon='times', effect='danger')),
     ('revert_snapshot', VmCommonSnapshotDiskView.factory(
         op='revert_snapshot', icon='backward', effect='warning')),
+    ('rename', VmRenameView),
 ])
 
 
@@ -1306,15 +1308,15 @@ def vm_activity(request, pk):
 
     response['activities'] = render_to_string(
         "dashboard/vm-detail/_activity-timeline.html",
-        RequestContext(request, context),
+        context, request
     )
     response['ops'] = render_to_string(
         "dashboard/vm-detail/_operations.html",
-        RequestContext(request, context),
+        context, request
     )
     response['disk_ops'] = render_to_string(
         "dashboard/vm-detail/_disk-operations.html",
-        RequestContext(request, context),
+        context, request
     )
 
     return HttpResponse(

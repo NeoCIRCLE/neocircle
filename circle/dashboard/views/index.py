@@ -18,7 +18,7 @@ from __future__ import unicode_literals, absolute_import
 
 import logging
 
-from django.core.cache import get_cache
+from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.contrib.auth.models import Group, User
@@ -103,7 +103,6 @@ class IndexView(LoginRequiredMixin, TemplateView):
         # toplist
         if settings.STORE_URL:
             cache_key = "files-%d" % self.request.user.pk
-            cache = get_cache("default")
             files = cache.get(cache_key)
             if not files:
                 try:

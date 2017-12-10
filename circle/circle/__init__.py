@@ -12,9 +12,10 @@ def update_permissions_after_migration(sender, **kwargs):
     """
 
     from django.conf import settings
-    from django.db.models import get_models
+    from django.apps import apps
     from django.contrib.auth.management import create_permissions
 
-    create_permissions(sender, get_models(), 2 if settings.DEBUG else 0)
+    create_permissions(sender, apps.get_models(), 2 if settings.DEBUG else 0)
+
 
 post_migrate.connect(update_permissions_after_migration)

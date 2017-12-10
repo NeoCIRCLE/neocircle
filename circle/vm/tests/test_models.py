@@ -177,9 +177,9 @@ class InterfaceTestCase(MockCeleryMixin, TestCase):
         i = Instance(id=10, owner=owner, access_method='rdp')
         d = Domain(owner=owner)
         d.save()
-        v = Vlan(vid=55, network4='127.0.0.1/8',
+        v = Vlan(name='vlan', vid=55, network4='127.0.0.1/8',
                  network6='2001::1/32', domain=d)
-        v.clean()
+        v.full_clean()
         v.save()
         Interface.create(i, v, managed=True, owner=owner)
 

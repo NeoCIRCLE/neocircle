@@ -15,3 +15,4 @@ from graph import *
 from storage import *
 from request import *
 from message import *
+from autocomplete import *

@@ -1031,7 +1031,7 @@ textarea[name="new_members"] {
   font-weight: bold;
 }
 
-.hilight .autocomplete-hl {
+.select2-results__option--highlighted .autocomplete-hl {
   color: orange;
 }
 
@@ -1550,4 +1550,57 @@ textarea[name="new_members"] {
 
 .snapshot-table {
   background: white;
+#two-factor-qr {
+  text-align: center;
+
+  span, small {
+    display: block;
+  }
+}
+
+#two-factor-confirm {
+  text-align: center;
+
+  button {
+    margin-left: 15px;
+  }
+}
+
+#two-factor-box {
+  .help-block {
+    display: block;
+  }
+
+  h4 {
+    margin: 0;
+  }
+
+  hr {
+    margin: 15px 0 2px 0;
+  }
+}
+
+
+#datastore-chart-legend {
+  width: 350px;
+  margin-top: 100px;
+  margin-left: -120px;
+
+  /* Landscape phones and down */
+  @media (max-width: 992px) {
+    margin-left: -25px;
+  }
+  ul {
+    list-style: none;
+  }
+  li {
+    font-size: 18px;
+      margin-bottom: 2px;
+    span {
+      display: inline-block;
+      width: 30px;
+      height: 18px;
+      margin-right: 8px;
+    }
+  }
 }
