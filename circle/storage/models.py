@@ -141,6 +141,7 @@ class Disk(TimeStampedModel):
     dev_num = CharField(default='a', max_length=1,
                         verbose_name=_("device number"))
     destroyed = DateTimeField(blank=True, default=None, null=True)
+    did_have_snapshot = BooleanField(default=False)
 
     is_ready = BooleanField(default=False)
 
@@ -575,4 +576,9 @@ class Disk(TimeStampedModel):
 
     @property
     def is_resizable(self):
-        return self.type in ('qcow2-norm', 'raw-rw', 'qcow2-snap', )
+        return (self.type in ('qcow2-norm', 'raw-rw', 'qcow2-snap', ) and
+                not self.did_have_snapshot)
+
+    @property
+    def is_read_only(self):
+        return not self.type in ('qcow2-norm', 'raw-rw', )

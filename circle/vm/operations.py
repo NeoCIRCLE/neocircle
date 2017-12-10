@@ -290,6 +290,7 @@ class RemoteSnapshotDiskOperation(InstanceOperation):
 
     def _operation(self, disk, **kwargs):
         if disk:
+            self.disk = disk
             if not disk.is_ready:
                 raise disk.DiskIsNotReady(disk)
             disk_desc = disk.get_disk_desc()
@@ -315,6 +316,10 @@ class CreateSnapshotDiskOperation(RemoteSnapshotDiskOperation):
         if not snap_name:
             snap_name = 'new snapshot'
         return [snap_name]
+
+    def on_commit(self, activity):
+        self.disk.did_have_snapshot = True
+        self.disk.save()
 
     def get_activity_name(self, kwargs):
         return create_readable(
@@ -389,6 +394,9 @@ class ResizeDiskOperation(RemoteInstanceOperation):
 
     def _operation(self, disk, size):
         if not disk.is_resizable:
+            if disk.did_have_snapshot:
+                raise HumanReadableException.create(ugettext_noop(
+                    'Disk already had snapshot, that is why not resizable.'))
             raise HumanReadableException.create(ugettext_noop(
                 'Disk type "%(type)s" is not resizable.'), type=disk.type)
         super(ResizeDiskOperation, self)._operation(disk=disk, size=size)

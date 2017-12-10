@@ -7,12 +7,10 @@
 
 <span class="operation-wrapper pull-right">
   <div>
-  {% if op.create_snapshot %}
-    <a href="{{ op.create_snapshot.get_url }}?disk={{d.pk}}"
-      class="btn btn-xs btn-{{ op.create_snapshot.effect }} operation disk-create_snapshot-btn
-      {% if op.create_snapshot.disabled %}disabled{% endif %}">
-      <i class="fa fa-{{ op.create_snapshot.icon }} fa-fw-12"></i> {% trans "Snapshot" %}
-    </a>
+  {% if perms.view_snapshot and d.list_snapshots %}
+    <input type="button" class="btn btn-default btn-xs show-snapshot-btn"
+     data-toggle="collapse" data-target="#snapshots-{{ d.pk }}"
+     value="{% trans "Show snapshots" %}" />
   {% endif %}
   {% if d.is_resizable %}
     {% if op.resize_disk %}
@@ -26,10 +24,13 @@
         <i class="fa fa-arrows-alt fa-fw-12"></i> {% trans "Request resize" %}
       </a>
     {% endif %}
-  {% else %}
-    <small class="btn-xs">
-      {% trans "Not resizable" %}
-    </small>
+  {% endif %}
+  {% if op.create_snapshot and not d.is_read_only and d.is_ready %}
+    <a href="{{ op.create_snapshot.get_url }}?disk={{d.pk}}"
+      class="btn btn-xs btn-{{ op.create_snapshot.effect }} operation disk-create_snapshot-btn
+      {% if op.create_snapshot.disabled %}disabled{% endif %}">
+      <i class="fa fa-{{ op.create_snapshot.icon }} fa-fw-12"></i> {% trans "Snapshot" %}
+    </a>
   {% endif %}
   {% if op.remove_disk %}
     <a href="{{ op.remove_disk.get_url }}?disk={{d.pk}}"
@@ -39,13 +40,6 @@
     </a>
   {% endif %}
   </div>
-  <div class="pull-right">
-  {% if perms.view_snapshot and d.list_snapshots %}
-  <input type="button" class="btn btn-default btn-xs show-snapshot-btn"
-   data-toggle="collapse" data-target="#snapshots-{{ d.pk }}"
-   value="{% trans "Show snapshots" %}" />
-  {% endif %}
-  </div>
 </span>
 <br />
 {% if request.user.is_superuser %}
@@ -53,7 +47,7 @@
   <small>{% trans "Bus" %}: {{ d.device_bus }}</small><br />
 {% endif %}
 <div style="clear: both;"></div>
-{% if perms.storage.view_snapshot %}
+{% if perms.storage.view_snapshot and d.list_snapshots %}
 <div id="snapshots-{{ d.pk }}" class="collapse out snapshot-list">
   <table class="table table-striped info-panel small snapshot-table">
     {% for snap in d.list_snapshots %}
