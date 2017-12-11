@@ -1,6 +1,11 @@
 <div class="progress">
-  <div class="progress-bar progress-bar-success progress-bar-stripped"
-    role="progressbar" style="min-width: 30px; width: {{ record.used_percent }}%">
-    {{ record.used_percent }}%
+  {% with record.used_percent as used_percent %}
+  <div class="progress-bar progress-bar-stripped
+    {% if used_percent < 80 %}progress-bar-success
+    {% elif used_percent < 90 %}progress-bar-warning
+    {% else %}progress-bar-danger{% endif %}"
+    role="progressbar" style="min-width: 30px; width: {{ used_percent }}%">
+    {{ used_percent }}%
   </div>
+  {% endwith %}
 </div>
