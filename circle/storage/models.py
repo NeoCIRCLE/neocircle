@@ -119,9 +119,11 @@ class DataStore(Model):
 
     @property
     def used_percent(self):
-        stats = self.get_statistics()
+        try:
+            stats = self.get_statistics()
+        except WorkerNotFound:
+            return -1 # invalid value for unreachable
         free_percent = float(stats['free_percent'])
-
         return int(100 - free_percent)
 
     @property
