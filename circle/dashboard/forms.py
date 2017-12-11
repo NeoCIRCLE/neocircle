@@ -1386,6 +1386,9 @@ class UserEditForm(forms.ModelForm):
         label=_('Two-factor authentication secret'),
         help_text=_("Remove the secret key to disable two-factor "
                     "authentication for this user."), required=False)
+    disk_snapshot_limit = forms.IntegerField(
+        label=_('Snapshot limit per disk'),
+        min_value=0, widget=NumberInput)
 
     def __init__(self, *args, **kwargs):
         super(UserEditForm, self).__init__(*args, **kwargs)
@@ -1393,11 +1396,13 @@ class UserEditForm(forms.ModelForm):
             self.instance.profile.instance_limit)
         self.fields["two_factor_secret"].initial = (
             self.instance.profile.two_factor_secret)
+        self.fields["disk_snapshot_limit"].initial = (
+            self.instance.profile.disk_snapshot_limit)
 
     class Meta:
         model = User
         fields = ('email', 'first_name', 'last_name', 'instance_limit',
-                  'is_active', "two_factor_secret", )
+                  'disk_snapshot_limit', 'is_active', "two_factor_secret", )
 
     def save(self, commit=True):
         user = super(UserEditForm, self).save()
@@ -1405,6 +1410,8 @@ class UserEditForm(forms.ModelForm):
             self.cleaned_data['instance_limit'] or None)
         user.profile.two_factor_secret = (
             self.cleaned_data['two_factor_secret'] or None)
+        user.profile.disk_snapshot_limit = (
+            self.cleaned_data['disk_snapshot_limit'] or None)
         user.profile.save()
         return user
 

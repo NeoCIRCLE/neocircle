@@ -321,6 +321,16 @@ class CreateSnapshotDiskOperation(RemoteSnapshotDiskOperation):
         self.disk.did_have_snapshot = True
         self.disk.save()
 
+    def _operation(self, disk, **kwargs):
+        user = kwargs.get('user')
+        snap_num = len(disk.list_snapshots())
+        limit = user.profile.disk_snapshot_limit
+        if snap_num == limit:
+            raise humanize_exception(ugettext_noop(
+                "Snapshot limit (%(limit)d) exceeded."),
+                PermissionDenied(), limit=limit)
+        super(CreateSnapshotDiskOperation, self)._operation(disk, **kwargs)
+
     def get_activity_name(self, kwargs):
         return create_readable(
             ugettext_noop('Created snapshot %(snap_name)s'
@@ -478,7 +488,7 @@ class DeployOperation(InstanceOperation):
         # Deploy virtual images
         try:
             self.instance._deploy_disks(parent_activity=activity)
-        except:
+        except Exception:
             self.instance.yield_node()
             self.instance.yield_vnc_port()
             raise
@@ -495,7 +505,7 @@ class DeployOperation(InstanceOperation):
 
         try:
             self.instance.renew(parent_activity=activity)
-        except:
+        except Exception:
             pass
 
         self.instance._resume_vm(parent_activity=activity)
@@ -580,7 +590,7 @@ class DestroyOperation(InstanceOperation):
         # Delete mem. dump if exists
         try:
             self.instance._delete_mem_dump(parent_activity=activity)
-        except:
+        except Exception:
             pass
 
         # Clear node and VNC port association
@@ -827,7 +837,7 @@ class SaveAsTemplateOperation(InstanceOperation):
                    with_shutdown=True, clone=False, task=None, **kwargs):
         try:
             self.instance._cleanup(parent_activity=activity, user=user)
-        except:
+        except Exception:
             pass
 
         if with_shutdown:
@@ -891,7 +901,7 @@ class SaveAsTemplateOperation(InstanceOperation):
             # create interface templates
             for i in self.instance.interface_set.all():
                 i.save_as_template(tmpl)
-        except:
+        except Exception:
             tmpl.delete()
             raise
         else:
@@ -1046,7 +1056,7 @@ class WakeUpOperation(InstanceOperation):
 
         try:
             self.instance.renew(parent_activity=activity)
-        except:
+        except Exception:
             pass
 
     @register_operation
@@ -1446,7 +1456,7 @@ class RecoverOperation(InstanceOperation):
 
         try:
             self.instance.renew(parent_activity=activity)
-        except:
+        except Exception:
             pass
 
         if self.instance.template:
@@ -1636,7 +1646,7 @@ class AgentStartedOperation(InstanceOperation):
         if not self.initialized:
             try:
                 self.measure_boot_time()
-            except:
+            except Exception:
                 logger.exception('Unhandled error in measure_boot_time()')
             self.instance._cleanup(parent_activity=activity)
             self.instance.password_reset(

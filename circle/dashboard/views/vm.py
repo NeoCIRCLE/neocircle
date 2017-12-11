@@ -248,7 +248,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
 
         try:
             messages.error(request, message)
-        except:
+        except Exception:
             pass
 
         return redirect(reverse_lazy("dashboard.views.detail",
@@ -263,7 +263,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
 
             self.object.tags.remove(to_remove)
             message = u"Success"
-        except:  # note this won't really happen
+        except Exception:  # note this won't really happen
             message = u"Not success"
 
         if request.is_ajax():
@@ -808,7 +808,8 @@ vm_ops = OrderedDict([
     )),
     ('create_snapshot', VmDiskModifyView.factory(
         op='create_snapshot', icon='camera', effect='success',
-        form_class=VmSnapshotDiskForm)),
+        form_class=VmSnapshotDiskForm,
+    )),
     ('remove_snapshot', VmCommonSnapshotDiskView.factory(
         op='remove_snapshot', icon='times', effect='danger')),
     ('revert_snapshot', VmCommonSnapshotDiskView.factory(
@@ -1182,7 +1183,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         else:
             try:
                 amount = int(request.POST.get("amount", 1))
-            except:
+            except Exception:
                 amount = limit  # TODO this should definitely use a Form
             current = Instance.active.filter(owner=user).count()
             logger.debug('current use: %d, limit: %d', current, limit)
@@ -1207,7 +1208,7 @@ def get_vm_screenshot(request, pk):
     instance = get_object_or_404(Instance, pk=pk)
     try:
         image = instance.screenshot(user=request.user).getvalue()
-    except:
+    except Exception:
         # TODO handle this better
         raise Http404()
 

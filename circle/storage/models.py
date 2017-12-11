@@ -564,7 +564,7 @@ class Disk(TimeStampedModel):
                     disk.destroy()
                     raise humanize_exception(ugettext_noop(
                         "Operation aborted by user."), e)
-            except:
+            except Exception:
                 disk.destroy()
                 raise
         disk.is_ready = True
@@ -581,4 +581,4 @@ class Disk(TimeStampedModel):
 
     @property
     def is_read_only(self):
-        return not self.type in ('qcow2-norm', 'raw-rw', )
+        return self.type not in ('qcow2-norm', 'raw-rw', )

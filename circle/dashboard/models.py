@@ -200,6 +200,10 @@ class Profile(Model):
         verbose_name=_('disk quota'),
         default=2048 * 1024 * 1024,
         help_text=_('Disk quota in mebibytes.'))
+    disk_snapshot_limit = IntegerField(
+        verbose_name=_('disk snapshot limit'),
+        default=3,
+        help_text=_('Snapshot limit per disk.'))
     two_factor_secret = CharField(
         verbose_name=_("two factor secret key"),
         max_length=32, null=True, blank=True,
@@ -332,7 +336,7 @@ def create_profile(user):
 
     try:
         Store(user).create_user(profile.smb_password, None, profile.disk_quota)
-    except:
+    except Exception:
         logger.exception("Can't create user %s", unicode(user))
     return created
 
