@@ -21,7 +21,7 @@ import warnings
 from factory import Factory, Sequence
 from mock import patch, MagicMock
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django.core.exceptions import PermissionDenied
 from django.core.signing import TimestampSigner, JSONSerializer, b64_encode
 from django.http import HttpRequest, Http404, QueryDict
@@ -52,7 +52,8 @@ class ViewUserTestCase(unittest.TestCase):
     def test_not_superuser(self):
         request = FakeRequestFactory(superuser=False)
         with patch.object(InstanceActivityDetail, 'get_object') as go:
-            go.return_value = MagicMock(spec=InstanceActivity)
+            go.return_value = MagicMock(spec=InstanceActivity,
+                                        activity_code='test.test')
             go.return_value._meta.object_name = "InstanceActivity"
             view = InstanceActivityDetail.as_view()
             self.assertEquals(view(request, pk=1234).status_code, 200)
@@ -61,7 +62,8 @@ class ViewUserTestCase(unittest.TestCase):
         request = FakeRequestFactory(superuser=True)
 
         with patch.object(InstanceActivityDetail, 'get_object') as go:
-            act = MagicMock(spec=InstanceActivity)
+            act = MagicMock(spec=InstanceActivity,
+                            activity_code='test.test')
             act._meta.object_name = "InstanceActivity"
             act.user.pk = 1
             go.return_value = act
@@ -627,13 +629,13 @@ def FakeRequestFactory(user=None, **kwargs):
     '''
 
     if user is None:
-        user = UserFactory()
         auth = kwargs.pop('authenticated', True)
-        user.is_authenticated = lambda: auth
+        user = UserFactory() if auth else AnonymousUser()
         user.is_superuser = kwargs.pop('superuser', False)
         if kwargs.pop('has_perms_mock', False):
             user.has_perms = MagicMock(return_value=True)
-        user.save()
+        if auth:
+            user.save()
 
     request = HttpRequest()
     request.user = user

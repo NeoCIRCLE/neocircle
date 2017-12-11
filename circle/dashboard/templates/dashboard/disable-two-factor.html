@@ -1,0 +1,30 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin">
+          <i class="fa fa-unlock"></i>
+          {% trans "Disable two-factor authentication" %}
+        </h3>
+      </div>
+      <div class="panel-body">
+        <form action="" method="POST">
+          {% csrf_token %}
+          <input type="hidden" value="" name="{{ form.two_factor_secret.name }}"/>
+          {{ form.confirmation_code|as_crispy_field }}
+          <button type="submit" class="btn btn-warning">
+            <i class="fa fa-unlock"></i>
+            {% trans "Disable" %}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

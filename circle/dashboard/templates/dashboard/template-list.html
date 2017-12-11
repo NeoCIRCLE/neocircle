@@ -63,18 +63,36 @@
     </div>
   </div>
 
-  {% comment %}
   <div class="col-md-6">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <h3 class="no-margin"><i class="fa fa-desktop"></i> Placeholder</h3>
+        <h3 class="no-margin">
+          <i class="fa fa-puzzle-piece"></i>
+          {% trans "Rarely used templates" %}
+        </h3>
       </div>
       <div class="panel-body">
-        ???
+        <dl>
+          <dt>{% trans "Never instantiated" %}</dd>
+          <dd>
+            {% include "dashboard/_list-templates.html" with templates=unused_templates.never_instantiated %}
+          </dd>
+          <dt>{% trans "Templates without running instances" %}</dd>
+          <dd>
+            {% include "dashboard/_list-templates.html" with templates=unused_templates.templates_wo_instances %}
+          </dd>
+          <dt>{% trans "Templates without instances, last instance created more than 90 days ago" %}</dd>
+          <dd>
+            {% include "dashboard/_list-templates.html" with templates=unused_templates.templates_wo_instances_90 %}
+          </dd>
+          <dt>{% trans "Templates without instances, last instance created more than 180 days ago" %}</dd>
+          <dd>
+            {% include "dashboard/_list-templates.html" with templates=unused_templates.templates_wo_instances_180 %}
+          </dd>
+        </dl>
       </div>
     </div>
   </div>
-  {% endcomment %}
 </div>
 {% endif %}
 {% endblock %}

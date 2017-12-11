@@ -27,7 +27,6 @@ from django.db.models import Count
 from django.forms.models import inlineformset_factory
 from django.http import HttpResponse
 from django.shortcuts import redirect
-from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
 from django.views.generic import DetailView, TemplateView, View
@@ -330,8 +329,12 @@ class NodeActivityView(LoginRequiredMixin, SuperuserRequiredMixin, View):
         response = {
             'activities': render_to_string(
                 "dashboard/node-detail/_activity-timeline.html",
-                RequestContext(request, {'activities': activities,
-                                         'show_show_all': show_show_all}))
+                {
+                    'activities': activities,
+                    'show_show_all': show_show_all
+                },
+                request
+            )
         }
 
         return HttpResponse(

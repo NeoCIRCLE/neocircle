@@ -143,6 +143,7 @@ class SwitchPortAdmin(admin.ModelAdmin):
 class EthernetDeviceAdmin(admin.ModelAdmin):
     list_display = ('name', )
 
+
 admin.site.register(Host, HostAdmin)
 admin.site.register(Vlan, VlanAdmin)
 admin.site.register(Rule, RuleAdmin)

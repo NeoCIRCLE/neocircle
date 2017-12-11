@@ -104,7 +104,6 @@ html {
 .timeline > div {
   margin: 0;
   padding: 0;
-  margin-left: -34px;
   margin-bottom: .5em;
   line-height: 24px;
 }
@@ -113,7 +112,7 @@ html {
 }
 
 .timeline .timeline-icon {
-  margin: 0;
+  margin-left: -34px;
   padding: 0;
   width: 24px;
   height: 24px;
@@ -153,7 +152,7 @@ html {
 }
 
 .sub-activity {
-  margin-left: 30px;
+  margin-left: -4px;
   padding-left: 10px;
   border-left: 3px solid green;
 }
@@ -1031,7 +1030,7 @@ textarea[name="new_members"] {
   font-weight: bold;
 }
 
-.hilight .autocomplete-hl {
+.select2-results__option--highlighted .autocomplete-hl {
   color: orange;
 }
 
@@ -1532,4 +1531,59 @@ textarea[name="new_members"] {
 
 #manage-access-select-all {
   cursor: pointer;
+}
+
+#two-factor-qr {
+  text-align: center;
+
+  span, small {
+    display: block;
+  }
+}
+
+#two-factor-confirm {
+  text-align: center;
+
+  button {
+    margin-left: 15px;
+  }
+}
+
+#two-factor-box {
+  .help-block {
+    display: block;
+  }
+
+  h4 {
+    margin: 0;
+  }
+
+  hr {
+    margin: 15px 0 2px 0;
+  }
+}
+
+
+#datastore-chart-legend {
+  width: 350px;
+  margin-top: 100px;
+  margin-left: -120px;
+
+  /* Landscape phones and down */
+  @media (max-width: 992px) {
+    margin-left: -25px;
+  }
+  ul {
+    list-style: none;
+  }
+  li {
+    font-size: 18px;
+      margin-bottom: 2px;
+    span {
+      display: inline-block;
+      width: 30px;
+      height: 18px;
+      margin-right: 8px;
+    }
+  }
 }

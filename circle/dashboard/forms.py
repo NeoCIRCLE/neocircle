@@ -20,6 +20,8 @@ from __future__ import absolute_import
 from datetime import timedelta
 from urlparse import urlparse
 
+import pyotp
+
 from django.forms import ModelForm
 from django.contrib.auth.forms import (
     AuthenticationForm, PasswordResetForm, SetPasswordForm,
@@ -29,7 +31,7 @@ from django.contrib.auth.models import User, Group
 from django.core.validators import URLValidator
 from django.core.exceptions import PermissionDenied, ValidationError
 
-import autocomplete_light
+from dal import autocomplete
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
     Layout, Div, BaseInput, Field, HTML, Submit, TEMPLATE_PACK, Fieldset
@@ -40,7 +42,6 @@ from crispy_forms.utils import render_field
 from django import forms
 from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
 from django.forms.widgets import TextInput, HiddenInput
-from django.template import Context
 from django.template.loader import render_to_string
 from django.utils.html import escape, format_html
 from django.utils.safestring import mark_safe
@@ -63,6 +64,7 @@ from django.utils.translation import string_concat
 from .validators import domain_validator
 
 from dashboard.models import ConnectCommand, create_profile
+
 
 LANGUAGES_WITH_CODE = ((l[0], string_concat(l[1], " (", l[0], ")"))
                        for l in LANGUAGES)
@@ -1201,8 +1203,7 @@ class AnyTag(Div):
             fields += render_field(field, form, form_style, context,
                                    template_pack=template_pack)
 
-        return render_to_string(self.template, Context({'tag': self,
-                                                        'fields': fields}))
+        return render_to_string(self.template, {'tag': self, 'fields': fields})
 
 
 class WorkingBaseInput(BaseInput):
@@ -1321,21 +1322,29 @@ class UserEditForm(forms.ModelForm):
     instance_limit = forms.IntegerField(
         label=_('Instance limit'),
         min_value=0, widget=NumberInput)
+    two_factor_secret = forms.CharField(
+        label=_('Two-factor authentication secret'),
+        help_text=_("Remove the secret key to disable two-factor "
+                    "authentication for this user."), required=False)
 
     def __init__(self, *args, **kwargs):
         super(UserEditForm, self).__init__(*args, **kwargs)
         self.fields["instance_limit"].initial = (
             self.instance.profile.instance_limit)
+        self.fields["two_factor_secret"].initial = (
+            self.instance.profile.two_factor_secret)
 
     class Meta:
         model = User
         fields = ('email', 'first_name', 'last_name', 'instance_limit',
-                  'is_active')
+                  'is_active', "two_factor_secret", )
 
     def save(self, commit=True):
         user = super(UserEditForm, self).save()
         user.profile.instance_limit = (
             self.cleaned_data['instance_limit'] or None)
+        user.profile.two_factor_secret = (
+            self.cleaned_data['two_factor_secret'] or None)
         user.profile.save()
         return user
 
@@ -1347,27 +1356,31 @@ class UserEditForm(forms.ModelForm):
 
 
 class AclUserOrGroupAddForm(forms.Form):
-    name = forms.CharField(widget=autocomplete_light.TextWidget(
-        'AclUserGroupAutocomplete',
-        attrs={'class': 'form-control',
-               'placeholder': _("Name of group or user")}))
+    name = forms.CharField(
+        widget=autocomplete.ListSelect2(
+            url='autocomplete.acl.user-group',
+            attrs={'class': 'form-control',
+                   'data-html': 'true',
+                   'data-placeholder': _("Name of group or user")}))
 
 
 class TransferOwnershipForm(forms.Form):
     name = forms.CharField(
-        widget=autocomplete_light.TextWidget(
-            'AclUserAutocomplete',
+        widget=autocomplete.ListSelect2(
+            url='autocomplete.acl.user',
             attrs={'class': 'form-control',
-                   'placeholder': _("Name of user")}),
+                   'data-html': 'true',
+                   'data-placeholder': _("Name of user")}),
         label=_("E-mail address or identifier of user"))
 
 
 class AddGroupMemberForm(forms.Form):
     new_member = forms.CharField(
-        widget=autocomplete_light.TextWidget(
-            'AclUserAutocomplete',
+        widget=autocomplete.ListSelect2(
+            url='autocomplete.acl.user',
             attrs={'class': 'form-control',
-                   'placeholder': _("Name of user")}),
+                   'data-html': 'true',
+                   'data-placeholder': _("Name of user")}),
         label=_("E-mail address or identifier of user"))
 
 
@@ -1571,14 +1584,21 @@ class VmResourcesForm(forms.ModelForm):
         fields = ('num_cores', 'priority', 'ram_size', )
 
 
+class VmRenameForm(forms.Form):
+    new_name = forms.CharField()
+
+
 vm_search_choices = (
     ("owned", _("owned")),
     ("shared", _("shared")),
+    ("shared_with_me", _("shared with me")),
     ("all", _("all")),
 )
 
 
 class VmListSearchForm(forms.Form):
+    use_required_attribute = False
+
     s = forms.CharField(widget=forms.TextInput(attrs={
         'class': "form-control input-tags",
         'placeholder': _("Search...")
@@ -1603,6 +1623,8 @@ class VmListSearchForm(forms.Form):
 
 
 class TemplateListSearchForm(forms.Form):
+    use_required_attribute = False
+
     s = forms.CharField(widget=forms.TextInput(attrs={
         'class': "form-control input-tags",
         'placeholder': _("Search...")
@@ -1622,6 +1644,8 @@ class TemplateListSearchForm(forms.Form):
 
 
 class UserListSearchForm(forms.Form):
+    use_required_attribute = False
+
     s = forms.CharField(widget=forms.TextInput(attrs={
         'class': "form-control input-tags",
         'placeholder': _("Search...")
@@ -1720,9 +1744,9 @@ class MessageForm(ModelForm):
         fields = ("message", "enabled", "effect", "start", "end")
         help_texts = {
             'start': _("Start time of the message in "
-                       "YYYY.DD.MM. hh.mm.ss format."),
+                       "YYYY-MM-DD hh:mm:ss format."),
             'end': _("End time of the message in "
-                     "YYYY.DD.MM. hh.mm.ss format."),
+                     "YYYY-MM-DD hh:mm:ss format."),
             'effect': _('The color of the message box defined by the '
                         'respective '
                         '<a href="http://getbootstrap.com/components/#alerts">'
@@ -1738,3 +1762,26 @@ class MessageForm(ModelForm):
         helper = FormHelper()
         helper.add_input(Submit("submit", _("Save")))
         return helper
+
+
+class TwoFactorForm(ModelForm):
+    class Meta:
+        model = Profile
+        fields = ["two_factor_secret", ]
+
+
+class TwoFactorConfirmationForm(forms.Form):
+    confirmation_code = forms.CharField(
+        label=_('Two-factor authentication passcode'),
+        help_text=_("Get the code from your authenticator."),
+        widget=forms.TextInput(attrs={'autofocus': True})
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super(TwoFactorConfirmationForm, self).__init__(*args, **kwargs)
+
+    def clean_confirmation_code(self):
+        totp = pyotp.TOTP(self.user.profile.two_factor_secret)
+        if not totp.verify(self.cleaned_data.get('confirmation_code')):
+            raise ValidationError(_("Invalid confirmation code."))

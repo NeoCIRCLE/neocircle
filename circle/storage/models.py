@@ -189,8 +189,14 @@ class DataStore(Model):
 
     @classmethod
     def get_all(cls):
-
         return cls.objects.all()
+
+    @method_cache(120)
+    def get_file_statistics(self, timeout=30):
+        queue_name = self.get_remote_queue_name('storage', "slow")
+        data = storage_tasks.get_file_statistics.apply_async(
+            args=[self.path], queue=queue_name).get(timeout=timeout)
+        return data
 
 
 class Disk(TimeStampedModel):

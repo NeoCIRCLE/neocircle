@@ -1459,6 +1459,27 @@ class ResourcesOperation(InstanceOperation):
 
 
 @register_operation
+class RenameOperation(InstanceOperation):
+    id = "rename"
+    name = _("rename")
+    description = _("Change the name of virtual machine.")
+    acl_level = "operator"
+    required_perms = ()
+
+    def _operation(self, user, activity, new_name):
+        old_name = self.instance.name
+        self.instance.name = new_name
+
+        self.instance.full_clean()
+        self.instance.save()
+
+        return create_readable(ugettext_noop(
+            "Changed name from '%(old_name)s' to '%(new_name)s'."),
+            old_name=old_name, new_name=new_name
+        )
+
+
+@register_operation
 class PasswordResetOperation(RemoteAgentOperation):
     id = 'password_reset'
     name = _("password reset")

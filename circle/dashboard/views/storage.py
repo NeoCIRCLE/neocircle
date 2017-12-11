@@ -257,6 +257,7 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
         return qs
 
     def _get_stats(self):
+        # datastore stats
         stats = self.object.get_statistics()
         free_space = int(stats['free_space'])
         free_percent = float(stats['free_percent'])
@@ -264,11 +265,32 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
         total_space = free_space / (free_percent/100.0)
         used_space = total_space - free_space
 
+        # file stats
+        data = self.get_object().get_file_statistics()
+        dumps_size = sum(d['size'] for d in data['dumps'])
+        trash = sum(d['size'] for d in data['trash'])
+        iso_raw = sum(d['size'] for d in data['disks']
+                      if d['format'] in ("iso", "raw"))
+
+        vm_size = vm_actual_size = template_actual_size = 0
+        for d in data['disks']:
+            if d['format'] == "qcow2" and d['type'] == "normal":
+                template_actual_size += d['actual_size']
+            else:
+                vm_size += d['size']
+                vm_actual_size += d['actual_size']
+
         return {
             'used_percent': int(100 - free_percent),
             'free_space': filesizeformat(free_space),
             'used_space': filesizeformat(used_space),
             'total_space': filesizeformat(total_space),
+            'dumps': dumps_size,
+            'trash': trash,
+            'iso_raw': iso_raw,
+            'vm_size': vm_size,
+            'vm_actual_size': vm_actual_size,
+            'template_actual_size': template_actual_size,
         }
 
     def get_form_class(self):

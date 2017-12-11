@@ -15,13 +15,16 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
-import autocomplete_light
+import json
+from dal import autocomplete
 from django.contrib.auth.models import User
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
+from django.db.models import Q
+from django.http import HttpResponse
 
-from .views import AclUpdateView
-from .models import Profile
+from ..views import AclUpdateView
+from ..models import Profile
 
 
 def highlight(field, q, none_wo_match=True):
@@ -48,13 +51,21 @@ def highlight(field, q, none_wo_match=True):
         return escape(field)
 
 
-class AclUserGroupAutocomplete(autocomplete_light.AutocompleteGenericBase):
-    search_fields = (
-        ('first_name', 'last_name', 'username', 'email', 'profile__org_id'),
-        ('name', 'groupprofile__org_id'),
-    )
-    choice_html_format = (u'<span data-value="%s"><span style="display:none"'
-                          u'>%s</span>%s</span>')
+class AclUserAutocomplete(autocomplete.Select2ListView):
+    search_fields = ('first_name', 'last_name', 'username',
+                     'email', 'profile__org_id')
+
+    def filter(self, qs, search_fields):
+        if self.q:
+            condition = Q()
+            for field in search_fields:
+                condition |= Q(**{field + '__icontains': unicode(self.q)})
+            return list(qs.filter(condition))
+        return []
+
+    def get_list(self):
+        users = AclUpdateView.get_allowed_users(self.request.user)
+        return self.filter(users, self.search_fields)
 
     def choice_displayed_text(self, choice):
         q = unicode(self.request.GET.get('q', ''))
@@ -71,35 +82,17 @@ class AclUserGroupAutocomplete(autocomplete_light.AutocompleteGenericBase):
         else:
             return _('%s (group)') % name
 
-    def choice_html(self, choice):
-        return self.choice_html_format % (
-            self.choice_value(choice), self.choice_label(choice),
-            self.choice_displayed_text(choice))
-
-    def choices_for_request(self):
-        user = self.request.user
-        self.choices = (AclUpdateView.get_allowed_users(user),
-                        AclUpdateView.get_allowed_groups(user))
-        return super(AclUserGroupAutocomplete, self).choices_for_request()
-
-    def autocomplete_html(self):
-        html = []
-
-        for choice in self.choices_for_request():
-            html.append(self.choice_html(choice))
-
-        if not html:
-            html = self.empty_html_format % _('no matches found').capitalize()
-
-        return self.autocomplete_html_format % ''.join(html)
+    def get(self, *args, **kwargs):
+        return HttpResponse(json.dumps({
+            'results': [dict(id=unicode(r), text=self.choice_displayed_text(r))
+                        for r in self.get_list()]
+        }), content_type="application/json")
 
 
-class AclUserAutocomplete(AclUserGroupAutocomplete):
-    def choices_for_request(self):
-        user = self.request.user
-        self.choices = (AclUpdateView.get_allowed_users(user), )
-        return super(AclUserGroupAutocomplete, self).choices_for_request()
+class AclUserGroupAutocomplete(AclUserAutocomplete):
+    group_search_fields = ('name', 'groupprofile__org_id')
 
-
-autocomplete_light.register(AclUserGroupAutocomplete)
-autocomplete_light.register(AclUserAutocomplete)
+    def get_list(self):
+        groups = AclUpdateView.get_allowed_groups(self.request.user)
+        groups = self.filter(groups, self.group_search_fields)
+        return super(AclUserGroupAutocomplete, self).get_list() + groups

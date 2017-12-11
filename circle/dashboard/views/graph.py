@@ -171,6 +171,7 @@ class TemplateVms(object):
     def get_minmax(self):
         return (0, None)
 
+
 register_graph(TemplateVms, 'instances', TemplateGraphView)
 
 
@@ -197,6 +198,7 @@ class Ram(object):
     def get_minmax(self):
         return (0, 105)
 
+
 register_graph(Ram, 'memory', VmGraphView)
 register_graph(Ram, 'memory', NodeGraphView)
 
@@ -211,6 +213,7 @@ class Cpu(object):
             return (0, 105)
         else:
             return (0, self.obj.num_cores * 100 + 5)
+
 
 register_graph(Cpu, 'cpu', VmGraphView)
 register_graph(Cpu, 'cpu', NodeGraphView)
@@ -236,6 +239,7 @@ class VmNetwork(object):
                     params))
         return 'group(%s)' % ','.join(metrics) if metrics else None
 
+
 register_graph(VmNetwork, 'network', VmGraphView)
 
 
@@ -251,6 +255,7 @@ class NodeNetwork(object):
             '10), ".*\.bytes_(sent|recv)-([a-zA-Z0-9]+).*", "\\2 \\1")' % (
                 self.obj.metric_prefix))
 
+
 register_graph(NodeNetwork, 'network', NodeGraphView)
 
 
@@ -261,6 +266,7 @@ class NodeVms(object):
 
     def get_minmax(self):
         return (0, None)
+
 
 register_graph(NodeVms, 'vm', NodeGraphView)
 
@@ -282,6 +288,7 @@ class NodeAllocated(object):
     def get_minmax(self):
         return (0, None)
 
+
 register_graph(NodeAllocated, 'alloc', NodeGraphView)
 
 
@@ -302,6 +309,7 @@ class NodeListAllocated(object):
     def get_minmax(self):
         return (0, None)
 
+
 register_graph(NodeListAllocated, 'alloc', NodeListGraphView)
 
 
@@ -314,5 +322,6 @@ class NodeListVms(object):
 
     def get_minmax(self):
         return (0, None)
+
 
 register_graph(NodeListVms, 'vm', NodeListGraphView)

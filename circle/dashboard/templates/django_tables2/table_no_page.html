@@ -4,9 +4,9 @@
 {% if table.page %}
 <div class="table-container">
 {% endif %}
+{% endspaceless %}
 {% block table %}
 <table{% if table.attrs %} {{ table.attrs.as_html }}{% endif %}>
-    {% nospaceless %}
     {% block table.thead %}
     <thead>
         <tr>
@@ -42,10 +42,9 @@
     {% block table.tfoot %}
     <tfoot></tfoot>
     {% endblock table.tfoot %}
-    {% endnospaceless %}
 </table>
 {% endblock table %}
-
+{% spaceless %}
 {% if table.page %}
 </div>
 {% endif %}

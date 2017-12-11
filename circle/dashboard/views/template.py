@@ -16,6 +16,7 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals, absolute_import
 
+from datetime import timedelta
 import json
 import logging
 
@@ -24,8 +25,10 @@ from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.db.models import Count
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, get_object_or_404
+from django.utils import timezone
 from django.utils.translation import ugettext as _, ugettext_noop
 from django.views.generic import (
     TemplateView, CreateView, UpdateView,
@@ -36,7 +39,9 @@ from braces.views import (
 )
 from django_tables2 import SingleTableView
 
-from vm.models import InstanceTemplate, InterfaceTemplate, Instance, Lease
+from vm.models import (
+    InstanceTemplate, InterfaceTemplate, Instance, Lease, InstanceActivity
+)
 from storage.models import Disk
 
 from ..forms import (
@@ -202,6 +207,41 @@ class TemplateList(LoginRequiredMixin, FilterMixin, SingleTableView):
         )
 
         context['search_form'] = self.search_form
+
+        # templates without any instances
+        # [t for t in InstanceTemplate.objects.all()
+        #  if t.instance_set.count() < 1]
+        never_instantiated = context['object_list'].annotate(
+            instance_count=Count("instance_set")).filter(instance_count__lt=1)
+
+        # templates without active virtual machines
+        active_statuses = Instance.STATUS._db_values - set(["DESTROYED"])
+        templates_wo_instances = context['object_list'].exclude(
+            pk__in=InstanceTemplate.objects.filter(
+                instance_set__status__in=active_statuses)
+        ).exclude(pk__in=never_instantiated)
+
+        def get_create_acts_younger_than(days):
+            return InstanceActivity.objects.filter(
+                activity_code="vm.Instance.create",
+                finished__gt=timezone.now() - timedelta(days=days))
+
+        # templates without active virtual machines
+        # last machine started later than 90 days
+        templates_wo_i_90 = templates_wo_instances.exclude(
+            instance_set__activity_log__in=get_create_acts_younger_than(90))
+
+        # templates without active virtual machines
+        # last machine started later than 180 days
+        templates_wo_i_180 = templates_wo_instances.exclude(
+            instance_set__activity_log__in=get_create_acts_younger_than(180))
+
+        context['unused_templates'] = {
+            'never_instantiated': never_instantiated,
+            'templates_wo_instances': templates_wo_instances,
+            'templates_wo_instances_90': templates_wo_i_90,
+            'templates_wo_instances_180': templates_wo_i_180,
+        }
 
         return context
 

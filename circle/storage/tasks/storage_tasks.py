@@ -76,3 +76,8 @@ def make_free_space(datastore, path, deletable_disks, percent):
 @celery.task(name='storagedriver.get_storage_stat')
 def get_storage_stat(data_store_type, path):
     pass
+
+
+@celery.task(name='storagedriver.get_file_statistics')
+def get_file_statistics(datastore):
+    pass

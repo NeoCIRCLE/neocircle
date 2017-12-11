@@ -526,13 +526,6 @@ $.ajaxSetup({
   }
 });
 
-/* for autocomplete */
-$(function() {
-  yourlabs.TextWidget.prototype.getValue = function(choice) {
-    return choice.children().html();
-  };
-});
-
 var tagsToReplace = {
     '&': '&amp;',
     '<': '&lt;',
