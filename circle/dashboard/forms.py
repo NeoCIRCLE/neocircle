@@ -1670,6 +1670,9 @@ class DataStoreForm(ModelForm):
     class Meta:
         model = DataStore
         fields = ("type", "name", "path", "hostname", )
+        labels = {
+            'path': _('Path'),
+        }
         widgets = {"type": HiddenInput()}
 
 
@@ -1692,6 +1695,9 @@ class CephDataStoreForm(DataStoreForm):
         model = DataStore
         fields = ("type", "name", "path", "hostname",
                   "ceph_user",)
+        labels = {
+            'path': _('Poolname'),
+        }
 
 
 class StorageListSearchForm(forms.Form):
