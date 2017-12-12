@@ -397,7 +397,7 @@ class StorageListTable(Table):
     )
 
     used_percent = TemplateColumn(
-        verbose_name=_("Usage"),
+        verbose_name=_("DataStore usage"),
         template_name="dashboard/storage-list/" +
                       "column-storage-used_percent.html",
         orderable=False
