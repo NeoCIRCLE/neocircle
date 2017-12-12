@@ -122,7 +122,7 @@ class DataStore(Model):
         try:
             stats = self.get_statistics()
         except WorkerNotFound:
-            return -1 # invalid value for unreachable
+            return -1  # invalid value for unreachable
         free_percent = float(stats['free_percent'])
         return int(100 - free_percent)
 
