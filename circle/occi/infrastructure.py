@@ -119,8 +119,11 @@ class Compute(Resource):
             storages.append(Storage(disk))
         for storage in storages:
             links.append(StorageLink(self, storage).as_dict())
-        nics = [NetworkInterface(self, Network(nic.vlan))
-                for nic in self.vm.interface_set.all()]
+        nics = []
+        for nic in self.vm.interface_set.all():
+            net = nic.vxlan if nic.vxlan else nic.vlan
+            type = "vxlan" if nic.vxlan else "vlan"
+            nics.append(NetworkInterface(self, Network(net, type)))
         for networkinterface in nics:
             links.append(networkinterface.as_dict())
         return links
@@ -346,10 +349,15 @@ class StorageLink(Link):
 class Network(Resource):
     """ OCCI 1.2 - Infrastructure extension - Network """
 
-    def __init__(self, vlan):
+    def __init__(self, vlan, type="vlan"):
+        self.type = type
+        id = str(vlan.pk)
+        if self.type == "vxlan":
+            id = "x" + id
         super(Network, self).__init__(
             "http://schemas.ogf.org/occi/infrastructure#network",
-            str(vlan.pk),
+            id,
+            title=vlan.name,
         )
         self.vlan = vlan
         self.actions = action_list_for_resource(NETWORK_ACTIONS)
@@ -360,14 +368,19 @@ class Network(Resource):
 
     def set_attributes(self):
         attributes = {}
-        attributes["occi.network.vlan"] = self.vlan.vid
+        if self.type == "vxlan":
+            attributes["occi.network.vlan"] = self.vlan.vlan.vid
+            attributes["occi.network.label"] = self.vlan.vni
+        else:
+            attributes["occi.network.vlan"] = self.vlan.vid
         attributes["occi.network.state"] = "active"
         attributes["occi.network.state.message"] = (
             "The network instance is active.")
-        attributes["occi.network.address"] = unicode(self.vlan.network4)
-        attributes["occi.network.gateway"] = unicode(self.vlan.network4.ip)
-        attributes["occi.network.allocation"] = (
-            "static" if self.vlan.dhcp_pool == "" else "dynamic")
+        if self.type == "vlan" and self.vlan.managed:
+            attributes["occi.network.address"] = unicode(self.vlan.network4)
+            attributes["occi.network.gateway"] = unicode(self.vlan.network4.ip)
+            attributes["occi.network.allocation"] = (
+                "static" if self.vlan.dhcp_pool == "" else "dynamic")
         return attributes
 
     def invoke_action(self, user, action, attributes):
@@ -394,7 +407,10 @@ class NetworkInterface(Link):
         )
         self.compute = compute
         self.network = network
-        self.interface = compute.vm.interface_set.get(vlan=network.vlan)
+        if network.type == "vxlan":
+            self.interface = compute.vm.interface_set.get(vxlan=network.vlan)
+        else:
+            self.interface = compute.vm.interface_set.get(vlan=network.vlan)
         self.mixins = [
             ("http://schemas.ogf.org/occi/infrastructure/networkinterface#" +
              "ipnetworkinterface"),
@@ -410,7 +426,8 @@ class NetworkInterface(Link):
             self.removeport(user, attributes)
         else:
             raise OcciActionInvocationError(message="Undefined action.")
-        self.__init__(Compute(self.compute.vm), Network(self.network.vlan))
+        self.__init__(Compute(self.compute.vm),
+                      Network(self.network.vlan, self.network.type))
 
     def addport(self, user, attributes):
         if "port" not in attributes or "protocol" not in attributes:
@@ -444,8 +461,11 @@ class NetworkInterface(Link):
 
     def set_attributes(self):
         attributes = {}
-        attributes["occi.networkinterface.interface"] = (
-            self.interface.vlan.name)
+        if self.network.type == "vxlan":
+            intfname = self.interface.vxlan.name
+        else:
+            intfname = self.interface.vlan.name
+        attributes["occi.networkinterface.interface"] = intfname
         attributes["occi.networkinterface.mac"] = unicode(self.interface.mac)
         attributes["occi.networkinterface.state"] = "active"
         attributes["occi.networkinterface.state.message"] = (
@@ -453,12 +473,12 @@ class NetworkInterface(Link):
         if self.interface.host:
             attributes["occi.networkinterface.address"] = (
                 unicode(self.interface.host.ipv4))
-        attributes["occi.networkinterface.gateway"] = (
-            unicode(self.interface.vlan.network4.ip))
-        attributes["occi.networkinterface.allocation"] = (
-            self.network.attributes["occi.network.allocation"])
-        attributes["org.circlecloud.occi.networkinterface.ports"] = (
-            self.get_open_ports())
+            attributes["occi.networkinterface.gateway"] = (
+                unicode(self.interface.vlan.network4.ip))
+            attributes["occi.networkinterface.allocation"] = (
+                self.network.attributes["occi.network.allocation"])
+            attributes["org.circlecloud.occi.networkinterface.ports"] = (
+                self.get_open_ports())
         return attributes
 
     def get_open_ports(self):

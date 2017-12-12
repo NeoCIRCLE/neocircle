@@ -35,12 +35,18 @@ urlpatterns = [
     url(r'^storage/$', OcciStorageCollectionView.as_view()),
     url(r'^storage/(?P<id>\d+)/$', OcciStorageView.as_view()),
     url(r'^network/$', OcciNetworkCollectionView.as_view()),
-    url(r'^network/(?P<id>\d+)/$', OcciNetworkView.as_view()),
+    url(r'^network/(?P<id>\d+)/$', OcciNetworkView.as_view(),
+        kwargs={'type': 'vlan'}),
+    url(r'^network/x(?P<id>\d+)/$', OcciNetworkView.as_view(),
+        kwargs={'type': 'vxlan'}),
     url(r'^storagelink/$', OcciStoragelinkCollectionView.as_view()),
     url(r'^storagelink/compute(?P<computeid>\d+)-storage(?P<storageid>\d+)/$',
         OcciStoragelinkView.as_view()),
     url(r'^networkinterface/$', OcciNetworkInterfaceCollectionView.as_view()),
-    url(r'^networkinterface/compute(?P<computeid>\d+)-network(?P<networkid>' +
-        r'\d+)/$',
-        OcciNetworkInterfaceView.as_view()),
+    url((r'^networkinterface/compute(?P<computeid>\d+)-'
+         r'network(?P<networkid>\d+)/$'),
+        OcciNetworkInterfaceView.as_view(), kwargs={'type': 'vlan'}),
+    url((r'^networkinterface/compute(?P<computeid>\d+)-'
+         r'networkx(?P<networkid>\d+)/$'),
+        OcciNetworkInterfaceView.as_view(), kwargs={'type': 'vxlan'}),
 ]
