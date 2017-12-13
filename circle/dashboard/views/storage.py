@@ -275,6 +275,7 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
                  if d['name'] not in destroyed_filenames]
         trash = [d for d in data['disks'] if d not in disks]
         dumps_size = sum(d['size'] for d in data['dumps'])
+        trash_size = sum(d['size'] for d in trash)
         iso_raw = sum(d['size'] for d in disks
                       if d['format'] in ("iso", "raw"))
 
@@ -292,7 +293,7 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
             'used_space': filesizeformat(used_space),
             'total_space': filesizeformat(total_space),
             'dumps': dumps_size,
-            'trash': trash,
+            'trash': trash_size,
             'iso_raw': iso_raw,
             'vm_size': vm_size,
             'vm_actual_size': vm_actual_size,
