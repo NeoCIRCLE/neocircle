@@ -67,13 +67,21 @@ def select_node(instance, nodes):
         logger.warning('select_node: no enough RAM for %s', unicode(instance))
         raise NotEnoughMemoryException()
 
-    # sort nodes first by processor usage, then priority
+    # sort nodes first by sorting_key, then priority
     nodes.sort(key=lambda n: n.priority, reverse=True)
-    nodes.sort(key=free_cpu_time, reverse=True)
+    nodes.sort(key=sorting_key, reverse=True)
     result = nodes[0]
 
     logger.info('select_node: %s for %s', unicode(result), unicode(instance))
     return result
+
+
+def sorting_key(node):
+    """Determines how valuable a node is for scheduling.
+    """
+    if free_cpu_time(node) < free_ram(node):
+        return free_cpu_time(node)
+    return free_ram(node)
 
 
 def has_traits(traits, node):
@@ -116,11 +124,27 @@ def free_cpu_time(node):
     Higher values indicate more idle time.
     """
     try:
-        activity = node.cpu_usage / 100
-        inactivity = 1 - activity
-        cores = node.num_cores
-        return cores * inactivity
+        free_cpu_percent = 1 - node.cpu_usage
+        weight = node.cpu_weight
+        weighted_value = free_cpu_percent * weight
+        return weighted_value
     except TypeError as e:
         logger.warning('Got incorrect monitoring data for node %s. %s',
                        unicode(node), unicode(e))
         return False  # monitoring data is incorrect
+
+
+def free_ram(node):
+    """Get an indicator number for free RAM on the node.
+
+    Higher value indicates more RAM.
+    """
+    try:
+        free_ram_percent = 1 - node.ram_usage
+        weight = node.ram_weight
+        weighted_value = free_ram_percent * weight
+        return weighted_value
+    except TypeError as e:
+        logger.exception('Got incorrect monitoring data for node %s. %s',
+                         unicode(node), unicode(e))
+        return 0

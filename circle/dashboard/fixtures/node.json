@@ -65,7 +65,10 @@
     "modified": "2014-02-19T21:11:34.671Z", 
     "priority": 1, 
     "traits": [], 
-    "host": 1
+    "host": 1,
+    "ram_weight": 1.0,
+    "cpu_weight": 1.0,
+    "time_stamp":  "2017-12-13T21:08:08.819Z"
   }
 }
 ]

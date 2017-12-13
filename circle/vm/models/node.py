@@ -30,7 +30,7 @@ from time import time, sleep
 from django.conf import settings
 from django.db.models import (
     CharField, IntegerField, ForeignKey, BooleanField, ManyToManyField,
-    FloatField, permalink, Sum
+    FloatField, DateTimeField, permalink, Sum
 )
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -128,11 +128,15 @@ class Node(OperatedMixin, TimeStampedModel):
     enabled = BooleanField(verbose_name=_('enabled'), default=False,
                            help_text=_('Indicates whether the node can '
                                        'be used for hosting.'))
-    schedule_enabled = BooleanField(verbose_name=_('schedule enabled'),
-                                    default=False, help_text=_(
-                                        'Indicates whether a vm can be '
-                                        'automatically scheduled to this '
-                                        'node.'))
+    schedule_enabled = BooleanField(
+        verbose_name=_('schedule enabled'),
+        default=False,
+        help_text=_(
+            'Indicates whether a vm can be '
+            'automatically scheduled to this '
+            'node.'
+        )
+    )
     traits = ManyToManyField(Trait, blank=True,
                              help_text=_("Declared traits."),
                              verbose_name=_('traits'))
@@ -140,6 +144,21 @@ class Node(OperatedMixin, TimeStampedModel):
     overcommit = FloatField(default=1.0, verbose_name=_("overcommit ratio"),
                             help_text=_("The ratio of total memory with "
                                         "to without overcommit."))
+    ram_weight = FloatField(
+        default=1.0,
+        help_text=_("Indicates the relative RAM quantity of this node."),
+        verbose_name=_("RAM Weight")
+    )
+    cpu_weight = FloatField(
+        default=1.0,
+        help_text=_("Indicates the relative CPU power of this node."),
+        verbose_name=_("CPU Weight")
+    )
+    time_stamp = DateTimeField(
+        auto_now_add=True,
+        help_text=_("A timestamp for the node, used by the scheduler."),
+        verbose_name=_("Last Scheduled Time Stamp")
+    )
 
     class Meta:
         app_label = 'vm'
@@ -162,7 +181,7 @@ class Node(OperatedMixin, TimeStampedModel):
             self.get_remote_queue_name("vm", "fast")
             self.get_remote_queue_name("vm", "slow")
             self.get_remote_queue_name("net", "fast")
-        except:
+        except Exception:
             return False
         else:
             return True
@@ -353,7 +372,7 @@ class Node(OperatedMixin, TimeStampedModel):
                     continue
 
             return retval
-        except:
+        except Exception:
             logger.exception('Unhandled exception: ')
             return self.remote_query(vm_tasks.get_node_metrics, timeout=30,
                                      priority="fast")
@@ -413,7 +432,7 @@ class Node(OperatedMixin, TimeStampedModel):
             # [{'name': 'cloud-1234', 'state': 'RUNNING', ...}, ...]
             try:
                 id = int(i['name'].split('-')[1])
-            except:
+            except Exception:
                 pass  # name format doesn't match
             else:
                 domains[id] = i['state']
