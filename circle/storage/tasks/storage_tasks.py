@@ -79,5 +79,5 @@ def get_storage_stat(data_store_type, path):
 
 
 @celery.task(name='storagedriver.get_file_statistics')
-def get_file_statistics(datastore):
+def get_file_statistics(data_store_type, path_or_pool):
     pass

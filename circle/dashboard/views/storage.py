@@ -267,13 +267,19 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
 
         # file stats
         data = self.get_object().get_file_statistics()
+        disk_names = [d['name'] for d in data['disks']]
+        destroyed_filenames = [d.filename for d
+                               in Disk.objects.filter(
+                                   filename__in=disk_names, destroyed=None)]
+        disks = [d for d in data['disks']
+                 if d['name'] not in destroyed_filenames]
+        trash = [d for d in data['disks'] if d not in disks]
         dumps_size = sum(d['size'] for d in data['dumps'])
-        trash = sum(d['size'] for d in data['trash'])
-        iso_raw = sum(d['size'] for d in data['disks']
+        iso_raw = sum(d['size'] for d in disks
                       if d['format'] in ("iso", "raw"))
 
         vm_size = vm_actual_size = template_actual_size = 0
-        for d in data['disks']:
+        for d in disks:
             if d['format'] == "qcow2" and d['type'] == "normal":
                 template_actual_size += d['actual_size']
             else:
