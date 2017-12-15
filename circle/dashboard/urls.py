@@ -56,6 +56,7 @@ from .views import (
     MessageList, MessageDetail, MessageCreate, MessageDelete,
     EnableTwoFactorView, DisableTwoFactorView,
     AclUserGroupAutocomplete, AclUserAutocomplete,
+    RescheduleView,
 )
 from .views.vm import vm_ops, vm_mass_ops
 from .views.node import node_ops
@@ -153,6 +154,8 @@ urlpatterns = [
          r'(?P<time>[0-9]{1,2}[hdwy])$'),
         NodeListGraphView.as_view(),
         name='dashboard.views.node-list-graph'),
+    url(r'^node/reschedule/$', RescheduleView.as_view(),
+        name="dashboard.views.reschedule"),
     url((r'^template/(?P<pk>\d+)/graph/(?P<metric>[a-z]+)/'
          r'(?P<time>[0-9]{1,2}[hdwy])$'),
         TemplateGraphView.as_view(),

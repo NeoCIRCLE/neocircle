@@ -1697,3 +1697,11 @@ class TwoFactorConfirmationForm(forms.Form):
         totp = pyotp.TOTP(self.user.profile.two_factor_secret)
         if not totp.verify(self.cleaned_data.get('confirmation_code')):
             raise ValidationError(_("Invalid confirmation code."))
+
+
+class AutoMigrationForm(forms.Form):
+    minute = forms.CharField()
+    hour = forms.CharField()
+    day_of_month = forms.CharField()
+    month_of_year = forms.CharField()
+    day_of_week = forms.CharField()

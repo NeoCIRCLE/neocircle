@@ -17,12 +17,26 @@
 
 from celery import Celery
 from celery.signals import worker_ready
+from celery.schedules import crontab
 from datetime import timedelta
 from kombu import Queue, Exchange
 from os import getenv
 
+
 HOSTNAME = "localhost"
 QUEUE_NAME = HOSTNAME + '.man'
+AUTO_MIGRATION_CRONTAB = getenv('AUTO_MIGRATION_CRONTAB', '0 0 * * *')
+
+
+def crontab_parser(crontab):
+    fields = crontab.split(' ')
+    return dict(
+        minute=fields[0],
+        hour=fields[1],
+        day_of_month=fields[2],
+        month_of_year=fields[3],
+        day_of_week=fields[4],
+    )
 
 
 celery = Celery('manager',
@@ -54,6 +68,11 @@ celery.conf.update(
             'send_email_notifications',
             'schedule': timedelta(hours=24),
             'options': {'queue': 'localhost.man'}
+        },
+        'vm.local_periodic_tasks': {
+            'task': 'vm.tasks.local_periodic_tasks.auto_migrate',
+            'schedule': crontab(**crontab_parser(AUTO_MIGRATION_CRONTAB)),
+            'options': {'queue': 'localhost.man.slow'},
         },
     }
 

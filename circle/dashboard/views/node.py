@@ -25,7 +25,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse_lazy
 from django.db.models import Count
 from django.forms.models import inlineformset_factory
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
@@ -37,10 +37,13 @@ from django_tables2 import SingleTableView
 from firewall.models import Host
 from vm.models import Node, NodeActivity, Trait
 from vm.tasks.vm_tasks import check_queue
+from vm.tasks.local_periodic_tasks import auto_migrate
 
-from ..forms import TraitForm, HostForm, NodeForm
+from ..forms import TraitForm, HostForm, NodeForm, AutoMigrationForm
 from ..tables import NodeListTable
 from .util import AjaxOperationMixin, OperationView, GraphMixin, DeleteViewBase
+
+from manager.mancelery import crontab_parser
 
 
 def get_operations(instance, user):
@@ -189,6 +192,14 @@ class NodeList(LoginRequiredMixin, GraphMixin, SingleTableView):
     template_name = "dashboard/node-list.html"
     table_class = NodeListTable
     table_pagination = False
+
+    def get_crontab(self):
+        return crontab_parser(settings.AUTO_MIGRATION_CRONTAB)
+
+    def get_context_data(self):
+        context = super(NodeList, self).get_context_data()
+        context["auto_migration_form"] = AutoMigrationForm(self.get_crontab())
+        return context
 
     def get(self, *args, **kwargs):
         if not self.request.user.has_perm('vm.view_statistics'):
@@ -356,3 +367,23 @@ class NodeActivityDetail(LoginRequiredMixin, SuperuserRequiredMixin,
         ).order_by('-started').select_related())
         ctx['icon'] = _get_activity_icon(self.object)
         return ctx
+
+
+class RescheduleView(SuperuserRequiredMixin, View):
+    def get(self, *args, **kwargs):
+        try:
+            auto_migrate.apply_async(queue='localhost.man.slow')
+        except Exception as e:
+            msg = str(e)
+            result = 'error'
+        else:
+            result = 'ok'
+            msg = _('Reschedule has started.')
+        if self.request.is_ajax():
+            return JsonResponse({'result': result, 'message': msg})
+        else:
+            if result == 'ok':
+                messages.success(self.request, msg)
+            else:
+                messages.error(self.request, msg)
+        return redirect('dashboard.views.node-list')

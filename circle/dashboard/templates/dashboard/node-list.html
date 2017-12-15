@@ -41,4 +41,23 @@
   </div><!-- -col-md-12 -->
 </div><!-- .row -->
 
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <a id="reschedule-now" class="btn btn-danger pull-right" href="{% url "dashboard.views.reschedule" %}">
+          <i class="fa fa-magic"></i> {% trans "Reschedule now" %}
+        </a>
+        <h3 class="no-margin"><i class="fa fa-truck"></i> {% trans "Virtual machine auto migration" %}</h3>
+      </div>
+      <div id="node-list-auto-migration-body">
+        <h1>Crontab</h1>
+        <form>
+          {{ auto_migration_form.as_p }}
+        </form>
+      </div>
+    </div>
+  </div><!-- -col-md-12 -->
+</div><!-- .row -->
+
 {% endblock %}

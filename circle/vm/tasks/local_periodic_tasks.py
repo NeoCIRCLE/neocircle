@@ -76,3 +76,11 @@ def garbage_collector(timeout=15):
             i.notify_owners_about_expiration()
         else:
             logger.debug("Instance %d didn't expire." % i.pk)
+
+
+@celery.task(ignore_result=True)
+def auto_migrate():  # Dummy implementation
+    import time
+    logger.info("Auto migration has started.")
+    time.sleep(10)
+    logger.info("Auto migration has finished.")
