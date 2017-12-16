@@ -590,3 +590,5 @@ TWO_FACTOR_ISSUER = get_env_variable("TWO_FACTOR_ISSUER", "CIRCLE")
 
 # Default value is every day at midnight
 AUTO_MIGRATION_CRONTAB = get_env_variable("AUTO_MIGRATION_CRONTAB", "0 0 * * *")
+AUTO_MIGRATION_TIME_LIMIT_IN_HOURS = (
+    get_env_variable("AUTO_MIGRATION_TIME_LIMIT_IN_HOURS", "2"))

@@ -865,6 +865,53 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     def metric_prefix(self):
         return 'vm.%s' % self.vm_name
 
+
+    class MonitorUnavailableException(Exception):
+        """Exception for monitor_info()
+
+            Indicates the unavailability of the monitoring server.
+        """
+        pass
+
+    def monitor_info(self):
+        metrics = ('cpu.percent', 'memory.usage')
+        prefix = self.metric_prefix
+        params = [('target', '%s.%s' % (prefix, metric))
+                  for metric in metrics]
+        params.append(('from', '-5min'))
+        params.append(('format', 'json'))
+
+        try:
+            logger.info('%s %s', settings.GRAPHITE_URL, params)
+            response = requests.get(settings.GRAPHITE_URL, params=params)
+
+            retval = {}
+            for target in response.json():
+                # Example:
+                # {"target": "circle.vm.{name}.cpu.usage",
+                #  "datapoints": [[0.6, 1403045700], [0.5, 1403045760]
+                try:
+                    metric = target['target']
+                    if metric.startswith(prefix):
+                        metric = metric[len(prefix):]
+                    else:
+                        continue
+                    value = target['datapoints'][-2][0]
+                    retval[metric] = float(value)
+                except (KeyError, IndexError, ValueError):
+                    continue
+
+            return retval
+        except Exception:
+            logger.exception('Monitor server unavailable: ')
+            raise Instance.MonitorUnavailableException()
+
+    def cpu_usage(self):
+        return self.monitor_info().get('cpu.percent')
+
+    def ram_usage(self):
+        return self.monitor_info().get('memory.usage')
+
     @contextmanager
     def activity(self, code_suffix, readable_name, on_abort=None,
                  on_commit=None, task_uuid=None, user=None,

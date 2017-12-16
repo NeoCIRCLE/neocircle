@@ -17,7 +17,9 @@
 
 import logging
 from django.utils import timezone
+from datetime import timedelta
 from django.utils.translation import ugettext_noop
+from django.conf import settings
 
 from manager.mancelery import celery
 from vm.models import Node, Instance
@@ -79,8 +81,40 @@ def garbage_collector(timeout=15):
 
 
 @celery.task(ignore_result=True)
-def auto_migrate():  # Dummy implementation
-    import time
-    logger.info("Auto migration has started.")
-    time.sleep(10)
-    logger.info("Auto migration has finished.")
+def auto_migrate():
+    """Auto migration task for runtime scaling
+    """
+    time_limit = settings.AUTO_MIGRATION_TIME_LIMIT_IN_HOURS
+    available_time = timedelta(hours=int(time_limit))
+    deadline = timezone.now() + available_time
+    while timezone.now() < deadline:
+        migrate_one()
+
+
+def migrate_one():
+    """Migrate a VM syncronously.
+
+        The target node chosen by the scheduler.
+    """
+    nodes = [n for n in Node.objects.filter(enabled=True) if n.online]
+    node_max_cpu = max(nodes, key=lambda x: x.cpu_usage / x.cpu_weight)
+    node_max_ram = max(nodes, key=lambda x: x.ram_usage / x.ram_weight)
+    if node_max_cpu.cpu_usage > node_max_ram.ram_usage:
+        try:
+            instance_to_migrate = max(Instance.objects.filter(node=node_max_cpu.pk),
+                                      key=lambda x: x.cpu_usage())
+            instance_to_migrate.migrate(system=True)
+        except Instance.MonitorUnavailableException:
+            instance_to_migrate = max(Instance.objects.filter(node=node_max_cpu.pk),
+                                      key=(lambda x: x.get_vm_desc()["vcpu"] *
+                                           x.get_vm_desc()["cpu_share"]))
+            instance_to_migrate.migrate(system=True)
+    else:
+        try:
+            instance_to_migrate = max(Instance.objects.filter(node=node_max_ram.pk),
+                                      key=lambda x: x.ram_usage())
+            instance_to_migrate.migrate(system=True)
+        except Instance.MonitorUnavailableException:
+            instance_to_migrate = max(Instance.objects.filter(node=node_max_cpu.pk),
+                                      key=lambda x: x.get_vm_desc()["memory"])
+            instance_to_migrate.migrate(system=True)
