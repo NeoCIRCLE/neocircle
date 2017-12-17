@@ -23,7 +23,7 @@ from django.views.generic import (TemplateView, UpdateView, DeleteView,
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse, Http404
+from django.http import Http404
 from django.db.models import Q
 
 from django_tables2 import SingleTableView
@@ -38,10 +38,7 @@ from .tables import (
     SmallRuleTable, SmallGroupRuleTable, SmallRecordTable, SwitchPortTable,
     SmallDhcpTable, FirewallTable, FirewallRuleTable,
 )
-from .forms import (
-    HostForm, VlanForm, DomainForm, GroupForm, RecordForm, BlacklistItemForm,
-    RuleForm, VlanGroupForm, SwitchPortForm, FirewallForm
-)
+from . import forms
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
@@ -54,22 +51,7 @@ from itertools import chain
 from dashboard.views import AclUpdateView
 from dashboard.forms import AclUserOrGroupAddForm
 
-try:
-    from django.http import JsonResponse
-except ImportError:
-    from django.utils import simplejson
-
-    class JsonResponse(HttpResponse):
-        """JSON response for Django < 1.7
-        https://gist.github.com/philippeowagner/3179eb475fe1795d6515
-        """
-        def __init__(self, content, mimetype='application/json',
-                     status=None, content_type=None):
-            super(JsonResponse, self).__init__(
-                content=simplejson.dumps(content),
-                mimetype=mimetype,
-                status=status,
-                content_type=content_type)
+from django.http import JsonResponse
 
 
 class MagicMixin(object):
@@ -129,14 +111,24 @@ class BlacklistList(LoginRequiredMixin, SuperuserRequiredMixin,
     model = BlacklistItem
     table_class = BlacklistItemTable
     template_name = "network/blacklist-list.html"
-    table_pagination = False
+    table_pagination = {
+        'per_page': 25
+    }
+
+    def get_table_data(self):
+        data = self.model.objects.all()
+        search = self.request.GET.get("s")
+        if search:
+            data = data.filter(Q(host__hostname__icontains=search) | Q(ipv4__icontains=search) | Q(reason__icontains=search))
+
+        return data
 
 
 class BlacklistDetail(LoginRequiredMixin, SuperuserRequiredMixin,
                       SuccessMessageMixin, UpdateView):
     model = BlacklistItem
     template_name = "network/blacklist-edit.html"
-    form_class = BlacklistItemForm
+    form_class = forms.BlacklistItemForm
     success_message = _(u'Successfully modified blacklist item %(ipv4)s.')
 
     def get_success_url(self):
@@ -153,7 +145,7 @@ class BlacklistCreate(LoginRequiredMixin, SuperuserRequiredMixin,
                       SuccessMessageMixin, CreateView):
     model = BlacklistItem
     template_name = "network/blacklist-create.html"
-    form_class = BlacklistItemForm
+    form_class = forms.BlacklistItemForm
     success_message = _(u'Successfully created blacklist item %(ipv4)s')
 
 
@@ -181,14 +173,23 @@ class DomainList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     model = Domain
     table_class = DomainTable
     template_name = "network/domain-list.html"
-    table_pagination = False
+    table_pagination = {
+        'per_page': 25
+    }
+
+    def get_table_data(self):
+        data = self.model.objects.all()
+        search = self.request.GET.get("s")
+        if search:
+            data = self.model.objects.filter(Q(name__icontains=search))
+        return data
 
 
 class DomainDetail(LoginRequiredMixin, SuperuserRequiredMixin,
                    SuccessMessageMixin, UpdateView):
     model = Domain
     template_name = "network/domain-edit.html"
-    form_class = DomainForm
+    form_class = forms.DomainForm
     success_message = _(u'Successfully modified domain %(name)s.')
 
     def get_success_url(self):
@@ -215,7 +216,7 @@ class DomainCreate(LoginRequiredMixin, SuperuserRequiredMixin,
                    SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = Domain
     template_name = "network/domain-create.html"
-    form_class = DomainForm
+    form_class = forms.DomainForm
     success_message = _(u'Successfully created domain %(name)s.')
 
 
@@ -293,14 +294,24 @@ class FirewallList(LoginRequiredMixin, SuperuserRequiredMixin,
     model = Firewall
     table_class = FirewallTable
     template_name = "network/firewall-list.html"
-    table_pagination = False
+    table_pagination = {
+        'per_page': 25
+    }
+
+    def get_table_data(self):
+        data = self.model.objects.all()
+        search = self.request.GET.get("s")
+        if search:
+            data = data.filter(Q(name__icontains=search))
+
+        return data
 
 
 class FirewallDetail(LoginRequiredMixin, SuperuserRequiredMixin,
                      SuccessMessageMixin, UpdateView):
     model = Firewall
     template_name = "network/firewall-edit.html"
-    form_class = FirewallForm
+    form_class = forms.FirewallForm
     success_message = _(u'Succesfully modified firewall.')
 
     def get_success_url(self):
@@ -319,7 +330,7 @@ class FirewallCreate(LoginRequiredMixin, SuperuserRequiredMixin,
                      SuccessMessageMixin, CreateView):
     model = Firewall
     template_name = "network/firewall-create.html"
-    form_class = FirewallForm
+    form_class = forms.FirewallForm
     success_message = _(u'Successfully created firewall.')
 
 
@@ -339,14 +350,24 @@ class GroupList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     model = Group
     table_class = GroupTable
     template_name = "network/group-list.html"
-    table_pagination = False
+    table_pagination = {
+        'per_page': 25
+    }
+
+    def get_table_data(self):
+        data = self.model.objects.all()
+        search = self.request.GET.get("s")
+        if search:
+            data = data.filter(Q(name__icontains=search) | Q(description__icontains=search))
+
+        return data
 
 
 class GroupCreate(LoginRequiredMixin, SuperuserRequiredMixin,
                   SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = Group
     template_name = "network/group-create.html"
-    form_class = GroupForm
+    form_class = forms.GroupForm
     success_message = _(u'Successfully created host group %(name)s.')
 
 
@@ -354,7 +375,7 @@ class GroupDetail(LoginRequiredMixin, SuperuserRequiredMixin,
                   SuccessMessageMixin, UpdateView):
     model = Group
     template_name = "network/group-edit.html"
-    form_class = GroupForm
+    form_class = forms.GroupForm
     success_message = _(u'Successfully modified host group %(name)s.')
 
     def get_success_url(self):
@@ -412,7 +433,9 @@ class HostList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     model = Host
     table_class = HostTable
     template_name = "network/host-list.html"
-    table_pagination = False
+    table_pagination = {
+        'per_page': 25
+    }
 
     def get_context_data(self, **kwargs):
         context = super(HostList, self).get_context_data(**kwargs)
@@ -423,9 +446,9 @@ class HostList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     def get_table_data(self):
         vlan_id = self.request.GET.get('vlan')
         if vlan_id:
-            data = Host.objects.filter(vlan=vlan_id).select_related()
+            data = self.model.objects.filter(vlan=vlan_id).select_related()
         else:
-            data = Host.objects.select_related()
+            data = self.model.objects.select_related()
 
         search = self.request.GET.get("s")
         if search:
@@ -438,7 +461,7 @@ class HostDetail(HostMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
                  SuccessMessageMixin, UpdateView):
     model = Host
     template_name = "network/host-edit.html"
-    form_class = HostForm
+    form_class = forms.HostForm
     success_message = _(u'Successfully modified host %(hostname)s.')
 
     def _get_ajax(self, *args, **kwargs):
@@ -511,7 +534,7 @@ class HostCreate(HostMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
                  SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = Host
     template_name = "network/host-create.html"
-    form_class = HostForm
+    form_class = forms.HostForm
     success_message = _(u'Successfully created host %(hostname)s.')
 
     def get_initial(self):
@@ -572,7 +595,9 @@ class RecordList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     model = Record
     table_class = RecordTable
     template_name = "network/record-list.html"
-    table_pagination = False
+    table_pagination = {
+        'per_page': 25
+    }
 
     def get_context_data(self, **kwargs):
         context = super(RecordList, self).get_context_data(**kwargs)
@@ -585,6 +610,11 @@ class RecordList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
             data = Record.objects.filter(type=type_id).select_related()
         else:
             data = Record.objects.select_related()
+
+        search = self.request.GET.get("s")
+        if search:
+            data = data.filter(Q(host__hostname__icontains=search) | Q(domain__name__icontains=search))
+
         return data
 
 
@@ -592,7 +622,7 @@ class RecordDetail(LoginRequiredMixin, SuperuserRequiredMixin,
                    SuccessMessageMixin, UpdateView):
     model = Record
     template_name = "network/record-edit.html"
-    form_class = RecordForm
+    form_class = forms.RecordForm
     # TODO fqdn
     success_message = _(u'Successfully modified record.')
 
@@ -611,7 +641,7 @@ class RecordCreate(LoginRequiredMixin, SuperuserRequiredMixin,
                    SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = Record
     template_name = "network/record-create.html"
-    form_class = RecordForm
+    form_class = forms.RecordForm
     # TODO fqdn
     success_message = _(u'Successfully created record.')
 
@@ -651,7 +681,9 @@ class RuleList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     model = Rule
     table_class = RuleTable
     template_name = "network/rule-list.html"
-    table_pagination = False
+    table_pagination = {
+        'per_page': 25
+    }
 
     def get_context_data(self, **kwargs):
         self.types = OrderedDict([
@@ -664,9 +696,9 @@ class RuleList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
         return context
 
     def get_table_data(self):
-        rules = Rule.objects.select_related('host', 'hostgroup', 'vlan',
-                                            'vlangroup', 'firewall',
-                                            'foreign_network', 'owner')
+        rules = Rule.objects.select_related(
+            'host', 'hostgroup', 'vlan', 'vlangroup', 'firewall',
+            'foreign_network', 'owner')
 
         rule_type = self.request.GET.get("type")
         if rule_type and rule_type in self.types.keys():
@@ -678,7 +710,7 @@ class RuleDetail(LoginRequiredMixin, SuperuserRequiredMixin,
                  SuccessMessageMixin, UpdateView):
     model = Rule
     template_name = "network/rule-edit.html"
-    form_class = RuleForm
+    form_class = forms.RuleForm
     success_message = _(u'Successfully modified rule.')
 
     def get_success_url(self):
@@ -698,7 +730,7 @@ class RuleCreate(LoginRequiredMixin, SuperuserRequiredMixin,
                  SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = Rule
     template_name = "network/rule-create.html"
-    form_class = RuleForm
+    form_class = forms.RuleForm
     success_message = _(u'Successfully created rule.')
 
     def get_initial(self):
@@ -727,14 +759,16 @@ class SwitchPortList(LoginRequiredMixin, SuperuserRequiredMixin,
     model = SwitchPort
     table_class = SwitchPortTable
     template_name = "network/switch-port-list.html"
-    table_pagination = False
+    table_pagination = {
+        'per_page': 25
+    }
 
 
 class SwitchPortDetail(LoginRequiredMixin, SuperuserRequiredMixin,
                        SuccessMessageMixin, UpdateView):
     model = SwitchPort
     template_name = "network/switch-port-edit.html"
-    form_class = SwitchPortForm
+    form_class = forms.SwitchPortForm
     success_message = _(u'Succesfully modified switch port.')
 
     def get_success_url(self):
@@ -753,7 +787,7 @@ class SwitchPortCreate(LoginRequiredMixin, SuperuserRequiredMixin,
                        SuccessMessageMixin, CreateView):
     model = SwitchPort
     template_name = "network/switch-port-create.html"
-    form_class = SwitchPortForm
+    form_class = forms.SwitchPortForm
     success_message = _(u'Successfully created switch port.')
 
 
@@ -773,7 +807,17 @@ class VlanList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     model = Vlan
     table_class = VlanTable
     template_name = "network/vlan-list.html"
-    table_pagination = False
+    table_pagination = {
+        'per_page': 25
+    }
+
+    def get_table_data(self):
+        search = self.request.GET.get("s")
+        data = self.model.objects.all()
+
+        if search:
+            data = self.model.objects.filter(Q(name__icontains=search))
+        return data
 
 
 class VlanAclUpdateView(AclUpdateView):
@@ -798,7 +842,7 @@ class VlanDetail(VlanMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
                  SuccessMessageMixin, UpdateView):
     model = Vlan
     template_name = "network/vlan-edit.html"
-    form_class = VlanForm
+    form_class = forms.VlanForm
     slug_field = 'vid'
     slug_url_kwarg = 'vid'
     success_message = _(u'Succesfully modified vlan %(name)s.')
@@ -820,7 +864,7 @@ class VlanCreate(VlanMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
                  SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = Vlan
     template_name = "network/vlan-create.html"
-    form_class = VlanForm
+    form_class = forms.VlanForm
     success_message = _(u'Successfully created vlan %(name)s.')
 
 
@@ -871,6 +915,7 @@ class VlanDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
 
         context['deps'] = deps
         context['confirmation'] = True
+
         return context
 
 
@@ -879,14 +924,24 @@ class VlanGroupList(LoginRequiredMixin, SuperuserRequiredMixin,
     model = VlanGroup
     table_class = VlanGroupTable
     template_name = "network/vlan-group-list.html"
-    table_pagination = False
+    table_pagination = {
+        'per_page': 25
+    }
+
+    def get_table_data(self):
+        data = self.model.objects.all()
+        search = self.request.GET.get("s")
+        if search:
+            data = data.filter(Q(name__icontains=search) | Q(description__icontains=search))
+
+        return data
 
 
 class VlanGroupDetail(LoginRequiredMixin, SuperuserRequiredMixin,
                       SuccessMessageMixin, UpdateView):
     model = VlanGroup
     template_name = "network/vlan-group-edit.html"
-    form_class = VlanGroupForm
+    form_class = forms.VlanGroupForm
     success_url = reverse_lazy('network.vlan_group_list')
     success_message = _(u'Successfully modified vlan group %(name)s.')
 
@@ -900,7 +955,7 @@ class VlanGroupCreate(LoginRequiredMixin, SuperuserRequiredMixin,
                       SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = VlanGroup
     template_name = "network/vlan-group-create.html"
-    form_class = VlanGroupForm
+    form_class = forms.VlanGroupForm
     success_message = _(u'Successfully created vlan group %(name)s.')
 
 
@@ -922,22 +977,26 @@ def remove_host_group(request, **kwargs):
 
     # for get we show the confirmation page
     if request.method == "GET":
-        return render(request,
-                      'network/confirm/remove_host_group.html',
-                      {
-                          'group': group.name,
-                          'host': host.hostname
-                      })
+        return render(
+            request,
+            'network/confirm/remove_host_group.html',
+            {
+                'group': group.name,
+                'host': host.hostname
+            }
+        )
 
     # for post we actually remove the group from the host
     elif request.method == "POST":
         host.groups.remove(group)
         if not request.is_ajax():
-            messages.success(request, _(u"Successfully removed %(host)s from "
-                                        "%(group)s group." % {
-                                            'host': host,
-                                            'group': group
-                                        }))
+            messages.success(
+                request,
+                _(u"Successfully removed %(host)s from %(group)s group." % {
+                    'host': host,
+                    'group': group
+                })
+            )
         return redirect(reverse_lazy('network.host',
                                      kwargs={'pk': kwargs['pk']}))
 
@@ -949,11 +1008,13 @@ def add_host_group(request, **kwargs):
         group = Group.objects.get(pk=group_pk)
         host.groups.add(group)
         if not request.is_ajax():
-            messages.success(request, _(u"Successfully added %(host)s to group"
-                                        " %(group)s." % {
-                                            'host': host,
-                                            'group': group
-                                        }))
+            messages.success(
+                request,
+                _(u"Successfully added %(host)s to group %(group)s." % {
+                    'host': host,
+                    'group': group
+                })
+            )
         return redirect(reverse_lazy('network.host', kwargs=kwargs))
 
 
@@ -968,10 +1029,12 @@ def remove_switch_port_device(request, **kwargs):
     elif request.method == "POST":
         device.delete()
         if not request.is_ajax():
-            messages.success(request, _(u"Successfully deleted ethernet device"
-                                        " %(name)s." % {
-                                            'name': device.name,
-                                        }))
+            messages.success(
+                request,
+                _(u"Successfully deleted ethernet device %(name)s." % {
+                    'name': device.name,
+                })
+            )
         return redirect(reverse_lazy('network.switch_port',
                                      kwargs={'pk': kwargs['pk']}))
 
@@ -986,16 +1049,20 @@ def add_switch_port_device(request, **kwargs):
         new_device = EthernetDevice(name=device_name, switch_port=switch_port)
         new_device.save()
         if not request.is_ajax():
-            messages.success(request, _(u"Successfully added %(name)s to this"
-                                        " switch port" % {
-                                            'name': device_name,
-                                        }))
+            messages.success(
+                request,
+                _(u"Successfully added %(name)s to this switch port" % {
+                    'name': device_name,
+                })
+            )
         return redirect(reverse_lazy('network.switch_port', kwargs=kwargs))
 
     elif not len(device_name) > 0:
         messages.error(request, _("Ethernet device name cannot be empty."))
         return redirect(reverse_lazy('network.switch_port', kwargs=kwargs))
     elif EthernetDevice.objects.get(name=device_name) is not None:
-        messages.error(request, _("There is already an ethernet device with"
-                                  " that name."))
+        messages.error(
+            request,
+            _("There is already an ethernet device with that name.")
+        )
         return redirect(reverse_lazy('network.switch_port', kwargs=kwargs))

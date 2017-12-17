@@ -12,6 +12,20 @@
     <h1>Vlans <small>{% trans "list of all vlans" %}</small></h1>
 </div>
 
+<div class="row">
+  <div class="col-md-3">
+    <form action="" method="GET" id="network-vlan-list-form">
+      <div class="input-group">
+        <input type="text" id="network-vlan-list-input" name="s" class="form-control"
+        value="{{ request.GET.s }}" placeholder="{% trans "Search..." %}"/>
+        <span class="input-group-btn">
+          <button class="btn btn-primary"><i class="fa fa-search"></i></button>
+        </span>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div class="table-responsive">
     {% render_table table %}
 </div>
