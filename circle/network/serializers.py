@@ -1,4 +1,4 @@
-# Copyright 2014 Budapest University of Technology and Economics (BME IK)
+# Copyright 2017 Budapest University of Technology and Economics (BME IK)
 #
 # This file is part of CIRCLE Cloud.
 #
