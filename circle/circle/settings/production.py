@@ -88,3 +88,20 @@ for i in LOCAL_APPS:
     LOGGING['loggers'][i] = {'handlers': ['syslog'], 'level': level}
 LOGGING['loggers']['djangosaml2'] = {'handlers': ['syslog'], 'level': level}
 LOGGING['loggers']['django'] = {'handlers': ['syslog'], 'level': level}
+
+
+############ REST FRAMEWORK CONFIGURATION
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'common.pagination.RelativePageNumberPagination',
+    'PAGE_SIZE': 25,
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAdminUser',
+    ),
+}

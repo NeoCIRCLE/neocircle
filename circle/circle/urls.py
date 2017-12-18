@@ -34,6 +34,7 @@ from dashboard.views import (
 from dashboard.forms import CirclePasswordResetForm, CircleSetPasswordForm
 from firewall.views import add_blacklist_item
 
+
 admin.autodiscover()
 
 urlpatterns = [
@@ -73,6 +74,10 @@ urlpatterns = [
         name="info.support"),
     url(r'^info/resize-how-to/$', ResizeHelpView.as_view(),
         name="info.resize"),
+
+    # API urls
+    url(r'api/v1/network/', include('network.api_urls')),
+    url(r'api/v1/dashboard/', include('dashboard.api_urls')),
 ]
 
 

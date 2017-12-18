@@ -357,6 +357,7 @@ THIRD_PARTY_APPS = (
     'statici18n',
     'django_sshkey',
     'pipeline',
+    'rest_framework',
 )
 
 
@@ -528,6 +529,8 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
 
 LOGIN_REDIRECT_URL = "/"
 
+# CSRF_USE_SESSIONS = True
+
 AGENT_DIR = get_env_variable(
     'DJANGO_AGENT_DIR', join(unicode(expanduser("~")), 'agent'))
     # AGENT_DIR is the root directory for the agent.
@@ -587,3 +590,19 @@ REQUEST_HOOK_URL = get_env_variable("REQUEST_HOOK_URL", "")
 SSHKEY_EMAIL_ADD_KEY = False
 
 TWO_FACTOR_ISSUER = get_env_variable("TWO_FACTOR_ISSUER", "CIRCLE")
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'common.pagination.RelativePageNumberPagination',
+    'PAGE_SIZE': 2,
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAdminUser',
+    ),
+}
