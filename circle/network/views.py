@@ -362,7 +362,10 @@ class GroupList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
         data = self.model.objects.all()
         search = self.request.GET.get("s")
         if search:
-            data = data.filter(Q(name__icontains=search) | Q(description__icontains=search))
+            data = data.filter(
+                Q(name__icontains=search) |
+                Q(description__icontains=search)
+            )
 
         return data
 
