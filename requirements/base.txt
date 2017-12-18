@@ -16,6 +16,7 @@ django-sizefield==0.9.1
 django-statici18n==1.4.0
 django-tables2==1.10.0
 django-taggit==0.22.1
+djangorestframework==3.7.0
 djangosaml2==0.16.10
 git+https://git.ik.bme.hu/circle/django-sshkey.git
 docutils==0.12
