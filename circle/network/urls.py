@@ -61,14 +61,17 @@ urlpatterns = [
     url('^groups/$', views.GroupList.as_view(), name='network.group_list'),
     url('^groups/create$', views.GroupCreate.as_view(),
         name='network.group_create'),
-    url('^groups/(?P<pk>\d+)/$', views.GroupDetail.as_view(), name='network.group'),
+    url('^groups/(?P<pk>\d+)/$', views.GroupDetail.as_view(),
+        name='network.group'),
     url('^groups/delete/(?P<pk>\d+)/$', views.GroupDelete.as_view(),
         name="network.group_delete"),
 
     # host
     url('^hosts/$', views.HostList.as_view(), name='network.host_list'),
-    url('^hosts/create$', views.HostCreate.as_view(), name='network.host_create'),
-    url('^hosts/(?P<pk>\d+)/$', views.HostDetail.as_view(), name='network.host'),
+    url('^hosts/create$', views.HostCreate.as_view(),
+        name='network.host_create'),
+    url('^hosts/(?P<pk>\d+)/$', views.HostDetail.as_view(),
+        name='network.host'),
     url('^hosts/delete/(?P<pk>\d+)/$', views.HostDelete.as_view(),
         name="network.host_delete"),
 
@@ -83,7 +86,8 @@ urlpatterns = [
 
     # rule
     url('^rules/$', views.RuleList.as_view(), name='network.rule_list'),
-    url('^rules/create$', views.RuleCreate.as_view(), name='network.rule_create'),
+    url('^rules/create$', views.RuleCreate.as_view(),
+        name='network.rule_create'),
     url('^rules/(?P<pk>\d+)/$', views.RuleDetail.as_view(),
         name='network.rule'),
 
@@ -99,8 +103,10 @@ urlpatterns = [
 
     # vlan
     url('^vlans/$', views.VlanList.as_view(), name='network.vlan_list'),
-    url('^vlans/create$', views.VlanCreate.as_view(), name='network.vlan_create'),
-    url('^vlans/(?P<vid>\d+)/$', views.VlanDetail.as_view(), name='network.vlan'),
+    url('^vlans/create$', views.VlanCreate.as_view(),
+        name='network.vlan_create'),
+    url('^vlans/(?P<vid>\d+)/$', views.VlanDetail.as_view(),
+        name='network.vlan'),
     url('^vlans/(?P<pk>\d+)/acl/$', views.VlanAclUpdateView.as_view(),
         name='network.vlan-acl'),
     url('^vlans/delete/(?P<vid>\d+)/$', views.VlanDelete.as_view(),
@@ -119,12 +125,14 @@ urlpatterns = [
         name="network.rule_delete"),
 
     # non class based views
-    url('^hosts/(?P<pk>\d+)/remove/(?P<group_pk>\d+)/$', views.remove_host_group,
+    url('^hosts/(?P<pk>\d+)/remove/(?P<group_pk>\d+)/$',
+        views.remove_host_group,
         name='network.remove_host_group'),
     url('^hosts/(?P<pk>\d+)/add/$', views.add_host_group,
         name='network.add_host_group'),
     url('^switchports/(?P<pk>\d+)/remove/(?P<device_pk>\d+)/$',
-        views.remove_switch_port_device, name='network.remove_switch_port_device'),
+        views.remove_switch_port_device,
+        name='network.remove_switch_port_device'),
     url('^switchports/(?P<pk>\d+)/add/$', views.add_switch_port_device,
         name='network.add_switch_port_device'),
 ]

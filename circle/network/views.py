@@ -119,7 +119,11 @@ class BlacklistList(LoginRequiredMixin, SuperuserRequiredMixin,
         data = self.model.objects.all()
         search = self.request.GET.get("s")
         if search:
-            data = data.filter(Q(host__hostname__icontains=search) | Q(ipv4__icontains=search) | Q(reason__icontains=search))
+            data = data.filter(
+                Q(host__hostname__icontains=search) |
+                Q(ipv4__icontains=search) |
+                Q(reason__icontains=search)
+            )
 
         return data
 
@@ -452,8 +456,10 @@ class HostList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
 
         search = self.request.GET.get("s")
         if search:
-            data = data.filter(Q(hostname__icontains=search) |
-                               Q(ipv4=search))  # ipv4 does not work TODO
+            data = data.filter(
+                Q(hostname__icontains=search) |
+                Q(ipv4__icontains=search)
+            )
         return data
 
 
@@ -613,7 +619,10 @@ class RecordList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
 
         search = self.request.GET.get("s")
         if search:
-            data = data.filter(Q(host__hostname__icontains=search) | Q(domain__name__icontains=search))
+            data = data.filter(
+                Q(host__hostname__icontains=search) |
+                Q(domain__name__icontains=search)
+            )
 
         return data
 
@@ -932,7 +941,10 @@ class VlanGroupList(LoginRequiredMixin, SuperuserRequiredMixin,
         data = self.model.objects.all()
         search = self.request.GET.get("s")
         if search:
-            data = data.filter(Q(name__icontains=search) | Q(description__icontains=search))
+            data = data.filter(
+                Q(name__icontains=search) |
+                Q(description__icontains=search)
+            )
 
         return data
 

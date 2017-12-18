@@ -65,6 +65,7 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
             return ''
         return obj.owner.get_full_name()
 
+
 class HostSerializer(serializers.HyperlinkedModelSerializer):
     owner_name = serializers.SerializerMethodField()
     vlan_name = serializers.SerializerMethodField()
@@ -123,13 +124,17 @@ class SwitchPortSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = models.SwitchPort
-        fields = ("url", "untagged_vlan", "tagged_vlans", "description", "untagged_vlan_info", "tagged_vlans_name")
+        fields = (
+            "url", "untagged_vlan", "tagged_vlans", "description",
+            "untagged_vlan_info", "tagged_vlans_name"
+        )
 
     def get_untagged_vlan_info(self, obj):
         return '{}'.format(obj.untagged_vlan)
 
     def get_tagged_vlans_name(self, obj):
         return obj.tagged_vlans.name
+
 
 class VlanSerializer(serializers.HyperlinkedModelSerializer):
     domain_name = serializers.SerializerMethodField()
@@ -150,6 +155,7 @@ class VlanSerializer(serializers.HyperlinkedModelSerializer):
 
 class VlanGroupSerializer(serializers.HyperlinkedModelSerializer):
     owner_name = serializers.SerializerMethodField()
+
     class Meta:
         model = models.VlanGroup
         fields = ("url", "name", "vlans", "description", "owner", "owner_name")
