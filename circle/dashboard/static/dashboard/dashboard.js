@@ -78,7 +78,7 @@ $(function () {
     return false;
   });
 
-  $('[href=#index-graph-view]').click(function (e) {
+  $('[href="#index-graph-view"]').click(function (e) {
     var box = $(this).data('index-box');
     $("#" + box + "-list-view").hide();
     $("#" + box + "-graph-view").show();
@@ -88,7 +88,7 @@ $(function () {
     return false;
   });
 
-  $('[href=#index-list-view]').click(function (e) {
+  $('[href="#index-list-view"]').click(function (e) {
     var box = $(this).data('index-box');
     $('#' + box + '-graph-view').hide();
     $('#' + box + '-list-view').show();
@@ -109,10 +109,10 @@ $(function () {
 
   if (window.location.hash) {
     if(window.location.hash.substring(1,4) == "ipv")
-      $("a[href=#network]").tab('show');
+      $("a[href='#network']").tab('show');
     if(window.location.hash == "activity")
       checkNewActivity(false, 1);
-    $("a[href=" + window.location.hash +"]").tab('show');
+    $("a[href='" + window.location.hash +"']").tab('show');
   }
 
 

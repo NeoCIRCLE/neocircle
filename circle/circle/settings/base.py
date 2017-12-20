@@ -159,7 +159,7 @@ STATICFILES_FINDERS = (
     'pipeline.finders.PipelineFinder',
 )
 ########## END STATIC FILE CONFIGURATION
-STATICFILES_DIRS = [normpath(join(SITE_ROOT, 'bower_components'))]
+STATICFILES_DIRS = [normpath(join(SITE_ROOT, 'node_modules'))]
 
 p = normpath(join(SITE_ROOT, '../../site-circle/static'))
 if exists(p):

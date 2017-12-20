@@ -37,6 +37,7 @@ circle/*.pem
 # collected static files:
 circle/static_collected
 circle/bower_components
+circle/node_modules
 
 # jsi18n files
 jsi18n

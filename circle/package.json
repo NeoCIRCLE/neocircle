@@ -1,0 +1,25 @@
+{
+  "name": "circle",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bootbox": "^4.4.0",
+    "bootstrap": "^3.3.7",
+    "chart.js": "^2.7.1",
+    "clipboard": "^1.7.1",
+    "datatables": "^1.10.13",
+    "favico.js": "^0.3.10",
+    "fontawesome": "^4.7.2",
+    "intro.js": "^2.8.0-alpha.1",
+    "jquery": "^3.2.1",
+    "jquery-knob": "^1.2.11",
+    "jquery-simple-slider": "https://github.com/BME-IK/jquery-simple-slider.git"
+  }
+}
