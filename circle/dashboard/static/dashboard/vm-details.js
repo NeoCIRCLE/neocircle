@@ -193,7 +193,7 @@ $(function() {
   // note: this should not work if the image is cached, but it's not
   // see: http://stackoverflow.com/a/3877079/1112653
   // note #2: it actually gets cached, so a random number is appended
-  $("#vm-console-screenshot img").load(function(e) {
+  $("#vm-console-screenshot img").on('load', function(e) {
     $("#getScreenshotButton").prop("disabled", false)
     .find("i").removeClass("fa-spinner fa-spin");
 
