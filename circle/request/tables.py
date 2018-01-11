@@ -47,7 +47,7 @@ class RequestTable(Table):
     class Meta:
         model = Request
         template = "django_tables2/with_pagination.html"
-        attrs = {'class': ('table table-bordered table-striped table-hover'),
+        attrs = {'class': ('table table-striped table-hover'),
                  'id': "request-list-table"}
         fields = ("pk", "status", "type", "created", "user", )
         order_by = ("-pk", )
@@ -65,7 +65,7 @@ class LeaseTypeTable(Table):
 
     class Meta:
         model = LeaseType
-        attrs = {'class': "table table-bordered table-striped table-hover"}
+        attrs = {'class': "table table-striped table-hover"}
         fields = ('pk', 'name', 'lease', )
         prefix = "lease-"
         template = "django_tables2/with_pagination.html"
@@ -84,7 +84,7 @@ class TemplateAccessTypeTable(Table):
 
     class Meta:
         model = TemplateAccessType
-        attrs = {'class': "table table-bordered table-striped table-hover"}
+        attrs = {'class': "table table-striped table-hover"}
         fields = ('pk', 'name', 'templates', )
         prefix = "template-"
         template = "django_tables2/with_pagination.html"

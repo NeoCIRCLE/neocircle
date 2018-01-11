@@ -105,7 +105,7 @@ class NodeListTable(Table):
 
     class Meta:
         model = Node
-        attrs = {'class': ('table table-bordered table-striped table-hover '
+        attrs = {'class': ('table table-striped table-hover '
                            'node-list-table')}
         fields = ('pk', 'name', 'host', 'get_status_display', 'priority',
                   'minion_online', 'overcommit', 'number_of_VMs', )
@@ -146,7 +146,7 @@ class GroupListTable(Table):
 
     class Meta:
         model = Group
-        attrs = {'class': ('table table-bordered table-striped table-hover '
+        attrs = {'class': ('table table-striped table-hover '
                            'group-list-table')}
         fields = ('pk', 'name', )
         order_by = ('pk', )
@@ -174,7 +174,7 @@ class UserListTable(Table):
     class Meta:
         model = User
         template = "django_tables2/with_pagination.html"
-        attrs = {'class': ('table table-bordered table-striped table-hover')}
+        attrs = {'class': ('table  table-striped table-hover')}
         fields = ('username', 'last_name', 'first_name', 'profile__org_id',
                   'email', 'is_active', 'is_superuser')
         order_by = ('username', )
@@ -225,7 +225,7 @@ class TemplateListTable(Table):
 
     class Meta:
         model = InstanceTemplate
-        attrs = {'class': ('table table-bordered table-striped table-hover'
+        attrs = {'class': ('table table-striped table-hover'
                            ' template-list-table')}
         fields = ('name', 'resources', 'system', 'access_method', 'lease',
                   'owner', 'created', 'running', 'actions', )
@@ -255,7 +255,7 @@ class LeaseListTable(Table):
 
     class Meta:
         model = Lease
-        attrs = {'class': ('table table-bordered table-striped table-hover'
+        attrs = {'class': ('table table-striped table-hover'
                            ' lease-list-table')}
         fields = ('name', 'suspend_interval_seconds',
                   'delete_interval_seconds', )
@@ -289,7 +289,7 @@ class UserKeyListTable(Table):
 
     class Meta:
         model = UserKey
-        attrs = {'class': ('table table-bordered table-striped table-hover'),
+        attrs = {'class': ('table table-striped table-hover'),
                  'id': "profile-key-list-table"}
         fields = ('name', 'fingerprint', 'created', 'actions')
         prefix = "key-"
@@ -319,7 +319,7 @@ class ConnectCommandListTable(Table):
 
     class Meta:
         model = ConnectCommand
-        attrs = {'class': ('table table-bordered table-striped table-hover'),
+        attrs = {'class': ('table table-striped table-hover'),
                  'id': "profile-command-list-table"}
         fields = ('name', 'access_method',  'template', 'actions')
         prefix = "cmd-"
@@ -347,7 +347,7 @@ class DiskListTable(Table):
 
     class Meta:
         model = Disk
-        attrs = {'class': "table table-bordered table-striped table-hover",
+        attrs = {'class': "table table-striped table-hover",
                  'id': "disk-list-table"}
         fields = ("pk", "appliance", "filename", "size", "is_ready")
         prefix = "disk-"
@@ -366,7 +366,7 @@ class MessageListTable(Table):
     class Meta:
         template = "django_tables2/with_pagination.html"
         model = Message
-        attrs = {'class': "table table-bordered table-striped table-hover",
+        attrs = {'class': "table table-striped table-hover",
                  'id': "disk-list-table"}
         order_by = ("-pk", )
         fields = ('pk', 'message', 'enabled', 'effect')

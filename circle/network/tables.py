@@ -105,7 +105,7 @@ class SmallRuleTable(Table):
 
     class Meta:
         model = Rule
-        attrs = {'class': 'table table-striped table-bordered table-condensed',
+        attrs = {'class': 'table table-striped table-condensed',
                  'id': "small_rule_table"}
         fields = ('rule', 'action', )
 
@@ -118,7 +118,7 @@ class SmallGroupRuleTable(Table):
 
     class Meta:
         model = Rule
-        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        attrs = {'class': 'table table-striped table-condensed'}
         fields = ('rule', )
 
 
@@ -168,7 +168,7 @@ class SmallRecordTable(Table):
 
     class Meta:
         model = Record
-        attrs = {'class': 'table table-striped table-bordered'}
+        attrs = {'class': 'table table-striped'}
         fields = ('type', 'fqdn', 'host', 'address', )
         sequence = ('type', 'fqdn', )
         # order_by = '-type'
@@ -242,7 +242,7 @@ class HostRecordsTable(Table):
     class Meta:
         model = Record
         attrs = {
-            'class': "table table-striped table-bordered",
+            'class': "table table-striped",
             'id': "host-detail-records-table",
         }
         fields = ("type", "fqdn")
