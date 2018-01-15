@@ -592,3 +592,7 @@ TWO_FACTOR_ISSUER = get_env_variable("TWO_FACTOR_ISSUER", "CIRCLE")
 AUTO_MIGRATION_CRONTAB = get_env_variable("AUTO_MIGRATION_CRONTAB", "0 0 * * *")
 AUTO_MIGRATION_TIME_LIMIT_IN_HOURS = (
     get_env_variable("AUTO_MIGRATION_TIME_LIMIT_IN_HOURS", "2"))
+
+# Maximum time difference until the monitor's values get valid
+SCHEDULER_TIME_SENSITIVITY_IN_SECONDS = (
+    get_env_variable("SCHEDULER_TIME_SENSITIVITY_IN_SECONDS", "60"))

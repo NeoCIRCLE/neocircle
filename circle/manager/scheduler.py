@@ -18,6 +18,8 @@
 from logging import getLogger
 
 from django.utils.translation import ugettext_noop
+from django.utils import timezone
+from django.conf import settings
 
 from common.models import HumanReadableException
 
@@ -73,16 +75,38 @@ def select_node(instance, nodes):
     result = nodes[0]
 
     logger.info('select_node: %s for %s', unicode(result), unicode(instance))
+
+    result.time_stamp = timezone.now()
+
     return result
 
 
 def sorting_key(node):
     """Determines how valuable a node is for scheduling.
     """
+    key = 0
     if free_cpu_time(node) < free_ram(node):
-        return free_cpu_time(node)
-    return free_ram(node)
+        key = free_cpu_time(node)
+    else:
+        key = free_ram(node)
+    return key
 
+def last_scheduled_correction_factor(node):
+    """Returns the time correction factor for a node.
+
+    The monitor data may be outdated, because of recent scheduling for a given node.
+    The return value is between 0 and 1, higher value indicates more time since the
+    last scheduling for the given node.
+    """
+    factor = 0
+    max_time_diff = settings.SCHEDULER_TIME_SENSITIVITY_IN_SECONDS
+    current_time = timezone.now()
+    factor = (current_time - node.time_stamp)/max_time_diff
+    if factor > 1:
+        factor = 1
+    elif factor < 0:
+        factor = 0    
+    return factor
 
 def has_traits(traits, node):
     """True, if the node has all specified traits; otherwise, false.
@@ -131,7 +155,7 @@ def free_cpu_time(node):
     except TypeError as e:
         logger.warning('Got incorrect monitoring data for node %s. %s',
                        unicode(node), unicode(e))
-        return False  # monitoring data is incorrect
+        return 0 # will result lowest priority
 
 
 def free_ram(node):
@@ -147,4 +171,4 @@ def free_ram(node):
     except TypeError as e:
         logger.exception('Got incorrect monitoring data for node %s. %s',
                          unicode(node), unicode(e))
-        return 0
+        return 0 # will result lowest priority
