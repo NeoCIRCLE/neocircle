@@ -151,7 +151,7 @@ class ConnectCommand(Model):
     access_method = CharField(max_length=10, choices=ACCESS_METHODS,
                               verbose_name=_('access method'),
                               help_text=_('Type of the remote access method.'))
-    name = CharField(max_length="128", verbose_name=_('name'), blank=False,
+    name = CharField(max_length=128, verbose_name=_('name'), blank=False,
                      help_text=_("Name of your custom command."))
     template = CharField(blank=True, null=True, max_length=256,
                          verbose_name=_('command template'),
@@ -212,15 +212,16 @@ class Profile(Model):
             commands = self.user.command_set.filter(
                 access_method=instance.access_method)
             if commands.count() < 1:
-                return [single_command]
+                return [{'id': 0, 'cmd': single_command}]
             else:
-                return [
-                    command.template % {
+                return [{
+                    'id': command.id,
+                    'cmd': command.template % {
                         'port': instance.get_connect_port(use_ipv6=use_ipv6),
                         'host':  instance.get_connect_host(use_ipv6=use_ipv6),
                         'password': instance.pw,
                         'username': 'cloud',
-                    } for command in commands]
+                    }} for command in commands]
         else:
             return []
 
@@ -349,14 +350,12 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
     def saml_save_org_id(sender, **kwargs):
         logger.debug("saml_save_org_id called by %s", sender.username)
         attributes = kwargs.pop('attributes')
-        atr = settings.SAML_ORG_ID_ATTRIBUTE
         try:
-            value = attributes[atr][0].upper()
+            value = attributes[settings.SAML_ORG_ID_ATTRIBUTE][0].upper()
         except Exception as e:
             value = None
             logger.info("saml_save_org_id couldn't find attribute. %s",
                         unicode(e))
-
         if sender.pk is None:
             sender.save()
             logger.debug("saml_save_org_id saved user %s", unicode(sender))

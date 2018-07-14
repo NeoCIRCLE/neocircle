@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from .views import (
     IndexView,
     HostList, HostDetail, HostCreate, HostDelete,
@@ -33,8 +33,7 @@ from .views import (
     VlanAclUpdateView
 )
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url('^$', IndexView.as_view(), name='network.index'),
     # blacklist
     url('^blacklist/$', BlacklistList.as_view(),
@@ -135,4 +134,4 @@ urlpatterns = patterns(
         remove_switch_port_device, name='network.remove_switch_port_device'),
     url('^switchports/(?P<pk>\d+)/add/$', add_switch_port_device,
         name='network.add_switch_port_device'),
-)
+]

@@ -45,7 +45,8 @@ def handler500(request):
     logger.exception("unhandled exception")
     ctx = get_context(request, exception)
     try:
-        resp = render_to_response("500.html", ctx, RequestContext(request))
+        resp = render_to_response("500.html", ctx,
+                                  RequestContext(request).flatten())
     except:
         resp = render_to_response("500.html", ctx)
     resp.status_code = 500

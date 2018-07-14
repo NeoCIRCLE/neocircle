@@ -1,24 +1,26 @@
 """
 Creates Levels for all installed apps that have levels.
 """
-from django.db.models import get_models, signals
+from django.db.models import signals
+from django.apps import apps
 from django.db import DEFAULT_DB_ALIAS
 from django.core.exceptions import ImproperlyConfigured
 
 from ..models import Level, AclBase
 
 
-def create_levels(app, created_models, verbosity, db=DEFAULT_DB_ALIAS,
+def create_levels(app_config, verbosity=False, using=DEFAULT_DB_ALIAS,
                   **kwargs):
     """Create and set the weights of the configured Levels.
 
     Based on django.contrib.auth.management.__init__.create_permissions"""
-    # if not router.allow_migrate(db, auth_app.Permission):
+    # if not router.allow_migrate(using, auth_app.Permission):
     #    return
 
     from django.contrib.contenttypes.models import ContentType
 
-    app_models = [k for k in get_models(app) if AclBase in k.__bases__]
+    app_models = [k for k in apps.get_models(app_config)
+                  if AclBase in k.__bases__]
     print "Creating levels for models: %s." % ", ".join(
         [m.__name__ for m in app_models])
 
@@ -31,7 +33,7 @@ def create_levels(app, created_models, verbosity, db=DEFAULT_DB_ALIAS,
     for klass in app_models:
         # Force looking up the content types in the current database
         # before creating foreign keys to them.
-        ctype1 = ContentType.objects.db_manager(db).get_for_model(klass)
+        ctype1 = ContentType.objects.db_manager(using).get_for_model(klass)
         ctypes.add(ctype1)
         weight = 0
         try:
@@ -46,7 +48,7 @@ def create_levels(app, created_models, verbosity, db=DEFAULT_DB_ALIAS,
     # Find all the Levels that have a content_type for a model we're
     # looking for.  We don't need to check for codenames since we already have
     # a list of the ones we're going to create.
-    all_levels = set(Level.objects.using(db).filter(
+    all_levels = set(Level.objects.using(using).filter(
         content_type__in=ctypes,
     ).values_list(
         "content_type", "codename"
@@ -57,7 +59,7 @@ def create_levels(app, created_models, verbosity, db=DEFAULT_DB_ALIAS,
         for ctype, (codename, name) in searched_levels
         if (ctype.pk, codename) not in all_levels
     ]
-    Level.objects.using(db).bulk_create(levels)
+    Level.objects.using(using).bulk_create(levels)
     if verbosity >= 2:
         print("Adding levels [%s]." % ", ".join(unicode(l) for l in levels))
         print("Searched: [%s]." % ", ".join(
@@ -70,5 +72,5 @@ def create_levels(app, created_models, verbosity, db=DEFAULT_DB_ALIAS,
                              content_type=ctype).update(weight=weight)
 
 
-signals.post_syncdb.connect(
+signals.post_migrate.connect(
     create_levels, dispatch_uid="circle.acl.management.create_levels")
