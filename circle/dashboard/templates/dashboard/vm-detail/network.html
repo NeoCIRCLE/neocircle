@@ -73,7 +73,9 @@
                   {% if l.ipv4 %}
                     <tr>
                       <td>
-                        {% display_portforward4 l %}
+                       {% autoescape off %}
+                         {% display_portforward4 l %}
+                       {% endautoescape %}
                       </td>
                       <td><i class="fa fa-long-arrow-right"></i></td>
                       <td>
@@ -82,7 +84,7 @@
                       <td>
                         <span class="operation-wrapper">
                           <a href="{{ op.remove_port.get_url }}?rule={{ l.ipv4.pk }}"
-                             class="btn btn-link btn-xs operation"
+		             class="btn btn-link btn-xs operation"
                              title="{% trans "Remove" %}"
                              {% if not op.remove_port %}disabled{% endif %}>
                             <i class="fa fa-times"><span class="sr-only">{% trans "Remove" %}</span></i>
