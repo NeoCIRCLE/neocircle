@@ -59,7 +59,7 @@ from storage.models import DataStore, Disk
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.models import Permission
 from .models import Profile, GroupProfile, Message
-from circle.settings.base import LANGUAGES, MAX_NODE_RAM
+from circle.settings.base import LANGUAGES, MAX_NODE_RAM, MAX_NODE_CPU_CORE
 from django.utils.translation import string_concat
 
 from .validators import domain_validator
@@ -118,10 +118,10 @@ class VmCustomizeForm(forms.Form):
     cpu_count = forms.IntegerField(widget=forms.NumberInput(attrs={
         'class': "form-control input-tags cpu-count-input",
         'min': 1,
-        'max': 10,
+        'max': MAX_NODE_CPU_CORE,
         'required': "",
     }),
-        min_value=1, max_value=10,
+        min_value=1, max_value=MAX_NODE_CPU_CORE,
     )
 
     ram_size = forms.IntegerField(widget=forms.TextInput(attrs={
@@ -466,10 +466,10 @@ class TemplateForm(forms.ModelForm):
     num_cores = forms.IntegerField(widget=forms.NumberInput(attrs={
         'class': "form-control input-tags cpu-count-input",
         'min': 1,
-        'max': 10,
+        'max': MAX_NODE_CPU_CORE,
         'required': "",
     }),
-        min_value=1, max_value=10,
+        min_value=1, max_value=MAX_NODE_CPU_CORE,
     )
 
     ram_size = forms.IntegerField(widget=forms.NumberInput(attrs={
@@ -1508,10 +1508,10 @@ class VmResourcesForm(forms.ModelForm):
     num_cores = forms.IntegerField(widget=forms.NumberInput(attrs={
         'class': "form-control input-tags cpu-count-input",
         'min': 1,
-        'max': 10,
+        'max': MAX_NODE_CPU_CORE,
         'required': "",
     }),
-        min_value=1, max_value=10,
+        min_value=1, max_value=MAX_NODE_CPU_CORE,
     )
 
     ram_size = forms.IntegerField(widget=forms.NumberInput(attrs={
