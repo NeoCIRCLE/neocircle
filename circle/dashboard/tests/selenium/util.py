@@ -343,8 +343,9 @@ class CircleSeleniumMixin(SeleniumMixin):
                 'Cannot save a vm as a template')
 
     def create_base_template(self, name=None, architecture="x86-64",
-                             method=None, op_system=None, lease=None,
-                             network="vm"):
+                             method=None, op_system=None,
+                             datastore="default",
+                             lease=None, network="vm"):
         if name is None:
             name = "new_%s" % self.conf.client_name
         if op_system is None:
@@ -369,6 +370,8 @@ class CircleSeleniumMixin(SeleniumMixin):
             system_name = self.driver.find_element_by_id("id_system")
             system_name.clear()
             system_name.send_keys(op_system)
+            self.select_option(self.driver.find_element_by_id(
+                "id_datastore"), datastore)
             self.select_option(self.driver.find_element_by_id(
                 "id_lease"), lease)
             self.select_option(self.driver.find_element_by_id(

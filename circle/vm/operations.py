@@ -287,12 +287,20 @@ class CreateDiskOperation(InstanceOperation):
     required_perms = ('storage.create_empty_disk', )
     accept_states = ('STOPPED', 'PENDING', 'RUNNING')
 
-    def _operation(self, user, size, activity, name=None):
-        from storage.models import Disk
+    def _operation(self, user, size, datastore, activity, name=None):
+        from storage.models import Disk, DataStore
+
+        if not datastore:
+            datastore = self.instance.get_most_used_datastore()
+            if not datastore:
+                datastore = DataStore.get_default_datastore()
+
+        type = Disk.get_type_for_datastore(datastore)
 
         if not name:
             name = "new disk"
-        disk = Disk.create(size=size, name=name, type="qcow2-norm")
+        disk = Disk.create(size=size, name=name,
+                           datastore=datastore, type=type)
         disk.full_clean()
         devnums = list(ascii_lowercase)
         for d in self.instance.disks.all():
@@ -360,10 +368,16 @@ class DownloadDiskOperation(InstanceOperation):
     accept_states = ('STOPPED', 'PENDING', 'RUNNING')
     async_queue = "localhost.man.slow"
 
-    def _operation(self, user, url, task, activity, name=None):
-        from storage.models import Disk
+    def _operation(self, user, url, datastore, task, activity, name=None):
+        from storage.models import Disk, DataStore
 
-        disk = Disk.download(url=url, name=name, task=task)
+        if not datastore:
+            datastore = self.instance.get_most_used_datastore()
+            if not datastore:
+                datastore = DataStore.get_default_datastore()
+
+        disk = Disk.download(url=url, name=name, task=task,
+                             datastore=datastore)
         devnums = list(ascii_lowercase)
         for d in self.instance.disks.all():
             devnums.remove(d.dev_num)
@@ -551,7 +565,9 @@ class DestroyOperation(InstanceOperation):
                 "storage", "fast")
 
         def _get_remote_args(self, **kwargs):
-            return [self.instance.mem_dump['path']]
+            return [self.instance.mem_dump['datastore'].type,
+                    self.instance.mem_dump['datastore'].path,
+                    self.instance.mem_dump['filename']]
 
 
 @register_operation
@@ -578,7 +594,7 @@ class MigrateOperation(RemoteInstanceOperation):
                 "redeploy network (rollback)")):
             self.instance.deploy_net()
 
-    def _operation(self, activity, to_node=None, live_migration=True):
+    def _operation(self, activity, user, to_node=None, live_migration=True):
         if not to_node:
             with activity.sub_activity('scheduling',
                                        readable_name=ugettext_noop(
@@ -587,6 +603,16 @@ class MigrateOperation(RemoteInstanceOperation):
                 sa.result = to_node
 
         try:
+            with activity.sub_activity(
+                'refresh_credential', readable_name=create_readable(
+                    ugettext_noop("refresh credential on %(node)s"),
+                    node=to_node)):
+                ceph_blocks = self.instance.disks.filter(
+                    datastore__type="ceph_block")
+                if ceph_blocks.exists():
+                    ds = ceph_blocks[0].datastore
+                    to_node.refresh_credential(user=user,
+                                               username=ds.ceph_user)
             with activity.sub_activity(
                 'migrate_vm', readable_name=create_readable(
                     ugettext_noop("migrate to %(node)s"), node=to_node)):
@@ -804,6 +830,7 @@ class SaveAsTemplateOperation(InstanceOperation):
             'ram_size': self.instance.ram_size,
             'raw_data': self.instance.raw_data,
             'system': self.instance.system,
+            'datastore': self.instance.datastore,
         }
         params.update(kwargs)
         params.pop("parent_activity", None)
@@ -957,7 +984,10 @@ class SleepOperation(InstanceOperation):
         def _get_remote_args(self, **kwargs):
             return (super(SleepOperation.SuspendVmOperation, self)
                     ._get_remote_args(**kwargs) +
-                    [self.instance.mem_dump['path']])
+                    [self.instance.mem_dump['datastore'].type,
+                     self.instance.mem_dump['datastore'].path,
+                     self.instance.mem_dump['filename'],
+                     self.instance.ram_size])
 
 
 @register_operation
@@ -1011,7 +1041,9 @@ class WakeUpOperation(InstanceOperation):
         def _get_remote_args(self, **kwargs):
             return (super(WakeUpOperation.WakeUpVmOperation, self)
                     ._get_remote_args(**kwargs) +
-                    [self.instance.mem_dump['path']])
+                    [self.instance.mem_dump['datastore'].type,
+                     self.instance.mem_dump['datastore'].path,
+                     self.instance.mem_dump['filename']])
 
 
 @register_operation
@@ -1161,6 +1193,14 @@ class NodeOperation(Operation):
             return NodeActivity.create(
                 code_suffix=self.get_activity_code_suffix(), node=self.node,
                 user=user, readable_name=name)
+
+
+class RemoteNodeOperation(RemoteOperationMixin, NodeOperation):
+
+    remote_queue = ('vm', 'fast')
+
+    def _get_remote_queue(self):
+        return self.node.get_remote_queue_name(*self.remote_queue)
 
 
 @register_operation
@@ -1350,6 +1390,22 @@ class UpdateNodeOperation(NodeOperation):
         if failed:
             raise HumanReadableException.create(ugettext_noop(
                 "Failed: %(failed)s"), failed=failed)
+
+
+@register_operation
+class RefreshCredentialOperation(RemoteNodeOperation):
+    id = 'refresh_credential'
+    name = _("refresh credential")
+    description = _("Refresh credential.")
+    required_perms = ()
+    task = vm_tasks.refresh_credential
+
+    def _get_remote_args(self, **kwargs):
+        return [kwargs["username"]]
+
+    def _operation(self, activity, username):
+        super(RefreshCredentialOperation, self)._operation(
+            username=username)
 
 
 @register_operation

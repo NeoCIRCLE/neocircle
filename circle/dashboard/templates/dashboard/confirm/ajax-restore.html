@@ -1,0 +1,24 @@
+{% load i18n %}
+<div class="modal fade" id="confirmation-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        {% blocktrans with object=object %}
+            Are you sure you want to restore <strong>{{ object }}</strong>?
+        {% endblocktrans %}
+        <br />
+        <div class="pull-right" style="margin-top: 15px;">
+          <form action="{{ request.path }}" method="POST">
+            {% csrf_token %}
+            <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
+            <input type="hidden" name="next" value="{{ request.GET.next }}"/>
+            <button class="btn btn-warning modal-accept"
+              {% if disable_submit %}disabled{% endif %}
+              >{% trans "Restore" %}</button>
+          </form>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div>

@@ -335,7 +335,6 @@ class Node(OperatedMixin, TimeStampedModel):
         try:
             logger.info('%s %s', settings.GRAPHITE_URL, params)
             response = requests.get(settings.GRAPHITE_URL, params=params)
-
             retval = {}
             for target in response.json():
                 # Example:
@@ -366,12 +365,12 @@ class Node(OperatedMixin, TimeStampedModel):
     @property
     @node_available
     def cpu_usage(self):
-        return self.monitor_info.get('cpu.percent') / 100
+        return self.monitor_info.get('cpu.percent', 0) / 100
 
     @property
     @node_available
     def ram_usage(self):
-        return self.monitor_info.get('memory.usage') / 100
+        return self.monitor_info.get('memory.usage', 0) / 100
 
     @property
     @node_available
@@ -461,3 +460,10 @@ class Node(OperatedMixin, TimeStampedModel):
     @property
     def metric_prefix(self):
         return 'circle.%s' % self.host.hostname
+
+    @classmethod
+    def refresh_crendential_on_all(cls, user, ceph_user):
+        nodes = cls.objects.all()
+        for node in nodes:
+            if node.get_online():
+                node.refresh_credential.async(user=user, username=ceph_user)

@@ -50,7 +50,7 @@ from common.models import (
 from firewall.models import Vlan, Host, Rule
 from network.models import Vxlan
 from manager.scheduler import SchedulerError
-from storage.models import Disk
+from storage.models import Disk, DataStore
 from vm.models import (
     Instance, InstanceActivity, Node, Lease,
     InstanceTemplate, InterfaceTemplate, Interface,
@@ -69,6 +69,8 @@ from ..forms import (
     VmPortRemoveForm, VmPortAddForm,
     VmRemoveInterfaceForm,
     VmRenameForm, VmAddUserInterfaceForm,
+    VmRemoveInterfaceForm, VmDataStoreForm,
+    VmRenameForm,
 )
 from request.models import TemplateAccessType, LeaseType
 from request.forms import LeaseRequestForm, TemplateRequestForm
@@ -175,6 +177,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         if self.request.user.is_superuser:
             context['traits_form'] = TraitsForm(instance=instance)
             context['raw_data_form'] = RawDataForm(instance=instance)
+            context['data_store_form'] = VmDataStoreForm(instance=instance)
 
         # resources change perm
         context['can_change_resources'] = self.request.user.has_perm(
@@ -296,6 +299,14 @@ class VmRawDataUpdate(SuperuserRequiredMixin, UpdateView):
     form_class = RawDataForm
     model = Instance
     template_name = 'dashboard/vm-detail/raw_data.html'
+
+    def get_success_url(self):
+        return self.get_object().get_absolute_url() + "#resources"
+
+
+class VmDataStoreUpdate(SuperuserRequiredMixin, UpdateView):
+    form_class = VmDataStoreForm
+    model = Instance
 
     def get_success_url(self):
         return self.get_object().get_absolute_url() + "#resources"
@@ -444,6 +455,8 @@ class VmCreateDiskView(FormOperationMixin, VmOperationView):
         val = super(VmCreateDiskView, self).get_form_kwargs()
         num = op.instance.disks.count() + 1
         val['default'] = "%s %d" % (op.instance.name, num)
+        val['datastore_choices'] = DataStore.objects.filter(
+            destroyed__isnull=True)
         return val
 
 
@@ -456,6 +469,12 @@ class VmDownloadDiskView(FormOperationMixin, VmOperationView):
     effect = "success"
     is_disk_operation = True
     with_reload = True
+
+    def get_form_kwargs(self):
+        val = super(VmDownloadDiskView, self).get_form_kwargs()
+        val['datastore_choices'] = DataStore.objects.filter(
+            destroyed__isnull=True)
+        return val
 
 
 class VmMigrateView(FormOperationMixin, VmOperationView):

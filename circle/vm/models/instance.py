@@ -52,6 +52,7 @@ from .common import BaseResourceConfigModel, Lease
 from .network import Interface
 from .node import Node, Trait
 from network.models import EditorElement
+from storage.models import DataStore
 
 
 logger = getLogger(__name__)
@@ -96,6 +97,7 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
 
     """Abstract base for virtual machine describing models.
     """
+
     access_method = CharField(max_length=10, choices=ACCESS_METHODS,
                               verbose_name=_('access method'),
                               help_text=_('Primary remote access method.'))
@@ -119,6 +121,8 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
                              help_text=_(
                                  'If the machine has agent installed, and '
                                  'the manager should wait for its start.'))
+    datastore = ForeignKey(DataStore, verbose_name=_("Data store"),
+                           help_text=_("The target of VM's dump."))
 
     class Meta:
         abstract = True
@@ -429,7 +433,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         common_fields = ['name', 'description', 'num_cores', 'ram_size',
                          'max_ram_size', 'arch', 'priority', 'boot_menu',
                          'raw_data', 'lease', 'access_method', 'system',
-                         'has_agent']
+                         'has_agent', 'datastore']
         params = dict(template=template, owner=owner, pw=pwgen())
         params.update([(f, getattr(template, f)) for f in common_fields])
         params.update(kwargs)  # override defaults w/ user supplied values
@@ -491,16 +495,10 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     def mem_dump(self):
         """Return the path and datastore for the memory dump.
 
-        It is always on the first hard drive storage named cloud-<id>.dump
+        It named cloud-<id>.dump
         """
-        try:
-            datastore = self.disks.all()[0].datastore
-        except IndexError:
-            from storage.models import DataStore
-            datastore = DataStore.objects.get()
-
-        path = datastore.path + '/' + self.vm_name + '.dump'
-        return {'datastore': datastore, 'path': path}
+        filename = self.vm_name + '.dump'
+        return {'datastore': self.datastore, 'filename': filename}
 
     @property
     def primary_host(self):
@@ -882,3 +880,18 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             user=user, concurrency_check=concurrency_check,
             readable_name=readable_name, resultant_state=resultant_state)
         return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
+
+    def get_most_used_datastore(self):
+
+        disks = self.disks.all()
+        if not disks:
+            return None
+
+        freqs = dict()
+        for disk in disks:
+            datastore = disk.datastore
+            freqs[datastore] = freqs.get(datastore, 0) + 1
+
+        datastore = max(freqs.items(), key=lambda x: x[1])
+
+        return datastore[0]
