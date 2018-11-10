@@ -34,6 +34,7 @@ from dashboard.views import (
 from dashboard.forms import CirclePasswordResetForm, CircleSetPasswordForm
 from firewall.views import add_blacklist_item
 
+
 admin.autodiscover()
 
 urlpatterns = [
@@ -41,6 +42,7 @@ urlpatterns = [
     url(r'^network/', include('network.urls')),
     url(r'^blacklist-add/', add_blacklist_item),
     url(r'^dashboard/', include('dashboard.urls')),
+    url(r'^occi/', include('occi.urls')),
     url(r'^request/', include('request.urls')),
 
     # django/contrib/auth/urls.py (care when new version)

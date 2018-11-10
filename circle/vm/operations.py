@@ -202,32 +202,26 @@ class RemoteAgentOperation(EnsureAgentMixin, RemoteInstanceOperation):
     concurrency_check = False
 
 
-@register_operation
-class AddInterfaceOperation(InstanceOperation):
-    id = 'add_interface'
-    name = _("add interface")
-    description = _("Add a new network interface for the specified VLAN to "
-                    "the VM.")
+class AddInterfaceOperationBase(InstanceOperation):
+    id = None
+    name = None
+    description = None
     required_perms = ()
     accept_states = ('STOPPED', 'PENDING', 'RUNNING')
+    network_type = None
 
     def rollback(self, net, activity):
         with activity.sub_activity(
             'destroying_net',
-                readable_name=ugettext_noop("destroy network (rollback)")):
+                readable_name=ugettext_noop('destroy network (rollback)')):
             net.destroy()
             net.delete()
 
-    def _operation(self, activity, user, system, vlan, managed=None):
-        if not vlan.has_level(user, 'user'):
-            raise humanize_exception(ugettext_noop(
-                "User acces to vlan %(vlan)s is required."),
-                PermissionDenied(), vlan=vlan)
-        if managed is None:
-            managed = vlan.managed
-
-        net = Interface.create(base_activity=activity, instance=self.instance,
-                               managed=managed, owner=user, vlan=vlan)
+    def _operation(self, activity, user, system, vlan, vxlan, managed):
+        net = Interface.create(base_activity=activity,
+                               instance=self.instance,
+                               managed=managed, owner=user,
+                               vlan=vlan, vxlan=vxlan)
 
         if self.instance.is_running:
             try:
@@ -242,8 +236,46 @@ class AddInterfaceOperation(InstanceOperation):
             self.instance._restart_networking(parent_activity=activity)
 
     def get_activity_name(self, kwargs):
-        return create_readable(ugettext_noop("add %(vlan)s interface"),
-                               vlan=kwargs['vlan'])
+        return create_readable(ugettext_noop('add %(vlan)s interface'),
+                               vlan=kwargs[self.network_type])
+
+
+@register_operation
+class AddInterfaceOperation(AddInterfaceOperationBase):
+    id = 'add_interface'
+    name = _('add interface')
+    description = _('Add a new network interface for the specified VLAN to '
+                    'the VM.')
+    network_type = 'vlan'
+
+    def _operation(self, activity, user, system, vlan, managed=None):
+        if not vlan.has_level(user, 'user'):
+            raise humanize_exception(ugettext_noop(
+                'User acces to vlan %(vlan)s is required.'),
+                PermissionDenied(), vlan=vlan)
+        if managed is None:
+            managed = vlan.managed
+        super(AddInterfaceOperation, self)._operation(
+            activity=activity, user=user, system=system,
+            vlan=vlan, vxlan=None, managed=managed)
+
+
+@register_operation
+class AddUserInterfaceOperation(AddInterfaceOperationBase):
+    id = 'add_user_interface'
+    name = _('add user interface')
+    description = _('Add a new user network interface for the specified to '
+                    'the VM.')
+    network_type = 'vxlan'
+
+    def _operation(self, activity, user, system, vxlan, managed=None):
+        if not vxlan.has_level(user, 'user'):
+            raise humanize_exception(ugettext_noop(
+                'User acces to vxlan %(vxlan)s is required.'),
+                PermissionDenied(), vxlan=vxlan)
+        super(AddUserInterfaceOperation, self)._operation(
+            activity=activity, user=user, system=system,
+            vlan=vxlan.vlan, vxlan=vxlan, managed=managed)
 
 
 @register_operation
@@ -647,6 +679,15 @@ class RemoveInterfaceOperation(InstanceOperation):
     def get_activity_name(self, kwargs):
         return create_readable(ugettext_noop("remove %(vlan)s interface"),
                                vlan=kwargs['interface'].vlan)
+
+
+@register_operation
+class RemoveUserInterfaceOperation(RemoveInterfaceOperation):
+    id = 'remove_user_interface'
+    name = _("remove user interface")
+    description = _("Remove the specified user network interface.")
+    required_perms = ()
+    accept_states = ('STOPPED', 'PENDING', 'RUNNING')
 
 
 @register_operation

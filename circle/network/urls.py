@@ -20,6 +20,7 @@ from .views import (
     IndexView,
     HostList, HostDetail, HostCreate, HostDelete,
     VlanList, VlanDetail, VlanDelete, VlanCreate,
+    VxlanList, VxlanDetail, VxlanDelete, VxlanCreate, VxlanAclUpdateView,
     DomainList, DomainDetail, DomainDelete, DomainCreate,
     GroupList, GroupDetail, GroupDelete, GroupCreate,
     RecordList, RecordDetail, RecordCreate, RecordDelete,
@@ -30,7 +31,7 @@ from .views import (
     FirewallList, FirewallDetail, FirewallCreate, FirewallDelete,
     remove_host_group, add_host_group,
     remove_switch_port_device, add_switch_port_device,
-    VlanAclUpdateView
+    VlanAclUpdateView, NetworkEditorView
 )
 
 urlpatterns = [
@@ -124,6 +125,19 @@ urlpatterns = [
         name="network.vlan_group_delete"),
     url('^rules/delete/(?P<pk>\d+)/$', RuleDelete.as_view(),
         name="network.rule_delete"),
+
+    # vxlan
+    url('^vxlans/$', VxlanList.as_view(), name='network.vxlan-list'),
+    url('^vxlans/create$', VxlanCreate.as_view(), name='network.vxlan-create'),
+    url('^vxlans/(?P<vni>\d+)/$', VxlanDetail.as_view(), name='network.vxlan'),
+    url('^vxlans/(?P<pk>\d+)/acl/$', VxlanAclUpdateView.as_view(),
+        name='network.vxlan-acl'),
+    url('^vxlans/delete/(?P<vni>\d+)/$', VxlanDelete.as_view(),
+        name="network.vxlan-delete"),
+
+    # editor
+    url('^editor/$', NetworkEditorView.as_view(),
+        name="network.editor"),
 
     # non class based views
     url('^hosts/(?P<pk>\d+)/remove/(?P<group_pk>\d+)/$', remove_host_group,

@@ -15,32 +15,44 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import random
+import json
 from collections import OrderedDict
 
 from netaddr import IPNetwork
-from django.views.generic import (TemplateView, UpdateView, DeleteView,
-                                  CreateView)
-from django.core.exceptions import ValidationError
+from django.views.generic import (
+    TemplateView, UpdateView, DeleteView, CreateView,
+)
+from django.core.exceptions import (
+    ValidationError, PermissionDenied, ImproperlyConfigured
+)
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
 from django.db.models import Q
+from django.conf import settings
 
 from django_tables2 import SingleTableView
 
 from firewall.models import (
     Host, Vlan, Domain, Group, Record, BlacklistItem, Rule, VlanGroup,
-    SwitchPort, EthernetDevice, Firewall)
-from vm.models import Interface
+    SwitchPort, EthernetDevice, Firewall
+)
+from network.models import Vxlan, EditorElement
+from vm.models import Interface, Instance
+from common.views import CreateLimitedResourceMixin
+from acl.views import CheckedObjectMixin
 from .tables import (
     HostTable, VlanTable, SmallHostTable, DomainTable, GroupTable,
     RecordTable, BlacklistItemTable, RuleTable, VlanGroupTable,
     SmallRuleTable, SmallGroupRuleTable, SmallRecordTable, SwitchPortTable,
-    SmallDhcpTable, FirewallTable, FirewallRuleTable,
+    SmallDhcpTable, FirewallTable, FirewallRuleTable, VxlanTable, SmallVmTable,
 )
 from .forms import (
     HostForm, VlanForm, DomainForm, GroupForm, RecordForm, BlacklistItemForm,
-    RuleForm, VlanGroupForm, SwitchPortForm, FirewallForm
+    RuleForm, VlanGroupForm, SwitchPortForm, FirewallForm,
+    VxlanForm, VxlanSuperUserForm,
 )
 
 from django.contrib import messages
@@ -48,7 +60,6 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic.edit import FormMixin
 from django.utils.translation import ugettext_lazy as _
 from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
-# from django.db.models import Q
 from operator import itemgetter
 from itertools import chain
 from dashboard.views import AclUpdateView
@@ -70,6 +81,9 @@ except ImportError:
                 mimetype=mimetype,
                 status=status,
                 content_type=content_type)
+
+
+logger = logging.getLogger(__name__)
 
 
 class MagicMixin(object):
@@ -508,7 +522,7 @@ class HostDetail(HostMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
 
 
 class HostCreate(HostMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
-                 SuccessMessageMixin, InitialOwnerMixin, CreateView):
+                 SuccessMessageMixin, CreateView):
     model = Host
     template_name = "network/host-create.html"
     form_class = HostForm
@@ -802,6 +816,7 @@ class VlanDetail(VlanMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
     slug_field = 'vid'
     slug_url_kwarg = 'vid'
     success_message = _(u'Succesfully modified vlan %(name)s.')
+    success_url = reverse_lazy('network.vlan_list')
 
     def get_context_data(self, **kwargs):
         context = super(VlanDetail, self).get_context_data(**kwargs)
@@ -812,8 +827,6 @@ class VlanDetail(VlanMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
             self.object, self.request.user, 'network.vlan-acl')
         context['aclform'] = AclUserOrGroupAddForm()
         return context
-
-    success_url = reverse_lazy('network.vlan_list')
 
 
 class VlanCreate(VlanMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
@@ -914,6 +927,371 @@ class VlanGroupDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
             return next
         else:
             return reverse_lazy('network.vlan_group_list')
+
+
+class VxlanList(LoginRequiredMixin, SingleTableView):
+    model = Vxlan
+    table_class = VxlanTable
+    table_pagination = False
+
+    def get_template_names(self):
+        if self.request.user.is_superuser:
+            return ["network/vxlan-superuser-list.html"]
+        else:
+            return ["network/vxlan-list.html"]
+
+    def get_queryset(self):
+        return Vxlan.get_objects_with_level('user', self.request.user)
+
+    def get(self, *args, **kwargs):
+        if self.request.is_ajax():
+            return self._create_ajax_request()
+        return super(VxlanList, self).get(*args, **kwargs)
+
+    def _create_ajax_request(self):
+        vxlans = self.get_queryset()
+        vxlans = [{
+            'pk': i.pk,
+            'url': reverse_lazy('network.vxlan', args=[i.pk]),
+            'icon': 'fa-sitemap',
+            'name': i.name,
+            'vni': i.vni if self.request.user.is_superuser else None
+        } for i in vxlans]
+        return JsonResponse(list(vxlans), safe=False)
+
+
+class VxlanAclUpdateView(AclUpdateView):
+    model = Vxlan
+
+
+class VxlanDetail(LoginRequiredMixin, CheckedObjectMixin,
+                  SuccessMessageMixin, UpdateView):
+    model = Vxlan
+    slug_field = 'vni'
+    slug_url_kwarg = 'vni'
+    success_message = _(u'Succesfully modified vlan %(name)s.')
+    success_url = reverse_lazy('network.vxlan-list')
+
+    def get_template_names(self):
+        if self.request.user.is_superuser:
+            return ["network/vxlan-superuser-edit.html"]
+        else:
+            return ["network/vxlan-edit.html"]
+
+    def get_form_class(self, is_post=False):
+        if self.request.user.is_superuser:
+            return VxlanSuperUserForm
+        return VxlanForm
+
+    def get_context_data(self, **kwargs):
+        context = super(VxlanDetail, self).get_context_data(**kwargs)
+        context['vm_list'] = SmallVmTable(self.object.vm_interface.all())
+        context['acl'] = AclUpdateView.get_acl_data(
+            self.object, self.request.user, 'network.vxlan-acl')
+        context['aclform'] = AclUserOrGroupAddForm()
+        return context
+
+    def post(self, *args, **kwargs):
+        if not self.object.has_level(self.request.user, 'owner'):
+            raise PermissionDenied()
+        return super(VxlanDetail, self).post(*args, **kwargs)
+
+
+class VxlanCreate(LoginRequiredMixin, CreateLimitedResourceMixin,
+                  SuccessMessageMixin, InitialOwnerMixin, CreateView):
+    model = Vxlan
+    profile_attribute = 'network_limit'
+    resource_name = _('Virtual network')
+    success_message = _(u'Successfully created vxlan %(name)s.')
+
+    def get_template_names(self):
+        if self.request.user.is_superuser:
+            return ["network/vxlan-superuser-create.html"]
+        else:
+            return ["network/vxlan-create.html"]
+
+    def get_form_class(self, is_post=False):
+        if self.request.user.is_superuser:
+            return VxlanSuperUserForm
+        return VxlanForm
+
+    def get_initial(self):
+        initial = super(VxlanCreate, self).get_initial()
+        initial['vni'] = self._generate_vni()
+        return initial
+
+    def get_default_vlan(self):
+        vlan = Vlan.objects.filter(
+            name=settings.DEFAULT_USERNET_VLAN_NAME).first()
+        if vlan is None:
+            msg = (_('Cannot find server vlan: %s') %
+                   settings.DEFAULT_USERNET_VLAN_NAME)
+            if self.request.user.is_superuser:
+                messages.error(self.request, msg)
+            logger.error(msg)
+            raise ImproperlyConfigured()
+        return vlan
+
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+        obj.owner = self.request.user
+        obj.vlan = self.get_default_vlan()
+        try:
+            obj.full_clean()
+            obj.save()
+            obj.set_level(obj.owner, 'owner')
+            self.object = obj
+        except Exception as e:
+            msg = _('Unexpected error occured. '
+                    'Please try again or contact administrator!')
+            messages.error(self.request, msg)
+            logger.exception(e)
+        return redirect(self.get_success_url())
+
+    def form_invalid(self, form):
+        # When multiple client get same VNI value
+        if 'vni' in form.errors.as_data():
+            messages.error(self.request, _('Cannot create virtual network.'
+                                           ' Please try again.'))
+            return redirect('network.vxlan-create')
+        return super(VxlanCreate, self).form_invalid(form)
+
+    def _generate_vni(self):
+        if Vxlan.objects.count() == settings.USERNET_MAX:
+            msg = _('Cannot find unused VNI value. '
+                    'Please contact administrator!')
+            messages.error(self.request, msg)
+            logger.error(msg)
+        else:
+            full_range = set(range(0, settings.USERNET_MAX))
+            used_values = {vni[0] for vni in Vxlan.objects.values_list('vni')}
+            free_values = full_range - used_values
+            return random.choice(list(free_values))
+
+
+class VxlanDelete(LoginRequiredMixin, CheckedObjectMixin, DeleteView):
+    model = Vlan
+    read_level = 'owner'
+
+    def get_template_names(self):
+        if self.request.user.is_superuser:
+            return ["network/confirm/base_delete.html"]
+        else:
+            return ["dashboard/confirm/base-delete.html"]
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return next
+        else:
+            return reverse_lazy('network.vxlan-list')
+
+    def get_object(self, queryset=None):
+        """ we identify vlans by vid and not pk """
+        return Vxlan.objects.get(vni=self.kwargs['vni'])
+
+    def delete(self, request, *args, **kwargs):
+        if self.request.user.is_superuser:
+            self.object = self.get_object()
+            if unicode(self.object) != request.POST.get('confirm'):
+                messages.error(request, _(u"Object name does not match."))
+                return self.get(request, *args, **kwargs)
+
+        response = super(VxlanDelete, self).delete(request, *args, **kwargs)
+        messages.success(request, _(u"Vxlan successfully deleted."))
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super(VxlanDelete, self).get_context_data(**kwargs)
+        if self.request.user.is_superuser:
+            context['confirmation'] = True
+        return context
+
+
+class NetworkEditorView(LoginRequiredMixin, TemplateView):
+    template_name = 'network/editor.html'
+
+    def get(self, *args, **kwargs):
+        if self.request.is_ajax():
+            connections = self._get_connections()
+
+            ngelements = self._get_nongraph_elements(connections)
+            ngelements = self._serialize_elements(ngelements)
+
+            connections = map(lambda con: {
+               'source': 'vm-%s' % con['source'].pk,
+               'target': 'net-%s' % con['target'].vni,
+            }, connections['connections'])
+
+            unused_elements = self._get_unused_elements()
+            unused_elements = self._serialize_elements(unused_elements)
+
+            return JsonResponse({
+                'elements': map(lambda e: e.as_data(),
+                                EditorElement.objects.filter(
+                                    owner=self.request.user)),
+                'nongraph_elements': ngelements,
+                'unused_elements': unused_elements,
+                'connections': connections,
+            })
+        return super(NetworkEditorView, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        data = json.loads(self.request.body)
+        add_ifs = data.get('add_interfaces', [])
+        remove_ifs = data.get('remove_interfaces', [])
+        add_nodes = data.get('add_nodes', [])
+        remove_nodes = data.get('remove_nodes', [])
+
+        # Add editor element
+        self._element_list_operation(add_nodes, self._update_element)
+        # Remove editor element
+        self._element_list_operation(remove_nodes, self._remove_element)
+
+        # Add interface
+        self._interface_list_operation(add_ifs, self._add_interface)
+        # Remove interface
+        self._interface_list_operation(remove_ifs, self._remove_interface)
+
+        return self.get(*args, **kwargs)
+
+    def _max_port_num_helper(self, model, attr_name):
+        if not hasattr(self, attr_name):
+            value = model.get_objects_with_level(
+                'user', self.request.user).count()
+            setattr(self, attr_name, value)
+        return getattr(self, attr_name)
+
+    @property
+    def vm_max_port_num(self):
+        return self._max_port_num_helper(Vxlan, '_vm_max_port_num')
+
+    @property
+    def vxlan_max_port_num(self):
+        return self._max_port_num_helper(Instance, '_vxlan_max_port_num')
+
+    def _vm_serializer(self, vm):
+        max_port_num = self.vm_max_port_num
+        vxlans = Vxlan.get_objects_with_level(
+            'user', self.request.user).values_list('pk', flat=True)
+        free_port_num = max_port_num - vm.interface_set.filter(
+            vxlan__pk__in=vxlans).count()
+        return {
+            'name': unicode(vm),
+            'id': 'vm-%s' % vm.pk,
+            'description': vm.description,
+            'type': 'vm',
+            'icon': 'fa-desktop',
+            'free_port_num': free_port_num,
+        }
+
+    def _vxlan_serializer(self, vxlan):
+        max_port_num = self.vxlan_max_port_num
+        vms = Instance.get_objects_with_level(
+            'user', self.request.user).values_list('pk', flat=True)
+        free_port_num = max_port_num - Interface.objects.filter(
+            vxlan=vxlan, instance__pk__in=vms).count()
+        return {
+            'name': vxlan.name,
+            'id': 'net-%s' % vxlan.vni,
+            'description': vxlan.description,
+            'type': 'network',
+            'icon': 'fa-sitemap',
+            'free_port_num': free_port_num,
+        }
+
+    def _get_unused_elements(self):
+        connections = self._get_connections()
+        vms = map(lambda vm: vm.id, connections['vms'])
+        vxlans = map(lambda vxlan: vxlan.vni, connections['vxlans'])
+        eelems = EditorElement.objects.filter(owner=self.request.user)
+
+        vm_query = Q(pk__in=vms) | Q(editor_elements__in=eelems)
+        vms = Instance.get_objects_with_level(
+            'user', self.request.user).exclude(vm_query)
+        vxlan_query = Q(vni__in=vms) | Q(editor_elements__in=eelems)
+        vxlans = Vxlan.get_objects_with_level(
+            'user', self.request.user).exclude(vxlan_query)
+        return {
+            'vms': vms,
+            'vxlans': vxlans,
+        }
+
+    def _get_nongraph_elements(self, connections):
+        return {
+            'vms': filter(lambda v: not v.editor_elements.exists(),
+                          connections['vms']),
+            'vxlans': filter(lambda v: not v.editor_elements.exists(),
+                             connections['vxlans']),
+        }
+
+    def _get_connections(self):
+        """ Returns connections and theirs participants. """
+        vms = Instance.get_objects_with_level('user', self.request.user)
+        connections = []
+        vm_set = set()
+        vxlan_set = set()
+        for vm in vms:
+            for intf in vm.interface_set.filter(vxlan__isnull=False):
+                vm_set.add(vm)
+                vxlan_set.add(intf.vxlan)
+                connections.append({
+                    'source': vm,
+                    'target': intf.vxlan,
+                })
+        return {
+            'connections': connections,
+            'vms': vm_set,
+            'vxlans': vxlan_set,
+        }
+
+    def _serialize_elements(self, elements):
+        return (map(self._vm_serializer, elements['vms']) +
+                map(self._vxlan_serializer, elements['vxlans']))
+
+    def _get_modifiable_object(self, model, connection,
+                               attr_name, filter_attr):
+        value = connection.get(attr_name)
+        if value is not None:
+            value = model.get_objects_with_level(
+                'user', self.request.user).filter(
+                    **{filter_attr: value}).first()
+        return value
+
+    def _element_list_operation(self, node_list, operation):
+        for e in node_list:
+            elem = dict(e)
+            type = elem.pop('type')
+            id = elem.pop('id')
+            model = Instance if type == 'vm' else Vxlan
+            filter = {'pk': id} if type == 'vm' else {'vni': id}
+            object = model.get_objects_with_level(
+                'user', self.request.user).get(**filter)
+            operation(object.editor_elements, elem)
+
+    def _update_element(self, elements, elem):
+        elements.update_or_create(owner=self.request.user,
+                                  defaults=elem)
+
+    def _remove_element(self, elements, elem):
+        elements.filter(owner=self.request.user).delete()
+
+    def _interface_list_operation(self, if_list, operation):
+        for con in if_list:
+            vm = self._get_modifiable_object(Instance, con, 'source', 'pk')
+            vxlan = self._get_modifiable_object(Vxlan, con, 'target', 'vni')
+            if vm and vxlan:
+                operation(vm, vxlan)
+
+    def _add_interface(self, vm, vxlan):
+        vm.add_user_interface(
+            user=self.request.user, vxlan=vxlan, system=vm.system)
+
+    def _remove_interface(self, vm, vxlan):
+        intf = vm.interface_set.filter(vxlan=vxlan).first()
+        if intf:
+            vm.remove_user_interface(
+                interface=intf, user=self.request.user, system=vm.system)
 
 
 def remove_host_group(request, **kwargs):

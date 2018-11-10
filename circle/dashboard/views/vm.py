@@ -48,6 +48,7 @@ from common.models import (
     split_activity_code,
 )
 from firewall.models import Vlan, Host, Rule
+from network.models import Vxlan
 from manager.scheduler import SchedulerError
 from storage.models import Disk, DataStore
 from vm.models import (
@@ -66,6 +67,8 @@ from ..forms import (
     VmDiskResizeForm, RedeployForm, VmDiskRemoveForm,
     VmMigrateForm, VmDeployForm,
     VmPortRemoveForm, VmPortAddForm,
+    VmRemoveInterfaceForm,
+    VmRenameForm, VmAddUserInterfaceForm,
     VmRemoveInterfaceForm, VmDataStoreForm,
     VmRenameForm,
 )
@@ -358,6 +361,32 @@ class VmRemoveInterfaceView(FormOperationMixin, VmOperationView):
         return val
 
 
+class VmRemoveUserInterfaceView(FormOperationMixin, VmOperationView):
+    op = 'remove_user_interface'
+    form_class = VmRemoveInterfaceForm
+    show_in_toolbar = False
+    wait_for_result = 0.5
+    icon = 'times'
+    effect = "danger"
+    with_reload = True
+
+    def get_form_kwargs(self):
+        instance = self.get_op().instance
+        choices = instance.interface_set.all()
+        interface_pk = self.request.GET.get('interface')
+        if interface_pk:
+            try:
+                default = choices.get(pk=interface_pk)
+            except (ValueError, Interface.DoesNotExist):
+                raise Http404()
+        else:
+            default = None
+
+        val = super(VmRemoveUserInterfaceView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
+
+
 class VmAddInterfaceView(FormOperationMixin, VmOperationView):
 
     op = 'add_interface'
@@ -366,15 +395,27 @@ class VmAddInterfaceView(FormOperationMixin, VmOperationView):
     icon = 'globe'
     effect = 'success'
     with_reload = True
+    network_model = Vlan
 
     def get_form_kwargs(self):
         inst = self.get_op().instance
-        choices = Vlan.get_objects_with_level(
+        choices = self.network_model.get_objects_with_level(
             "user", self.request.user).exclude(
             vm_interface__instance__in=[inst])
         val = super(VmAddInterfaceView, self).get_form_kwargs()
         val.update({'choices': choices})
         return val
+
+
+class VmAddUserInterfaceView(VmAddInterfaceView):
+
+    op = 'add_user_interface'
+    form_class = VmAddUserInterfaceForm
+    show_in_toolbar = False
+    icon = 'link'
+    effect = 'success'
+    with_reload = True
+    network_model = Vxlan
 
 
 class VmDiskModifyView(FormOperationMixin, VmOperationView):
@@ -795,6 +836,8 @@ vm_ops = OrderedDict([
         icon='times', effect="danger")),
     ('add_interface', VmAddInterfaceView),
     ('remove_interface', VmRemoveInterfaceView),
+    ('add_user_interface', VmAddUserInterfaceView),
+    ('remove_user_interface', VmRemoveUserInterfaceView),
     ('remove_port', VmPortRemoveView),
     ('add_port', VmPortAddView),
     ('renew', VmRenewView),

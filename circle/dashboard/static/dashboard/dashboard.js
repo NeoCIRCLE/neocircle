@@ -241,6 +241,7 @@ $(function () {
   register_search($("#dashboard-group-search-form"), $("#dashboard-group-list"), generateGroupHTML);
   register_search($("#dashboard-user-search-form"), $("#dashboard-user-list"), generateUserHTML);
   register_search($("#dashboard-template-search-form"), $("#dashboard-template-list"), generateTemplateHTML);
+  register_search($("#dashboard-vxlan-search-form"), $("#dashboard-vxlan-list"), generateVxlanHTML);
 
   /* notification message toggle */
   $(document).on('click', ".notification-message-subject", function() {
@@ -347,6 +348,18 @@ function generateNodeHTML(data, is_last) {
          '</span>' +
          '<div style="clear: both;"></div>' +
          '</a>';
+}
+
+function generateVxlanHTML(data, is_last) {
+  html = '<a href="' + data.url + '" class="list-group-item real-link' + (is_last ? ' list-group-item-last' : '') + '">' +
+         '<span class="index-vxlan-list-name">' +
+         '<i class="fa ' + data.icon + '" title="' + data.name + '"></i> ' + safe_tags_replace(data.name);
+  if(data.vni !== null && data.vni !== undefined)
+    html += ' <small class="text-muted"> vni: ' + data.vni + '</small>';
+  html += '</span>' +
+          '<div style="clear: both;"></div>' +
+          '</a>';
+  return html;
 }
 
 /* copare vm-s by fav, pk order */

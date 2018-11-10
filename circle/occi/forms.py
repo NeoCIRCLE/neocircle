@@ -1,4 +1,4 @@
-# Copyright 2014 Budapest University of Technology and Economics (BME IK)
+# Copyright 2017 Budapest University of Technology and Economics (BME IK)
 #
 # This file is part of CIRCLE Cloud.
 #
@@ -15,14 +15,17 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.core.exceptions import PermissionDenied
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login
 
 
-class CheckedObjectMixin(object):
-    read_level = 'user'
+class OcciAuthForm(AuthenticationForm):
+    """ An authentication form for the OCCI implementation. """
 
-    def get_object(self, **kwargs):
-        obj = super(CheckedObjectMixin, self).get_object()
-        if not obj.has_level(self.request.user, self.read_level):
-            raise PermissionDenied()
-        return obj
+    def __init__(self, request, *args, **kwargs):
+        super(OcciAuthForm, self).__init__(*args, **kwargs)
+        self.request = request
+
+    def confirm_login_allowed(self, user):
+        super(OcciAuthForm, self).confirm_login_allowed(user)
+        login(self.request, user)

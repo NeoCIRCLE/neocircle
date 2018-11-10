@@ -18,8 +18,7 @@
 """Common settings and globals."""
 # flake8: noqa
 from os import environ
-from os.path import (abspath, basename, dirname, join, normpath, isfile,
-                     exists, expanduser)
+from os.path import abspath, basename, join, normpath, isfile, expanduser
 from sys import path
 from subprocess import check_output
 from uuid import getnode
@@ -28,32 +27,13 @@ from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext_lazy as _
 from json import loads
 
-
-# from socket import SOCK_STREAM
+from util import get_env_variable
+from static_and_pipeline import *
 
 
 # Normally you should not import ANYTHING from Django directly
 # into your settings, but ImproperlyConfigured is an exception.
 
-
-def get_env_variable(var_name, default=None):
-    """ Get the environment variable or return exception/default """
-    try:
-        return environ[var_name]
-    except KeyError:
-        if default is None:
-            error_msg = "Set the %s environment variable" % var_name
-            raise ImproperlyConfigured(error_msg)
-        else:
-            return default
-
-
-########## PATH CONFIGURATION
-# Absolute filesystem path to the Django project directory:
-BASE_DIR = dirname(dirname(abspath(__file__)))
-
-# Absolute filesystem path to the top-level project folder:
-SITE_ROOT = dirname(BASE_DIR)
 
 # Site name:
 SITE_NAME = basename(BASE_DIR)
@@ -136,125 +116,6 @@ USE_L10N = True
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#use-tz
 USE_TZ = True
 ########## END GENERAL CONFIGURATION
-
-
-########## MEDIA CONFIGURATION
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
-MEDIA_ROOT = normpath(join(SITE_ROOT, 'media'))
-
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#media-url
-MEDIA_URL = get_env_variable('DJANGO_MEDIA_URL', default='/media/')
-########## END MEDIA CONFIGURATION
-
-
-########## STATIC FILE CONFIGURATION
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
-STATIC_ROOT = normpath(join(SITE_ROOT, 'static_collected'))
-
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
-STATIC_URL = get_env_variable('DJANGO_STATIC_URL', default='/static/')
-
-# See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
-STATICFILES_FINDERS = (
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'pipeline.finders.PipelineFinder',
-)
-########## END STATIC FILE CONFIGURATION
-STATICFILES_DIRS = [normpath(join(SITE_ROOT, 'bower_components'))]
-
-p = normpath(join(SITE_ROOT, '../../site-circle/static'))
-if exists(p):
-    STATICFILES_DIRS.append(p)
-
-STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
-
-PIPELINE = {
-    'COMPILERS' : ('pipeline.compilers.less.LessCompiler',),
-    'LESS_ARGUMENTS': u'--include-path={}'.format(':'.join(STATICFILES_DIRS)),
-    'CSS_COMPRESSOR': 'pipeline.compressors.yuglify.YuglifyCompressor',
-    'JS_COMPRESSOR': None,
-    'DISABLE_WRAPPER': True,
-    'STYLESHEETS': {
-        "all": {"source_filenames": (
-            "compile_bootstrap.less",
-            "bootstrap/dist/css/bootstrap-theme.css",
-            "fontawesome/css/font-awesome.css",
-            "jquery-simple-slider/css/simple-slider.css",
-            "intro.js/introjs.css",
-            "template.less",
-            "dashboard/dashboard.less",
-            "network/network.less",
-            "autocomplete_light/vendor/select2/dist/css/select2.css",
-            "autocomplete_light/select2.css",
-        ),
-            "output_filename": "all.css",
-        }
-    },
-    'JAVASCRIPT': {
-        "all": {"source_filenames": (
-            # "jquery/dist/jquery.js",  # included separately
-            "bootbox/bootbox.js",
-            "bootstrap/dist/js/bootstrap.js",
-            "intro.js/intro.js",
-            "jquery-knob/dist/jquery.knob.min.js",
-            "jquery-simple-slider/js/simple-slider.js",
-            "favico.js/favico.js",
-            "datatables/media/js/jquery.dataTables.js",
-            "autocomplete_light/jquery.init.js",
-            "autocomplete_light/autocomplete.init.js",
-            "autocomplete_light/vendor/select2/dist/js/select2.js",
-            "autocomplete_light/select2.js",
-            "dashboard/dashboard.js",
-            "dashboard/activity.js",
-            "dashboard/group-details.js",
-            "dashboard/group-list.js",
-            "dashboard/js/stupidtable.min.js",  # no bower file
-            "dashboard/node-create.js",
-            "dashboard/node-details.js",
-            "dashboard/node-list.js",
-            "dashboard/profile.js",
-            "dashboard/store.js",
-            "dashboard/template-list.js",
-            "dashboard/vm-common.js",
-            "dashboard/vm-create.js",
-            "dashboard/vm-list.js",
-            "dashboard/help.js",
-            "js/host.js",
-            "js/network.js",
-            "js/switch-port.js",
-            "js/host-list.js",
-        ),
-            "output_filename": "all.js",
-        },
-        "vm-detail": {"source_filenames": (
-            "clipboard/dist/clipboard.min.js",
-            "dashboard/vm-details.js",
-            "no-vnc/include/util.js",
-            "no-vnc/include/webutil.js",
-            "no-vnc/include/base64.js",
-            "no-vnc/include/websock.js",
-            "no-vnc/include/des.js",
-            "no-vnc/include/keysym.js",
-            "no-vnc/include/keysymdef.js",
-            "no-vnc/include/keyboard.js",
-            "no-vnc/include/input.js",
-            "no-vnc/include/display.js",
-            "no-vnc/include/jsunzip.js",
-            "no-vnc/include/rfb.js",
-            "dashboard/vm-console.js",
-            "dashboard/vm-tour.js",
-        ),
-            "output_filename": "vm-detail.js",
-        },
-        "datastore": {"source_filenames": (
-            "chart.js/dist/Chart.min.js",
-            "dashboard/datastore-details.js"
-        ),
-            "output_filename": "datastore.js",
-        },
-    },
-}
 
 
 ########## SECRET CONFIGURATION
@@ -374,6 +235,7 @@ LOCAL_APPS = (
     'acl',
     'monitor',
     'request',
+    'occi',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -589,3 +451,7 @@ REQUEST_HOOK_URL = get_env_variable("REQUEST_HOOK_URL", "")
 SSHKEY_EMAIL_ADD_KEY = False
 
 TWO_FACTOR_ISSUER = get_env_variable("TWO_FACTOR_ISSUER", "CIRCLE")
+
+DEFAULT_USERNET_VLAN_NAME = (
+    get_env_variable("DEFAULT_USERNET_VLAN_NAME", "usernet"))
+USERNET_MAX = 2 ** 12
