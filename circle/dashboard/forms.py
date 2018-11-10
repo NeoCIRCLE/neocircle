@@ -38,7 +38,6 @@ from crispy_forms.layout import (
 )
 
 from crispy_forms.utils import render_field
-from crispy_forms.bootstrap import FormActions
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
@@ -462,6 +461,9 @@ class NodeForm(forms.ModelForm):
 class TemplateForm(forms.ModelForm):
     networks = forms.ModelMultipleChoiceField(
         queryset=None, required=False, label=_("Networks"))
+    datastore = forms.ModelChoiceField(
+        queryset=DataStore.objects.filter(destroyed__isnull=True),
+        empty_label=None)
 
     num_cores = forms.IntegerField(widget=forms.NumberInput(attrs={
         'class': "form-control input-tags cpu-count-input",
@@ -818,9 +820,18 @@ class VmCreateDiskForm(OperationForm):
 
     def __init__(self, *args, **kwargs):
         default = kwargs.pop('default', None)
+        datastore_choices = kwargs.pop('datastore_choices')
         super(VmCreateDiskForm, self).__init__(*args, **kwargs)
         if default:
             self.fields['name'].initial = default
+
+        datastore_field = forms.ModelChoiceField(
+            queryset=datastore_choices, required=False, initial=None,
+            label=_('Data store'))
+        if not datastore_choices:
+            datastore_field.widget.attrs['disabled'] = 'disabled'
+            datastore_field.empty_label = _('No more data stores.')
+        self.fields['datastore'] = datastore_field
 
     def clean_size(self):
         size_in_bytes = self.cleaned_data.get("size")
@@ -902,6 +913,18 @@ class VmDiskRemoveForm(OperationForm):
 class VmDownloadDiskForm(OperationForm):
     name = forms.CharField(max_length=100, label=_("Name"), required=False)
     url = forms.CharField(label=_('URL'), validators=[URLValidator(), ])
+
+    def __init__(self, *args, **kwargs):
+        datastore_choices = kwargs.pop('datastore_choices')
+        super(VmDownloadDiskForm, self).__init__(*args, **kwargs)
+
+        datastore_field = forms.ModelChoiceField(
+            queryset=datastore_choices, required=False, initial=None,
+            label=_('Data store'))
+        if not datastore_choices:
+            datastore_field.widget.attrs['disabled'] = 'disabled'
+            datastore_field.empty_label = _('No more data stores.')
+        self.fields['datastore'] = datastore_field
 
     def clean(self):
         cleaned_data = super(VmDownloadDiskForm, self).clean()
@@ -1442,6 +1465,26 @@ class RawDataForm(forms.ModelForm):
         return helper
 
 
+class VmDataStoreForm(forms.ModelForm):
+    datastore = forms.ModelChoiceField(
+        queryset=DataStore.objects.filter(destroyed__isnull=True),
+        empty_label=None)
+
+    class Meta:
+        model = Instance
+        fields = ('datastore', )
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = False
+        helper.form_action = reverse_lazy("dashboard.views.vm-data-store",
+                                          kwargs={'pk': self.instance.pk})
+        helper.add_input(Submit("submit", _("Save"),
+                                css_class="btn btn-success", ))
+        return helper
+
+
 class GroupPermissionForm(forms.ModelForm):
     permissions = forms.ModelMultipleChoiceField(
         queryset=None,
@@ -1620,16 +1663,67 @@ class DataStoreForm(ModelForm):
                 'name',
                 'path',
                 'hostname',
-            ),
-            FormActions(
-                Submit('submit', _('Save')),
             )
         )
         return helper
 
     class Meta:
         model = DataStore
-        fields = ("name", "path", "hostname", )
+        fields = ("type", "name", "path", "hostname", )
+        labels = {
+            'path': _('Path'),
+        }
+        widgets = {"type": HiddenInput()}
+
+
+class CephDataStoreForm(DataStoreForm):
+
+    type = forms.CharField(widget=forms.HiddenInput())
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.layout = Layout(
+            Fieldset(
+                '',
+                'ceph_user',
+            )
+        )
+        return helper
+
+    class Meta:
+        model = DataStore
+        fields = ("type", "name", "path", "hostname",
+                  "ceph_user",)
+        labels = {
+            'path': _('Poolname'),
+        }
+
+
+class StorageListSearchForm(forms.Form):
+
+    CHOICES = (
+        ("active", _("active")),
+        ("destroyed", _("destroyed")),
+        (("all"), _("all")),
+    )
+
+    s = forms.CharField(widget=forms.TextInput(attrs={
+        'class': "form-control input-tags",
+        'placeholder': _("Search...")
+    }))
+
+    stype = forms.ChoiceField(CHOICES, widget=forms.Select(attrs={
+        'class': "btn btn-default input-tags",
+    }))
+
+    def __init__(self, *args, **kwargs):
+        super(StorageListSearchForm, self).__init__(*args, **kwargs)
+        # set initial value, otherwise it would be overwritten by request.GET
+        if not self.data.get("stype"):
+            data = self.data.copy()
+            data['stype'] = "active"
+            self.data = data
 
 
 class DiskForm(ModelForm):

@@ -21,6 +21,7 @@ import logging
 
 from django.contrib.auth.models import User, Group, Permission
 from django.core.management.base import BaseCommand
+from django.conf import settings
 from django.db.models import Q
 
 from firewall.models import Vlan, VlanGroup, Domain, Firewall, Rule, Host
@@ -83,7 +84,8 @@ class Command(BaseCommand):
         admin.save()
         self.create(Profile, 'user', user=admin)
 
-        self.create(DataStore, 'path', path='/datastore', name='default',
+        self.create(DataStore, 'path', path='/datastore',
+                    name=settings.DEFAULT_DATASTORE,
                     hostname=options['datastore_queue'])
 
         # leases

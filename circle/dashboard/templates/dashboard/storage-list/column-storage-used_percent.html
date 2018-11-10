@@ -1,0 +1,18 @@
+{% load i18n %}
+{% with record.used_percent as used_percent %}
+{% if used_percent < 0 %}
+<div>
+  {% trans 'The DataStore is offline.' %}
+</div>
+{% else %}
+<div class="progress">
+  <div class="progress-bar progress-bar-stripped
+    {% if used_percent < 80 %}progress-bar-success
+    {% elif used_percent < 90 %}progress-bar-warning
+    {% else %}progress-bar-danger{% endif %}"
+    role="progressbar" style="min-width: 30px; width: {{ used_percent }}%">
+    {{ used_percent }}%
+  </div>
+</div>
+{% endif %}
+{% endwith %}

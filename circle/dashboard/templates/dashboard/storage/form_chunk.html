@@ -1,0 +1,31 @@
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% with form=form %}
+  {% include "display-form-errors.html" %}
+{% endwith %}
+
+{% csrf_token %}
+{{ form.type }}
+<fieldset>
+  <legend>{% trans "General settings" %}</legend>
+  {{ form.name|as_crispy_field }}
+  {{ form.path|as_crispy_field }}
+  {{ form.hostname|as_crispy_field }}
+</fieldset>
+{% if form.type.value == "ceph_block" %}
+<fieldset>
+  <legend>{% trans "Ceph block storage authentication settings" %}</legend>
+    {{ form.ceph_user|as_crispy_field }}
+</fieldset>
+{% endif %}
+
+<style>
+  fieldset{
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  fieldset legend {
+    font-weight: bold;
+  }
+</style>

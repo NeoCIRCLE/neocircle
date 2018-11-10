@@ -257,7 +257,8 @@ class VmDetailTest(LoginMixin, MockCeleryMixin, TestCase):
         tmpl.set_level(self.u1, 'owner')
         Vlan.objects.get(id=1).set_level(self.u1, 'user')
         kwargs = tmpl.__dict__.copy()
-        kwargs.update(name='t1', lease=1, disks=1, raw_data='tst1')
+        kwargs.update(name='t1', lease=1, disks=1,
+                      raw_data='tst1', datastore=1)
         response = c.post('/dashboard/template/1/', kwargs)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(InstanceTemplate.objects.get(id=1).raw_data,
@@ -268,7 +269,7 @@ class VmDetailTest(LoginMixin, MockCeleryMixin, TestCase):
         self.login(c, 'superuser')
         kwargs = InstanceTemplate.objects.get(id=1).__dict__.copy()
         kwargs.update(name='t2', lease=1, disks=1,
-                      raw_data='<devices></devices>')
+                      raw_data='<devices></devices>', datastore=1)
         response = c.post('/dashboard/template/1/', kwargs)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(InstanceTemplate.objects.get(id=1).raw_data,

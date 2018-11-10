@@ -16,19 +16,182 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals, absolute_import
 
+import logging
+
 from django.contrib import messages
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Q
-from django.utils.translation import ugettext_lazy as _
-from django.views.generic import UpdateView
+from django.utils.translation import ugettext_lazy as _, ugettext
+from django.views.generic import (
+    UpdateView, TemplateView, CreateView, DeleteView, DetailView
+)
+from django.contrib.messages.views import SuccessMessageMixin
+from django.shortcuts import redirect
+from django_tables2 import SingleTableView
+from django.http import (
+    Http404, HttpResponseRedirect, JsonResponse
+)
+from django.core.exceptions import PermissionDenied
 
 from braces.views import SuperuserRequiredMixin
 from sizefield.utils import filesizeformat
 
 from common.models import WorkerNotFound
 from storage.models import DataStore, Disk
-from ..tables import DiskListTable
-from ..forms import DataStoreForm, DiskForm
+from ..tables import DiskListTable, StorageListTable
+from ..forms import (
+    DataStoreForm, CephDataStoreForm, DiskForm, StorageListSearchForm
+)
+from .util import FilterMixin
+import json
+from celery.exceptions import TimeoutError
+
+from vm.models import Node
+
+logger = logging.getLogger(__name__)
+
+
+class StorageChoose(SuperuserRequiredMixin, TemplateView):
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/_modal.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(StorageChoose, self).get_context_data(*args, **kwargs)
+        types = DataStore.TYPES
+        context.update({
+            'box_title': _('Choose data store type'),
+            'ajax_title': True,
+            'template': "dashboard/_storage-choose.html",
+            'types': types,
+        })
+        return context
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.has_perm('storage.add_datastore'):
+            raise PermissionDenied()
+
+        type = request.POST.get("type")
+        if any(type in t for t in DataStore.TYPES):
+            return redirect(reverse("dashboard.views.storage-create",
+                                    kwargs={"type": type}))
+        else:
+            messages.warning(request, _("Select an option to proceed."))
+            return redirect(reverse("dashboard.views.storage-choose"))
+
+
+class StorageCreate(SuccessMessageMixin, CreateView):
+    model = DataStore
+    form = None
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            pass
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(StorageCreate, self).get_context_data(*args, **kwargs)
+        context.update({
+            'box_title': _("Create a new data store"),
+            'template': "dashboard/_storage-create.html",
+        })
+        return context
+
+    def get(self, *args, **kwargs):
+        if not self.request.user.has_perm('storage.add_datastore'):
+            raise PermissionDenied()
+
+        return super(StorageCreate, self).get(*args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if not self.request.user.has_perm('storage.add_datastore'):
+            raise PermissionDenied()
+
+        self.form = self.form_class(request.POST)
+        if not self.form.is_valid():
+            logger.debug("invalid form")
+            return self.get(request, self.form, *args, **kwargs)
+        else:
+            self.form.save()
+            return redirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse_lazy("dashboard.views.storage-list")
+
+    def get_form(self):
+
+        if self.form is not None:
+            return self.form
+        else:
+            type = self.kwargs.get("type")
+            fc = self.form_class
+            f = fc(initial={"type": type})
+            return f
+
+    @property
+    def form_class(self):
+        type = self.kwargs.get("type")
+        if type == "file":
+            fc = DataStoreForm
+        elif type == "ceph_block":
+            fc = CephDataStoreForm
+        else:
+            raise Http404(_("Invalid creation type"))
+        return fc
+
+
+class StorageList(SuperuserRequiredMixin, FilterMixin, SingleTableView):
+    template_name = "dashboard/storage-list.html"
+    model = DataStore
+    table_class = StorageListTable
+    table_pagination = False
+
+    allowed_filters = {
+        'name': "name__icontains",
+        'type': "type__icontains",
+        'path': "path__icontains",
+        'poolname': "path__icontains",
+        'hostname': "hostname__iexact",
+    }
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(StorageList, self).get_context_data(*args, **kwargs)
+        context['search_form'] = self.search_form
+        return context
+
+    def get(self, *args, **kwargs):
+        self.search_form = StorageListSearchForm(self.request.GET)
+        self.search_form.full_clean()
+
+        return super(StorageList, self).get(*args, **kwargs)
+
+    def get_queryset(self):
+        logger.debug('StorageList.get_queryset() called. User: %s',
+                     unicode(self.request.user))
+        cleaned_data = self.search_form.cleaned_data
+        stype = cleaned_data.get('stype', "all")
+        qs = self.get_queryset_by_stype(stype)
+        self.create_fake_get()
+
+        try:
+            filters, excludes = self.get_queryset_filters()
+            qs = qs.filter(**filters).exclude(**excludes).distinct()
+        except ValueError:
+            messages.error(self.request, _("Error during filtering."))
+
+        return qs
+
+    def get_queryset_by_stype(self, stype):
+        if stype == "all":
+            return DataStore.get_all()
+        elif stype == "destroyed":
+            return DataStore.objects.filter(destroyed__isnull=False)
+        else:
+            return DataStore.objects.filter(destroyed__isnull=True)
 
 
 class StorageDetail(SuperuserRequiredMixin, UpdateView):
@@ -36,19 +199,22 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
     form_class = DataStoreForm
     template_name = "dashboard/storage/detail.html"
 
-    def get_object(self):
-        return DataStore.objects.get()
-
     def get_context_data(self, **kwargs):
         context = super(StorageDetail, self).get_context_data(**kwargs)
-
-        ds = self.get_object()
         try:
+            ds = self.get_object()
             context['stats'] = self._get_stats()
             context['missing_disks'] = ds.get_missing_disks()
             context['orphan_disks'] = ds.get_orphan_disks()
         except WorkerNotFound:
             messages.error(self.request, _("The DataStore is offline."))
+        except TimeoutError:
+            messages.error(self.request, _("Operation timed out, "
+                                           "some data may insufficient."))
+        except Exception as e:
+            messages.error(self.request, _("Error occured: %s, "
+                                           "some data may insufficient."
+                                           % unicode(e)))
 
         context['disk_table'] = DiskListTable(
             self.get_table_data(), request=self.request,
@@ -101,13 +267,20 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
 
         # file stats
         data = self.get_object().get_file_statistics()
+        disk_names = [d['name'] for d in data['disks']]
+        destroyed_filenames = [d.filename for d
+                               in Disk.objects.filter(
+                                   filename__in=disk_names, destroyed=None)]
+        disks = [d for d in data['disks']
+                 if d['name'] not in destroyed_filenames]
+        trash = [d for d in data['disks'] if d not in disks]
         dumps_size = sum(d['size'] for d in data['dumps'])
-        trash = sum(d['size'] for d in data['trash'])
-        iso_raw = sum(d['size'] for d in data['disks']
+        trash_size = sum(d['size'] for d in trash)
+        iso_raw = sum(d['size'] for d in disks
                       if d['format'] in ("iso", "raw"))
 
         vm_size = vm_actual_size = template_actual_size = 0
-        for d in data['disks']:
+        for d in disks:
             if d['format'] == "qcow2" and d['type'] == "normal":
                 template_actual_size += d['actual_size']
             else:
@@ -120,15 +293,123 @@ class StorageDetail(SuperuserRequiredMixin, UpdateView):
             'used_space': filesizeformat(used_space),
             'total_space': filesizeformat(total_space),
             'dumps': dumps_size,
-            'trash': trash,
+            'trash': trash_size,
             'iso_raw': iso_raw,
             'vm_size': vm_size,
             'vm_actual_size': vm_actual_size,
             'template_actual_size': template_actual_size,
         }
 
+    def get_form_class(self):
+        ds = self.get_object()
+        if ds.type == "ceph_block":
+            return CephDataStoreForm
+        else:
+            return DataStoreForm
+
     def get_success_url(self):
-        return reverse("dashboard.views.storage")
+        ds = self.get_object()
+        return reverse("dashboard.views.storage-detail", kwargs={"pk": ds.id})
+
+    def form_valid(self, form):
+        response = super(StorageDetail, self).form_valid(form)
+        # automatic credential refresh
+        changed = (self.object.type == "ceph_block" and
+                   self.object.ceph_user_changed)
+        if changed:
+            Node.refresh_crendential_on_all(self.request.user,
+                                            self.object.ceph_user)
+        return response
+
+
+class StorageDelete(SuperuserRequiredMixin, DeleteView):
+    model = DataStore
+    success_message = _("Storage successfully destroyed.")
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def check_destroyable(self):
+        object = self.get_object()
+        if not object.is_destroyable:
+            raise PermissionDenied()
+
+    def get(self, request, *args, **kwargs):
+        try:
+            self.check_destroyable()
+        except PermissionDenied:
+            message = ugettext("Another object references"
+                               " to the selected object.")
+            if request.is_ajax():
+                return JsonResponse({"error": message})
+            else:
+                messages.warning(request, message)
+                return redirect(self.get_success_url())
+        return super(StorageDelete, self).get(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy("dashboard.views.storage-list")
+
+    def delete_obj(self, request, *args, **kwargs):
+        self.get_object().destroy()
+
+    def delete(self, request, *args, **kwargs):
+        self.check_destroyable()
+        self.delete_obj(request, *args, **kwargs)
+
+        if request.is_ajax():
+            return JsonResponse(
+                json.dumps({'message': self.success_message}),
+            )
+        else:
+            messages.success(request, self.success_message)
+            return HttpResponseRedirect(self.get_success_url())
+
+
+class StorageRestore(SuperuserRequiredMixin, UpdateView):
+
+    model = DataStore
+    fields = ("destroyed",)
+    success_message = _("Data store successfully restored.")
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-restore.html']
+        else:
+            return ['dashboard/confirm/base-restore.html']
+
+    def form_valid(self, form):
+        object = self.get_object()
+        object.destroyed = None
+        object.save()
+
+        if self.request.is_ajax():
+            return JsonResponse(
+                json.dumps({'message': self.success_message}),
+            )
+        else:
+            messages.success(self.request, self.success_message)
+            return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        ds = self.get_object()
+        return reverse_lazy("dashboard.views.storage-detail",
+                            kwargs={"pk": ds.id})
+
+
+class StorageRefreshCredential(SuperuserRequiredMixin, DetailView):
+
+    model = DataStore
+
+    def get(self, request, *args, **kwargs):
+        if self.get_object().type == 'ceph_block':
+            Node.refresh_crendential_on_all(self.request.user,
+                                            self.get_object().ceph_user)
+        return redirect('dashboard.views.storage-detail',
+                        pk=self.get_object().pk)
 
 
 class DiskDetail(SuperuserRequiredMixin, UpdateView):

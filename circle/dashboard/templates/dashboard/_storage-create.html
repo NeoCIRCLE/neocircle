@@ -1,0 +1,9 @@
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+<form id="storage-create-form" action="" method="POST">
+  {% include "dashboard/storage/form_chunk.html" %}
+  <fieldset>
+    <input type="submit" value="{% trans "Create new data store" %}" class="btn btn-success">
+  </fieldset>
+</form>
